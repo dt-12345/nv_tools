@@ -270,7 +270,7 @@ class DecodingMask(NamedTuple):
 
 class ValueRange(NamedTuple):
     min: int
-    count: int
+    max: int
 
 class EncodingRestriction(NamedTuple):
     encoding: EncodingField
@@ -998,12 +998,12 @@ class Architecture:
                 start = value
             elif prev is not None:
                 if value - prev != 1: # break in values
-                    ranges.append(ValueRange(start, prev - start + 1))
+                    ranges.append(ValueRange(start, prev + 1))
                     start = value
             else:
                 raise ValueError("How did you get here")
             prev = value
-        ranges.append(ValueRange(start, value - start + 1))
+        ranges.append(ValueRange(start, value + 1))
         return ranges
     
     def _calc_encoding_restrictions(self, opclass: OperationClass) -> list[EncodingRestriction]:
@@ -1114,7 +1114,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
         source.write(f"namespace {arch.name} {{\n\n")
         source.write("struct ValueRange {\n")
         source.write("  std::uint32_t min;\n")
-        source.write("  std::uint32_t count;\n") # you could also think of this as an exclusive upper bound
+        source.write("  std::uint32_t max;\n")
         source.write("};\n\n")
         source.write("struct EncodingRestriction {\n")
         source.write("  std::uint64_t (*ReadFunc)(std::uint64_t);\n")
@@ -1140,7 +1140,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
                     continue
                 else:
                     unique_ranges[tuple(restriction.ranges)] = f"sRange{counter}"
-                    source.write(f"static constexpr const ValueRange sRange{counter}[] = {{ {", ".join(f"ValueRange{{ {r.min}u, {r.count}u }}" for r in restriction.ranges)}, }};\n")
+                    source.write(f"static constexpr const ValueRange sRange{counter}[] = {{ {", ".join(f"ValueRange{{ {r.min}u, {r.max}u }}" for r in restriction.ranges)}, }};\n")
                     counter += 1
         source.write("\n")
         for entry in decoding_info:
@@ -1163,7 +1163,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
             if len(entry.restrictions) == 0:
                 source.write(f"  DecodingInfo{{ {entry.mask.mask & 0xffffffffffffffff:#018x}ull, {entry.mask.value & 0xffffffffffffffff:#018x}ull, {entry.mask.mask >> 64:#018x}ull, {entry.mask.value >> 64:#018x}ull, {f"\"{entry.opcode}\"":<15}, {f"OpClass::{fix_name(entry.opclass.name)}":<34} }},\n")
             else:
-                source.write(f"  DecodingInfo{{ {entry.mask.mask & 0xffffffffffffffff:#018x}ull, {entry.mask.value & 0xffffffffffffffff:#018x}ull, {entry.mask.mask >> 64:#018x}ull, {entry.mask.value >> 64:#018x}ull, {f"\"{entry.opcode}\"":<15}, {f"OpClass::{fix_name(entry.opclass.name)}":<34},\n                {f"s{fix_name(entry.opclass.name)}Restrictions":<40}, {len(entry.restrictions):<5} }},\n")
+                source.write(f"  DecodingInfo{{ {entry.mask.mask & 0xffffffffffffffff:#018x}ull, {entry.mask.value & 0xffffffffffffffff:#018x}ull, {entry.mask.mask >> 64:#018x}ull, {entry.mask.value >> 64:#018x}ull, {f"\"{entry.opcode}\"":<15}, {f"OpClass::{fix_name(entry.opclass.name)}":<34}, {f"s{fix_name(entry.opclass.name)}Restrictions":<40}, {len(entry.restrictions):<5} }},\n")
         source.write("};\n\n")
         source.write("std::optional<const DecodedInstruction> Decode(std::uint64_t inst, std::uint64_t sched) {\n")
         source.write("  for (const auto& entry : sDecodingTable) {\n")
@@ -1173,7 +1173,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
         source.write("      if (std::all_of(entry.restrictions, entry.restrictions + entry.restrictionCount, [=](const auto& restriction) {\n")
         source.write("        const std::uint32_t value = static_cast<std::uint32_t>(restriction.ReadFunc(sched ? restriction.isSched : inst));\n")
         source.write("        return std::any_of(restriction.validRanges, restriction.validRanges + restriction.rangeCount, [=](const auto& range) {\n")
-        source.write("          return value - range.min < range.count - range.min;\n")
+        source.write("          return value - range.min < range.max - range.min;\n")
         source.write("        });\n")
         source.write("      })) {\n")
         source.write("        return std::make_optional<const DecodedInstruction>(inst, sched, entry.opcode, entry.opclass);\n")
