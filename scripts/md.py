@@ -722,6 +722,8 @@ class Architecture:
             operand.fields.append(self._read_register_operand(scanner))
             if not scanner.peek_next() == "/":
                 break
+        for field in operand.fields:
+            field.add_dot = True
         return operand
     
     def _read_group_operand(self, scanner: Scanner) -> GroupOperand:
