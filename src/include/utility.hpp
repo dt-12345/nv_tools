@@ -1,8 +1,15 @@
 #pragma once
 
-#include <cstdint>
 #include <climits>
+#include <cstdint>
 #include <type_traits>
+
+template <std::size_t SIZE>
+std::int64_t SEXT(std::uint64_t value) {
+    static_assert(SIZE < sizeof(std::uint64_t) * CHAR_BIT, "SIZE must fit within a 64-bit integer");
+    constexpr std::size_t nbits = sizeof(std::uint64_t) * CHAR_BIT;
+    return static_cast<std::int64_t>(value << (nbits - SIZE)) >> (nbits - SIZE);
+}
 
 template <std::size_t OFFSET, std::size_t NBITS>
 struct BitRange {

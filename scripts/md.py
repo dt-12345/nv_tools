@@ -95,12 +95,13 @@ class Register:
     name: str
     value: int
     group: "RegisterGroup"
-
 @dataclasses.dataclass(slots=True)
 class RegisterGroup:
     name: str
     values: dict[str, Register] = dataclasses.field(default_factory=dict)
     default: str | None = None
+    is_composite: bool = False
+    contained: set[str] = dataclasses.field(default_factory=set)
 
 @dataclasses.dataclass(slots=True)
 class TableEntry:
@@ -114,6 +115,7 @@ class Table:
     num_args: int
     lookup_type: int = 1
     entries: list[TableEntry] = dataclasses.field(default_factory=list)
+    arg_types: list[RegisterGroup | type] = dataclasses.field(default_factory=list)
 
 class BitRange(NamedTuple):
     start: int
@@ -273,7 +275,7 @@ class ValueRange(NamedTuple):
     max: int
 
 class EncodingRestriction(NamedTuple):
-    encoding: EncodingField
+    encoding: EncodingField | MultiEncodingField
     ranges: list[ValueRange]
 
 class DecodingInfo(NamedTuple):
@@ -281,6 +283,10 @@ class DecodingInfo(NamedTuple):
     restrictions: list[EncodingRestriction]
     opcode: str
     opclass: OperationClass
+
+class RegisterComparator(NamedTuple):
+    name: str
+    value: int
 
 class Architecture:
     def __init__(self) -> None:
@@ -381,10 +387,12 @@ class Architecture:
             tokens.append(tok)
         reg: RegisterGroup = RegisterGroup(name)
         if tokens[0] == "=":
+            reg.is_composite = True
             for t in tokens:
                 if t in ["+", "="]:
                     continue
                 reg.values.update(self.register_groups[t].values)
+                reg.contained.update(reg.group.name for reg in reg.values.values())
                 if self.register_groups[t].default is not None:
                     if reg.default is not None:
                         raise ValueError(f"Register group {reg.name} inherits multiple default values!")
@@ -479,6 +487,8 @@ class Architecture:
                 line = scanner.line
             else:
                 current_entry.append(tok)
+        if current_entry:
+            entries.append(current_entry)
         assert len(entries) > 0, f"Line {scanner.line}: Encoding table {name} has no entries"
         table: Table = Table(name, self._count_args(entries[0]))
         for e in entries:
@@ -498,6 +508,37 @@ class Architecture:
                     entry.arguments.append(parse_int(t))
                     i += 1
             table.entries.append(entry)
+            if len(table.arg_types) == 0:
+                table.arg_types = [type(arg) if not isinstance(arg, Register) else arg.group for arg in entry.arguments]
+            else:
+                assert len(entry.arguments) == len(table.arg_types), f"Line {scanner.line}: Argument count mismatch"
+                for i, (expected, actual) in enumerate(zip(table.arg_types, (type(arg) if not isinstance(arg, Register) else arg.group for arg in entry.arguments))):
+                    if isinstance(expected, RegisterGroup):
+                        if actual is int:
+                            assert any(entry.arguments[i] == r.value for r in expected.values.values()), f"Line {scanner.line}: Argument type mismatch: {table.arg_types} vs. {entry.arguments}"
+                            for r in expected.values.values():
+                                if r.value == entry.arguments[i]:
+                                    entry.arguments[i] = r
+                        else:
+                            assert isinstance(actual, RegisterGroup), f"Line {scanner.line}: Argument type mismatch: {table.arg_types} vs. {entry.arguments}"
+                            if expected.name != actual.name:
+                                names: set[str]
+                                if expected.is_composite:
+                                    names = expected.contained.copy()
+                                    names.add(actual.name)
+                                else:
+                                    names = {expected.name, actual.name}
+                                matched: bool = False
+                                for register in self.register_groups.values():
+                                    if not register.is_composite:
+                                        continue
+                                    if register.contained.issuperset(names):
+                                        table.arg_types[i] = register
+                                        matched = True
+                                        break
+                                assert matched, f"Line {scanner.line}: Argument type mismatch: {table.arg_types} vs. {entry.arguments}"
+                    else:
+                        assert expected is actual, f"Line {scanner.line}: Argument type mismatch: {table.arg_types} vs. {entry.arguments}"
         self.tables[name] = table
         return scanner.peek_next() != "OPERATION"
     
@@ -549,7 +590,7 @@ class Architecture:
                     pass
                 if "(" in group:
                     i: int = group.index("=")
-                    enc: MultiEncodingField = MultiEncodingField([e for e in group[:i] if e != ","], group[i + 1])
+                    enc: MultiEncodingField = MultiEncodingField([e for e in group[:i] if e != ","], group[i + 1] if group[i + 1] != "*" else group[i + 2])
                     i += 1
                     if group[i] == "*":
                         i += 1
@@ -1009,13 +1050,18 @@ class Architecture:
     def _calc_encoding_restrictions(self, opclass: OperationClass) -> list[EncodingRestriction]:
         restrictions: list[EncodingRestriction] = []
         for encoding in opclass.encodings:
-            if not isinstance(encoding, EncodingField) or encoding.ignored or isinstance(encoding.value, RegisterOperand) and len(encoding.encoding_ops) > 0:
-                continue
-            if isinstance(encoding.value, RegisterOperand):
-                restrictions.append(EncodingRestriction(encoding, self._calc_value_restrictions([r.value for r in encoding.value.register.values.values()])))
-            elif isinstance(encoding.value, ImmediateOperand):
-                if encoding.value.bitwidth < 32:
-                    restrictions.append(EncodingRestriction(encoding, [ValueRange(0, 1 << encoding.value.bitwidth)]))
+            if isinstance(encoding, MultiEncodingField):
+                table: Table = self.tables[encoding.table]
+                if table.lookup_type == 1:
+                    restrictions.append(EncodingRestriction(encoding, self._calc_value_restrictions([entry.value for entry in table.entries])))
+            else:
+                if encoding.ignored or isinstance(encoding.value, RegisterOperand) and len(encoding.encoding_ops) > 0:
+                    continue
+                if isinstance(encoding.value, RegisterOperand):
+                    restrictions.append(EncodingRestriction(encoding, self._calc_value_restrictions([r.value for r in encoding.value.register.values.values()])))
+                elif isinstance(encoding.value, ImmediateOperand):
+                    if encoding.value.bitwidth < 32:
+                        restrictions.append(EncodingRestriction(encoding, [ValueRange(0, 1 << encoding.value.bitwidth)]))
         return restrictions
 
     # generate masks and masked values for each opclass
@@ -1033,6 +1079,31 @@ class Architecture:
              # the duplicates will overwrite each other which is intended
             info[value] = DecodingInfo(self._calc_decoding_mask(opclass, opcode), self._calc_encoding_restrictions(opclass), opcode, opclass)
         return list(info.values())
+    
+    def get_used_tables(self) -> list[str]:
+        tables: set[str] = set()
+        for opclass in self.funit.op_classes.values():
+            for encoding in opclass.encodings:
+                if isinstance(encoding, MultiEncodingField):
+                    tables.add(encoding.table)
+        return sorted(tables)
+    
+    def get_used_registers(self) -> list[str]:
+        registers: set[str] = set()
+        for opclass in self.funit.op_classes.values():
+            for encoding in opclass.encodings:
+                if isinstance(encoding, EncodingField):
+                    if isinstance(encoding.value, Register):
+                        registers.add(encoding.value.group.name)
+                    elif isinstance(encoding.value, RegisterOperand):
+                        registers.add(encoding.value.register.name)
+                else:
+                    for arg_type in self.tables[encoding.table].arg_types:
+                        if isinstance(arg_type, RegisterGroup):
+                            registers.add(arg_type.name)
+                            if arg_type.is_composite:
+                                registers.update(arg_type.contained)
+        return sorted(registers, key=lambda name: (self.register_groups[name].is_composite, name))
 
     # I have no idea what the exact grammar of this format is, they completely fucked the formatting (shitty obfuscation???)
     @classmethod
@@ -1075,6 +1146,8 @@ class Architecture:
         return arch
 
 def fix_name(name: str) -> str:
+    if name[0].isdigit():
+        name = f"_{name}"
     return name.replace(".", "_").replace(" ", "_")
 
 def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
@@ -1090,7 +1163,10 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
         header.write("#pragma once\n\n")
         header.write("#include \"utility.hpp\"\n\n")
         header.write("#include <cstdint>\n")
-        header.write("#include <optional>\n\n")
+        header.write("#include <optional>\n")
+        header.write("#include <tuple>\n")
+        header.write("#include <type_traits>\n")
+        header.write("#include <variant>\n\n")
         header.write(f"namespace {arch.name} {{\n\n")
         header.write("enum class OpClass : std::uint32_t {\n")
         for i, opclass in enumerate(arch.funit.op_classes):
@@ -1105,12 +1181,73 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
         header.write("  OpClass opclass;\n")
         header.write("};\n\n")
         header.write("std::optional<const DecodedInstruction> Decode(std::uint64_t inst, std::uint64_t sched);\n\n")
+        header.write(f"#define MAX_CONST_BANK {arch.parameters["MAX_CONST_BANK"]}\n\n")
+        seen_registers: dict[tuple[RegisterComparator, ...], str] = {}
+        for register in arch.get_used_registers():
+            reg: RegisterGroup = arch.register_groups[register]
+            if reg.is_composite:
+                registers: set[str] = set(v.group.name for v in reg.values.values())
+                if len(registers) == 1:
+                    header.write(f"using {fix_name(register)} = {fix_name(list(registers)[0])};\n")
+                else:
+                    types: list[str] = ["std::uint64_t"] + sorted(
+                        set(v.group.name for v in reg.values.values()), key=lambda name: min(r.value for r in arch.register_groups[name].values.values())
+                    )
+                    header.write(f"using {fix_name(register)} = std::variant<{", ".join(fix_name(r) for r in types)}>;\n")
+            else:
+                reg_key: tuple[RegisterComparator, ...] = tuple(RegisterComparator(name, value.value) for name, value in sorted(reg.values.items(), key=lambda i: (i[1].value, i[0])))
+                if reg_key in seen_registers:
+                    header.write(f"using {fix_name(register)} = {fix_name(seen_registers[reg_key])};\n")
+                else:
+                    seen_registers[reg_key] = reg.name
+                    header.write(f"enum class {fix_name(register)} : std::uint32_t {{\n")
+                    max_name = max(len(n) for n in reg.values)
+                    for value, r in sorted(reg.values.items(), key=lambda i: (i[1].value, i[1].name)):
+                        fixed_name: str = fix_name(value)
+                        if fixed_name != value and fixed_name in reg.values:
+                            assert reg.values[value].value == reg.values[fix_name(value)].value
+                        else:
+                            header.write(f"  {fix_name(value):<{max_name+1}} = {r.value:<#8x}, // {value}\n")
+                    header.write("};\n")
+        for table in arch.get_used_tables():
+            tbl: Table = arch.tables[table]
+            if tbl.lookup_type == 1:
+                types: str = ", ".join(fix_name(v.name) if isinstance(v, RegisterGroup) else "std::uint64_t" for v in tbl.arg_types)
+                header.write(f"std::optional<std::tuple<{types}>> {fix_name(tbl.name)}(std::uint64_t value);\n")
+            elif tbl.lookup_type == 0: # IDENTICAL
+                header.write("template<typename T>\n")
+                header.write(f"std::optional<std::tuple<T, T>> {fix_name(tbl.name)}(std::uint64_t value) {{\n")
+                header.write("  static_assert(std::is_integral_v<T>(), \"T must be an integral type!\");\n")
+                header.write("  return std::make_optional<std::tuple<T, T>>(static_cast<T>(value), static_cast<T>(value));\n")
+                header.write("}\n")
+            elif tbl.lookup_type == 11: # ConstBankAddress0
+                header.write("template<std::size_t BitSize>\n")
+                header.write(f"std::optional<std::tuple<std::uint64_t, std::int64_t>> {fix_name(tbl.name)}(std::uint64_t value) {{\n")
+                header.write("  static_assert(BitSize <= sizeof(std::uint64_t) * CHAR_BIT, \"Constant bank offset must fit within a 64-bit integer!\");\n")
+                header.write("  constexpr std::size_t nbits = BitSize - 1;\n")
+                header.write("  constexpr std::uint64_t mask = (1ull << nbits) - 1;\n")
+                header.write("  const std::uint64_t slot = value >> nbits;\n")
+                header.write("  const std::int64_t offset = SEXT<nbits>(value & mask);\n")
+                header.write("  return slot > MAX_CONST_BANK ? std::nullopt : std::make_optional<std::tuple<std::uint64_t, std::int64_t>>(slot, offset);\n")
+                header.write("}\n")
+            elif tbl.lookup_type == 12: # ConstBankAddress2
+                header.write("template<std::size_t BitSize>\n")
+                header.write(f"std::optional<std::tuple<std::uint64_t, std::int64_t>> {fix_name(tbl.name)}(std::uint64_t value) {{\n")
+                header.write("  static_assert(BitSize <= sizeof(std::uint64_t) * CHAR_BIT, \"Constant bank offset must fit within a 64-bit integer!\");\n")
+                header.write("  constexpr std::size_t nbits = BitSize - 1;\n")
+                header.write("  constexpr std::uint64_t mask = (1ull << nbits) - 1;\n")
+                header.write("  const std::uint64_t slot = value * 4 >> nbits;\n")
+                header.write("  const std::int64_t offset = SEXT<nbits>(value * 4 & mask);\n")
+                header.write("  return slot > MAX_CONST_BANK ? std::nullopt : std::make_optional<std::tuple<std::uint64_t, std::int64_t>>(slot, offset);\n")
+                header.write("}\n")
+        header.write("\n")
         header.write(f"}} // namespace {arch.name}")
 
     with open(os.path.join(source_path, f"{arch.name}.cpp"), "w", encoding="utf-8") as source:
         source.write(f"#include \"{arch.name}.hpp\"\n\n")
         source.write("#include <algorithm>\n")
-        source.write("#include <array>\n\n")
+        source.write("#include <array>\n")
+        source.write("#include <utility>\n\n")
         source.write(f"namespace {arch.name} {{\n\n")
         source.write("struct ValueRange {\n")
         source.write("  std::uint32_t min;\n")
@@ -1149,10 +1286,11 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
             source.write(f"static constexpr const EncodingRestriction s{fix_name(entry.opclass.name)}Restrictions[] = {{\n")
             for restriction in entry.restrictions:
                 # this is not guaranteed but it's easier to deal with if we assume it to be true
-                if all(r.start < 64 for r in arch.funit.encodings[restriction.encoding.encoding]):
-                    source.write(f"  EncodingRestriction{{ {f"Encoding<{", ".join(f"BitRange<{r.start}, {r.nbits}>" for r in arch.funit.encodings[restriction.encoding.encoding])}>::Read":<50}, {f"{unique_ranges[tuple(restriction.ranges)]}":<10}, {len(restriction.ranges):<5} }},\n")
-                elif all(r.start >= 64 for r in arch.funit.encodings[restriction.encoding.encoding]):
-                    source.write(f"  EncodingRestriction{{ {f"Encoding<{", ".join(f"BitRange<{r.start - 64}, {r.nbits}>" for r in arch.funit.encodings[restriction.encoding.encoding])}>::Read":<50}, {f"{unique_ranges[tuple(restriction.ranges)]}":<10}, {len(restriction.ranges):<5}, 1u }},\n")
+                encoding: str = restriction.encoding.encoding if isinstance(restriction.encoding, EncodingField) else restriction.encoding.encodings[0]
+                if all(r.start < 64 for r in arch.funit.encodings[encoding]):
+                    source.write(f"  EncodingRestriction{{ {f"Encoding<{", ".join(f"BitRange<{r.start}, {r.nbits}>" for r in arch.funit.encodings[encoding])}>::Read":<50}, {f"{unique_ranges[tuple(restriction.ranges)]}":<10}, {len(restriction.ranges):<5} }},\n")
+                elif all(r.start >= 64 for r in arch.funit.encodings[encoding]):
+                    source.write(f"  EncodingRestriction{{ {f"Encoding<{", ".join(f"BitRange<{r.start - 64}, {r.nbits}>" for r in arch.funit.encodings[encoding])}>::Read":<50}, {f"{unique_ranges[tuple(restriction.ranges)]}":<10}, {len(restriction.ranges):<5}, 1u }},\n")
                 else:
                     raise Exception
             source.write("};\n\n")
@@ -1182,6 +1320,28 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
         source.write("  }\n")
         source.write("  return std::nullopt;\n")
         source.write("}\n\n")
+        source.write("#define TABLE_LOOKUP(table, ...) \\\n")
+        source.write("std::optional<std::tuple<__VA_ARGS__>> table(std::uint64_t value) { \\\n")
+        source.write("  const auto res = std::lower_bound(s ## table.begin(), s ## table.end(), value, [](const auto& entry, std::uint64_t value) { \\\n")
+        source.write("    return entry.first < value; \\\n")
+        source.write("  }); \\\n")
+        source.write("  return res == s ## table.end() ? std::nullopt : std::make_optional<std::tuple<__VA_ARGS__>>(res->second); \\\n")
+        source.write("}\n")
+        for table in arch.get_used_tables():
+            tbl: Table = arch.tables[table]
+            if tbl.lookup_type == 1:
+                types: str = ", ".join(fix_name(v.name) if isinstance(v, RegisterGroup) else "std::uint64_t" for v in tbl.arg_types)
+                unique_values: list[int] = sorted(set(entry.value for entry in tbl.entries))
+                source.write(f"static constexpr const std::array<std::pair<std::uint64_t, std::tuple<{types}>>, {len(unique_values)}> s{fix_name(tbl.name)} = {{\n")
+                seen_values: set[int] = set()
+                for entry in sorted(tbl.entries, key=lambda entry: entry.value):
+                    if entry.value in seen_values:
+                        continue
+                    seen_values.add(entry.value)
+                    value: str = ", ".join(f"{fix_name(arg.group.name)}::{fix_name(arg.name)}" if isinstance(arg, Register) else f"{arg}ull" if isinstance(arg, int) else f"'{arg}'" for arg in entry.arguments)
+                    source.write(f"  std::pair{{ {entry.value}ull, std::tuple{{ {value} }} }},\n")
+                source.write("};\n")
+                source.write(f"TABLE_LOOKUP({fix_name(tbl.name)}, {types})\n")
         source.write(f"}} // namespace {arch.name}")
 
 if __name__ == "__main__":

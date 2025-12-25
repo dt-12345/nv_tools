@@ -24,6 +24,8 @@ endif()
 add_executable(
     disassemble
     
+    src/include/utility.hpp
+
     src/include/Maxwell.hpp
     src/Maxwell.cpp
 
