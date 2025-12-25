@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utility.hpp"
+
 #include <cstdint>
 #include <optional>
 
@@ -643,15 +645,6 @@ enum class OpClass : std::uint32_t {
 struct DecodedInstruction {
   std::uint64_t inst;
   std::uint64_t sched;
-  const char* opcode;
-  OpClass opclass;
-};
-
-struct DecodingInfo {
-  std::uint64_t instMask;
-  std::uint64_t instValue;
-  std::uint64_t schedMask;
-  std::uint64_t schedValue;
   const char* opcode;
   OpClass opclass;
 };

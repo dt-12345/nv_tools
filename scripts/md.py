@@ -268,8 +268,17 @@ class DecodingMask(NamedTuple):
     mask: int
     value: int
 
+class ValueRange(NamedTuple):
+    min: int
+    count: int
+
+class EncodingRestriction(NamedTuple):
+    encoding: EncodingField
+    ranges: list[ValueRange]
+
 class DecodingInfo(NamedTuple):
     mask: DecodingMask
+    restrictions: list[EncodingRestriction]
     opcode: str
     opclass: OperationClass
 
@@ -979,6 +988,36 @@ class Architecture:
                 value |= v
         return DecodingMask(mask, value)
     
+    def _calc_value_restrictions(self, values: list[int]) -> list[ValueRange]:
+        values = sorted(set(values))
+        start: int | None = None
+        prev: int | None = None
+        ranges: list[ValueRange] = []
+        for value in values:
+            if start is None:
+                start = value
+            elif prev is not None:
+                if value - prev != 1: # break in values
+                    ranges.append(ValueRange(start, prev - start + 1))
+                    start = value
+            else:
+                raise ValueError("How did you get here")
+            prev = value
+        ranges.append(ValueRange(start, value - start + 1))
+        return ranges
+    
+    def _calc_encoding_restrictions(self, opclass: OperationClass) -> list[EncodingRestriction]:
+        restrictions: list[EncodingRestriction] = []
+        for encoding in opclass.encodings:
+            if not isinstance(encoding, EncodingField) or encoding.ignored or isinstance(encoding.value, RegisterOperand) and len(encoding.encoding_ops) > 0:
+                continue
+            if isinstance(encoding.value, RegisterOperand):
+                restrictions.append(EncodingRestriction(encoding, self._calc_value_restrictions([r.value for r in encoding.value.register.values.values()])))
+            elif isinstance(encoding.value, ImmediateOperand):
+                if encoding.value.bitwidth < 32:
+                    restrictions.append(EncodingRestriction(encoding, [ValueRange(0, 1 << encoding.value.bitwidth)]))
+        return restrictions
+
     # generate masks and masked values for each opclass
     # masks should be sorted in order from most
     # masks should include:
@@ -986,12 +1025,13 @@ class Architecture:
     # - constant encoding integer values
     # - constant encoding register values
     # - constant encoding values derived from tables
-    # they also do a range restriction based on the bitwidth of value types but I'm going to assume that those are always valid
     # each opclass has multiple opcodes but they all have the same value usually so the last one ends up overwriting the others
+    # TODO: value restrictions for immediates + registers
     def get_opclass_decoding_info(self, opclass: OperationClass) -> list[DecodingInfo]:
         info: dict[str, DecodingMask] = {}
         for opcode, value in opclass.opcodes.items():
-            info[value] = DecodingInfo(self._calc_decoding_mask(opclass, opcode), opcode, opclass) # the duplicates will overwrite each other which is intended
+             # the duplicates will overwrite each other which is intended
+            info[value] = DecodingInfo(self._calc_decoding_mask(opclass, opcode), self._calc_encoding_restrictions(opclass), opcode, opclass)
         return list(info.values())
 
     # I have no idea what the exact grammar of this format is, they completely fucked the formatting (shitty obfuscation???)
@@ -1048,6 +1088,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
 
     with open(os.path.join(include_path, f"{arch.name}.hpp"), "w", encoding="utf-8") as header:
         header.write("#pragma once\n\n")
+        header.write("#include \"utility.hpp\"\n\n")
         header.write("#include <cstdint>\n")
         header.write("#include <optional>\n\n")
         header.write(f"namespace {arch.name} {{\n\n")
@@ -1063,31 +1104,80 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
         header.write("  const char* opcode;\n")
         header.write("  OpClass opclass;\n")
         header.write("};\n\n")
-        header.write("struct DecodingInfo {\n")
-        header.write("  std::uint64_t instMask;\n")
-        header.write("  std::uint64_t instValue;\n")
-        header.write("  std::uint64_t schedMask;\n")
-        header.write("  std::uint64_t schedValue;\n")
-        header.write("  const char* opcode;\n")
-        header.write("  OpClass opclass;\n")
-        header.write("};\n\n")
         header.write("std::optional<const DecodedInstruction> Decode(std::uint64_t inst, std::uint64_t sched);\n\n")
         header.write(f"}} // namespace {arch.name}")
 
     with open(os.path.join(source_path, f"{arch.name}.cpp"), "w", encoding="utf-8") as source:
         source.write(f"#include \"{arch.name}.hpp\"\n\n")
+        source.write("#include <algorithm>\n")
         source.write("#include <array>\n\n")
         source.write(f"namespace {arch.name} {{\n\n")
+        source.write("struct ValueRange {\n")
+        source.write("  std::uint32_t min;\n")
+        source.write("  std::uint32_t count;\n") # you could also think of this as an exclusive upper bound
+        source.write("};\n\n")
+        source.write("struct EncodingRestriction {\n")
+        source.write("  std::uint64_t (*ReadFunc)(std::uint64_t);\n")
+        source.write("  const ValueRange* validRanges;\n")
+        source.write("  const std::uint32_t rangeCount;\n")
+        source.write("  const std::uint32_t isSched = 0u;\n")
+        source.write("};\n\n")
+        source.write("struct DecodingInfo {\n")
+        source.write("  std::uint64_t instMask;\n")
+        source.write("  std::uint64_t instValue;\n")
+        source.write("  std::uint64_t schedMask;\n")
+        source.write("  std::uint64_t schedValue;\n")
+        source.write("  const char* opcode;\n")
+        source.write("  OpClass opclass;\n")
+        source.write("  const EncodingRestriction* restrictions = nullptr;\n")
+        source.write("  std::size_t restrictionCount = 0;\n")
+        source.write("};\n\n")
+        unique_ranges: dict[tuple[ValueRange, ...], str] = {}
+        counter: int = 0
+        for entry in decoding_info:
+            for restriction in entry.restrictions:
+                if tuple(restriction.ranges) in unique_ranges:
+                    continue
+                else:
+                    unique_ranges[tuple(restriction.ranges)] = f"sRange{counter}"
+                    source.write(f"static constexpr const ValueRange sRange{counter}[] = {{ {", ".join(f"ValueRange{{ {r.min}u, {r.count}u }}" for r in restriction.ranges)}, }};\n")
+                    counter += 1
+        source.write("\n")
+        for entry in decoding_info:
+            if len(entry.restrictions) == 0:
+                continue
+            source.write(f"static constexpr const EncodingRestriction s{fix_name(entry.opclass.name)}Restrictions[] = {{\n")
+            for restriction in entry.restrictions:
+                # this is not guaranteed but it's easier to deal with if we assume it to be true
+                if all(r.start < 64 for r in arch.funit.encodings[restriction.encoding.encoding]):
+                    source.write(f"  EncodingRestriction{{ {f"Encoding<{", ".join(f"BitRange<{r.start}, {r.nbits}>" for r in arch.funit.encodings[restriction.encoding.encoding])}>::Read":<50}, {f"{unique_ranges[tuple(restriction.ranges)]}":<10}, {len(restriction.ranges):<5} }},\n")
+                elif all(r.start >= 64 for r in arch.funit.encodings[restriction.encoding.encoding]):
+                    source.write(f"  EncodingRestriction{{ {f"Encoding<{", ".join(f"BitRange<{r.start - 64}, {r.nbits}>" for r in arch.funit.encodings[restriction.encoding.encoding])}>::Read":<50}, {f"{unique_ranges[tuple(restriction.ranges)]}":<10}, {len(restriction.ranges):<5}, 1u }},\n")
+                else:
+                    raise Exception
+            source.write("};\n\n")
         source.write(f"static constexpr const std::array<DecodingInfo, {len(decoding_info) + 1}> sDecodingTable = {{\n")
         # default NOP is the highest priority instruction (there can be normal NOPs as well)
-        source.write(f"  DecodingInfo{{ {nop.mask & 0xffffffffffffffff:#018x}ull, {nop.value & 0xffffffffffffffff:#018x}ull, {nop.mask >> 64:#018x}ull, {nop.value >> 64:#018x}ull, {f"\"NOP\"":<15}, {f"OpClass::NOP":<32} }},\n")
+        source.write(f"  DecodingInfo{{ {nop.mask & 0xffffffffffffffff:#018x}ull, {nop.value & 0xffffffffffffffff:#018x}ull, {nop.mask >> 64:#018x}ull, {nop.value >> 64:#018x}ull, {f"\"NOP\"":<15}, {f"OpClass::NOP":<34} }},\n")
         for entry in decoding_info:
-            source.write(f"  DecodingInfo{{ {entry.mask.mask & 0xffffffffffffffff:#018x}ull, {entry.mask.value & 0xffffffffffffffff:#018x}ull, {entry.mask.mask >> 64:#018x}ull, {entry.mask.value >> 64:#018x}ull, {f"\"{entry.opcode}\"":<15}, {f"OpClass::{fix_name(entry.opclass.name)}":<32} }},\n")
+            if len(entry.restrictions) == 0:
+                source.write(f"  DecodingInfo{{ {entry.mask.mask & 0xffffffffffffffff:#018x}ull, {entry.mask.value & 0xffffffffffffffff:#018x}ull, {entry.mask.mask >> 64:#018x}ull, {entry.mask.value >> 64:#018x}ull, {f"\"{entry.opcode}\"":<15}, {f"OpClass::{fix_name(entry.opclass.name)}":<34} }},\n")
+            else:
+                source.write(f"  DecodingInfo{{ {entry.mask.mask & 0xffffffffffffffff:#018x}ull, {entry.mask.value & 0xffffffffffffffff:#018x}ull, {entry.mask.mask >> 64:#018x}ull, {entry.mask.value >> 64:#018x}ull, {f"\"{entry.opcode}\"":<15}, {f"OpClass::{fix_name(entry.opclass.name)}":<34},\n                {f"s{fix_name(entry.opclass.name)}Restrictions":<40}, {len(entry.restrictions):<5} }},\n")
         source.write("};\n\n")
         source.write("std::optional<const DecodedInstruction> Decode(std::uint64_t inst, std::uint64_t sched) {\n")
         source.write("  for (const auto& entry : sDecodingTable) {\n")
         source.write("    if ((inst & entry.instMask) == entry.instValue && (sched & entry.schedMask) == entry.schedValue) {\n")
-        source.write("      return std::make_optional<const DecodedInstruction>(inst, sched, entry.opcode, entry.opclass);\n")
+        source.write("      if (entry.restrictions == nullptr || entry.restrictionCount == 0)\n")
+        source.write("        return std::make_optional<const DecodedInstruction>(inst, sched, entry.opcode, entry.opclass);\n")
+        source.write("      if (std::all_of(entry.restrictions, entry.restrictions + entry.restrictionCount, [=](const auto& restriction) {\n")
+        source.write("        const std::uint32_t value = static_cast<std::uint32_t>(restriction.ReadFunc(sched ? restriction.isSched : inst));\n")
+        source.write("        return std::any_of(restriction.validRanges, restriction.validRanges + restriction.rangeCount, [=](const auto& range) {\n")
+        source.write("          return value - range.min < range.count - range.min;\n")
+        source.write("        });\n")
+        source.write("      })) {\n")
+        source.write("        return std::make_optional<const DecodedInstruction>(inst, sched, entry.opcode, entry.opclass);\n")
+        source.write("      }\n")
         source.write("    }\n")
         source.write("  }\n")
         source.write("  return std::nullopt;\n")

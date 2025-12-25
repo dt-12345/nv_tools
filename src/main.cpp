@@ -28,6 +28,7 @@ int main() {
         start = 4;
     }
 
+    bool shouldBreak = false;
     for (size_t i = start; i < size / 4; ++i) {
         const std::uint64_t schedFlags = data[i * 4];
         for (size_t j = 0; j < 3; ++j) {
@@ -36,9 +37,16 @@ int main() {
             const auto decoded = Maxwell::Decode(inst, sched);
             if (decoded.has_value()) {
                 std::cout << std::format("{:#010x}: {}\n", i * 0x20 + j * 8, decoded->opcode);
+                if (decoded->opclass == Maxwell::OpClass::EXIT) {
+                    shouldBreak = true;
+                    break;
+                }
             } else {
                 std::cout << std::format("Failed to decode instruction at {:#010x} ({:#010x} {:#010x})\n", i * 0x20 + j * 8, inst, sched);
             }
+        }
+        if (shouldBreak) {
+            break;
         }
     }
 
