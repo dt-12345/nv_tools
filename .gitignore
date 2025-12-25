@@ -1,3 +1,4 @@
 build/*
 samples/*.txt
 samples/*.bin
+__pycache__/*
