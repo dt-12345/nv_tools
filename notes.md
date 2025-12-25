@@ -1,0 +1,263 @@
+<!--TODO: clean this up and update it-->
+
+NVIDIA stores information about how their various GPU architectures are structured inside of special files embedded within tools such as `nvdisasm`
+
+For each architecture, there are three files: machine description, latencies, and patterns
+
+This document only covers machine description (md) files
+
+The actual file data stored inside the binary is compressed + encoded
+
+- ISSUE_SLOTS refers to how many instructions can be executed in parallel
+- RELOCATORS - idk, not relevant to me so haven't looked into how these work
+- OPTIONS:
+  - NOCHECK_OPCLASS_AMBIGUITY
+  - CASE_INSENSITIVE_SYNTAX
+  - VLIW_BRACE_NOTATION
+    - Places braces around instructions executed in parallel in the disassembly
+  - probably more supported but not sure how to go about reversing the lexing tables (surely there's a way to generate the lexing rules from the tables)
+- RELATIVE_ADDRESS_BASE - self-explanatory
+- EMPTY_INSTRUCTION - SASS to print when encountering an empty instruction
+- CONDITION TYPES - self-explanatory
+  - `ConditionName : BaseConditionName`
+    - The base condition must be a builtin condition type
+  - The following condition types are builtin and not listed in the file:
+    - INFO (Level: 2)
+    - WARNING (Level: 3)
+    - ERROR (Level: 5)
+- PARAMETERS
+- CONSTANTS - self-explanatory
+- REGISTERS - kinda like enums
+  - Entries can be in one of two formats:
+    - `RegisterGroup Registers, ...;`         // defines a register group and its contained registers
+    - `RegisterGroup = RegisterGroup + ...;`  // defines a register group composed of the registers contained by each listed register group
+  - Each register definition can be one of a few formats:
+    - `Register`                              // defines a register with an ID one greater than the previous ID (starts at 0 if first register)
+    - `Register = ID`                         // defines a register with an ID of ID
+    - `Register(Min..Max)`                    // defines a range of registers from RegisterMin to RegisterMax with IDs of 1 + previous ID to (Max - Min) + 1 + previous ID
+    - `Register(Min0..Max0) = (Min1..Max1)`   // defines a range of registers from RegisterMin0 to RegisterMax0 with IDs of Min1 to Max1
+  - Registers followed by a `*` indicate a default register (only one default is allowed per register group)
+  - Registers are accessed with the syntax `RegisterGroup@Register`
+  - Register names may be enclosed in quotes if they contain certain characters or start with a number
+- TABLES - encoding tables
+  - Entries are in the form:
+    - `EncodingTableName Args... -> Value;`   // defines an encoding table with some number of arguments which map to a single value
+  - Each arg can either be a register, a character literal, an integer, or a wildcard (how do wildcards appear in the file?)
+  - Values can be either is an integer (binary values can have _ as a separator used in cases where the encoding field is non-contiguous but ignored otherwise)
+  - All user-defined tables in the file have a lookup type of 1
+  - The following tables are builtin and not listed in the file:
+    - IDENTICAL
+      - Num Args: 2
+      - Lookup Type: 0
+    - ARMExpandImm
+      - Num Args: 3
+      - Lookup Type: 2
+    - FixLatSrcABCMap
+      - Num Args: 4
+      - Lookup Type: 5
+    - FixLatSrcABMap
+      - Num Args: 3
+      - Lookup Type: 6
+    - FixLatSrcACMap
+      - Num Args: 3
+      - Lookup Type: 7
+    - FixLatSrcAMap
+      - Num Args: 2
+      - Lookup Type: 8
+    - FixLatSrcBMap
+      - Num Args: 2
+      - Lookup Type: 9
+    - FixLatSrcMap
+      - Num Args: 1
+      - Lookup Type: 10
+    - ConstBankAddress0
+      - Num Args: 2
+      - Lookup Type: 11
+    - ConstBankAddress2
+      - Num Args: 2
+      - Lookup Type: 12
+  - Encoding Table Lookup Types:
+    - 0 => do nothing, return two copies of the same value
+    - 1 => find first matching entry in table (used for all tables created from the machine description file)
+    - 2 => bunch of bit manipulations to get three different values, unused in Maxwell so I'm not gonna bother
+    - 3 => first arg is 0x80, then some other values but unused so whatever
+    - 4 => unused so I'm not gonna bother
+    - 5 => unused so I'm not gonna bother
+    - 6 => unused so I'm not gonna bother
+    - 7 => unused so I'm not gonna bother
+    - 8 => unused so I'm not gonna bother
+    - 9 => unused so I'm not gonna bother
+    - 10 => unused so I'm not gonna bother
+    - 11 => bottom n bits are the first value (signed), remaining bits are the second value (are the args stored in reverse order?)
+    - 12 => same as above but value is multiplied by 4 first
+- OPERATION PROPERTIES - properties operation classes can have
+- OPERATION PREDICATES - predicates operation classes can have
+- FUNCTIONAL UNITS
+  - Functional units represent a unit of execution
+  - The section is structured as follows:
+```
+FUNIT FunctionalUnitName
+      ISSUE_SLOTS IssueSlots...;
+      ENCODING WIDTH EncodingWidth;
+
+      FieldName 'FieldEncoding'
+      ...
+
+      NOP_ENCODING FieldName = Value;
+
+      OperationalClasses...
+```
+  - ISSUE_SLOTS defines the values of the issue slots available for this functional unit (as indices)
+  - ENCODING WIDTH defines the total width in bits of each encoding field
+    - Bits above 64 are "OE" bits (whatever that stands for) which are used for scheduling flags
+    - Maxwell has an encoding width of 88 of (so 24 OE bits) but nvdisasm is hardcoded to read 21 bits for the scheduling flags for each instruction so the top 3 are pointless
+  - Each encoding field is represented by `.`'s and `X`'s
+    - A `.` represents an ignored bit
+    - A `X` represents an included bit
+  - NOP_ENCODING defines the encoding for an empty instruction - this is checked first before checking any other operation
+- CLASS - operational classes
+  - CLASS "OperationName"
+    - ALTERNATE CLASS also exists
+    - There appears to be support for "remapped" operations but the file I'm looking at has none of that
+  - FORMAT - specifies how a given operation is formatted in SASS
+    - Composed of a sequence of operand arguments, each argument has a specific set of components (such as other arguments) and has its own formatting rules
+    - 19 operand types:
+      - Opcode
+        - `Opcode`
+      - Register
+        - `RegisterGroup[([DefaultRegister][/PRINT)]][@]:ArgumentLabel` (`[]` used to designate optional components)
+          - Optionally provided default value
+          - `PRINT` option always prints the value even if it is default
+          - `@` signifies this value is not encoded (a default must be provided in this case)
+      - Immediate
+        - `ImmType(NumBits[/DefaultValue[*]][/PRINT])[@][*]:ArgumentLabel` (`[]` used to designate optional components)
+          - Optionally provided default value
+          - `*` optional? (the one after the default value)
+          - `PRINT` option always prints the value even if it is default
+          - `@` signifies this value is not encoded (a default must be provided in this case)
+          - `*` ??? (the one after @)
+        - 8 immediate types
+          - Imm (integer)
+            - `SImm` (signed) or `UImm` (unsigned) (these are actually identical, this is mostly just for reference)
+            - `S` prefix = signed storage
+              - they sometimes do use SSImm for unsigned values, but in those cases, the field is 1 bit longer than the storage so it ends up unsigned
+            - `R` prefix = PC-relative
+          - BITSET
+            - BITSET(nbits/default)
+          - F16
+          - F32
+          - F64
+          - E6M9
+            - exponent 6 bits mantissa 9 bits? alternative half precision float ig
+          - BF16
+          - TF32
+      - RegCluster
+        - ???
+      - CharAlternative
+        - ???
+      - ,
+        - `','`
+      - =
+        - `'='`
+      - :
+        - `':'`
+      - ?
+        - `'?'`
+      - /
+        - `'/'`
+      - ^
+        - `'^'`
+      - &
+        - `'&'`
+      - <<
+        - `'<<'`
+      - Predicate
+        - `PREDICATE [RegisterOperand]`
+        - `PREDICATE (RegisterOperand)`
+        - `PREDICATE @RegisterOperand`
+      - Memory
+        - `[Operands + ...]`
+        - A `*` following the closing bracket means it is optional (must have a default value if so)
+      - ???
+        - Also a memory operand type
+      - {}
+        - `{ Operands... }`
+        - Print all if this group is not skippable or print all if at least one contained argument is not skippable
+        - Printed if at least one contained argument should not be skipped
+        - If printed, all operands are treated as unskippable
+        - This operand is not proceeded by a comma or space
+      - \$()$
+        - `$( Operands... )$`
+        - Prints like normal if this group is not skippable, otherwise print all if at least one contained argument is not skippable
+        - If printed, registers operands are treated as unskippable
+        - This may also show up as `/Operand /Operand...`
+          - This is treated the same way except a `.` is added before each argument
+      - ???
+        - idk what this last one is
+    - Operands can have modifiers (7 types):
+      - Nottable
+        - `[!]`
+        - Accessed via `ArgumentLabel@not`
+        - Adds a `!` to the beginning of the argument
+      - Invertable
+        - `[~]`
+        - Accessed via `ArgumentLabel@invert`
+        - Adds a `~` to the beginning of the argument
+      - Negatable
+        - `[-]`
+        - Accessed via `ArgumentLabel@negate`
+        - Adds a `-` to the beginning of the argument
+      - Absolutable
+        - `[||]`
+        - Accessed via `ArgumentLabel@absolute`
+        - Adds `|` around the argument
+      - Signed
+        - ???
+        - Accessed via `ArgumentLabel@sign`
+        - Negates the value of the argument
+      - Absolute Value
+        - ???
+        - ???
+        - Takes the absolute value of the argument
+  - CONDITIONS - self-explanatory
+  - PROPERTIES
+  - PREDICATES
+  - OPCODES - opcode names + their corresponding values for this operation
+    - `OpCodeName = Value;`
+  - ENCODING - how this operation is encoded
+    - `EncodingField = SrcOperand;`
+      - The source operand can either refer to the argument label or the register group name
+      - `EncodingFields, ... = SrcOperands, ...;` may be possible? not sure though
+    - `EncodingField = TableName(Args, ...);`
+    - `EncodingFields, ... = TableName(Args, ...);`
+    - Later architectures also have this `convertFloatType` thing but I am not going to bother with that
+    - Encoding values can be modified with operations such as (applied in the listed order):
+      - XOR (unsure of how this appears in the file)
+        - The encoded value is XOR'd with the specified value
+      - ROTATION (unsure of how this appears in the file)
+        - The encoded value is rotated to the right by the specified number of bits
+      - (NOT A SPECIFIED OPERATION)
+        - If the encoded value is stored as a signed value, it is sign-extended
+      - BIAS (unsure of how this appears in the file)
+        - The encoded value has the specified bias value subtracted from it
+      - INVERT (unsure of how this appears in the file)
+        - The encoded value is inverted as a boolean condition (zero => 1, non-zero => 0)
+      - NEGATE (unsure of how this appears in the file)
+        - The encoded value is negated
+      - LOG2 (unsure of how this appears in the file)
+        - The encoded value is the actual value log2
+      - SCALE
+        - The encoded value is scaled by the specified scale factor to obtain the actual value
+        - The scale factor must be a power of 2
+      - (NOT A SPECIFIED OPERATION)
+        - If the encoded value is a PC-relative value, it is adjusted accordingly:
+          - Value += PC + RelativeAddressBase
+      - MULTIPLY
+        - The encoded value is divided by the specified mulitplier to obtain the actual value
+        - The encoded value must be an integer multiple of the specified multiplier
+    - `=*` is masking the value (the value is something like 0b0_10 where _ represents the gap of ignored bits)
+      - What about the case where it's a field instead?
+    - ``` ` ``` designates an enum literal (to distinguish it from a modifier when using `@`)
+    - `!` means the specified encoding field is ignored
+
+For Maxwell, when decoding instructions, they are read in groups of for u64s. The first u64 is scheduling information for the next three instructions (the other three u64s). The scheduling information is split into 3 21-bit values for each of the three instructions. They are encoded according to the encodings specified in the md file. For Maxwell, the total encoding width is 88 bits; the lower 64 bits represent the u64 instruction data while the top 24 bits represent the scheduling info (the top 3 bits are ignored entirely so it's actually 21 bits). If an instruction has the `floxy2` scheduling flag set, then the next instruction is executed in parallel with the current instruction (and if the next one has the flag too, the same applies - though Maxwell only supports two issue slots so there's a max of 2 anyways)
