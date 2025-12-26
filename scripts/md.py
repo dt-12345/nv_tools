@@ -1426,61 +1426,61 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
 protected:
   using ProcessingFunc = std::uint64_t (AccessorBase::*)(std::uint64_t) const;
 
-  std::uint64_t _Bool(std::uint64_t value) const {
+  constexpr std::uint64_t _Bool(std::uint64_t value) const {
     return value & 1ull;
   }
 
-  std::uint64_t _Reg(std::uint64_t value) const {
+  constexpr std::uint64_t _Reg(std::uint64_t value) const {
     return value & 0xffffull;
   }
 
   template <std::uint64_t XOR>
-  std::uint64_t _Xor(std::uint64_t value) const {
+  constexpr std::uint64_t _Xor(std::uint64_t value) const {
     return value ^ XOR;
   }
 
   template <std::uint64_t ROR, std::size_t SIZE>
-  std::uint64_t _Rotate(std::uint64_t value) const {
+  constexpr std::uint64_t _Rotate(std::uint64_t value) const {
     static_assert(ROR < SIZE, "Rotation must be less than the size of the field!");
     constexpr std::uint64_t mask = SIZE >= 0x40 ? 0xfffffffffffffff : (1ull << SIZE) - 1;
     return value >> (SIZE - ROR) | value << (ROR) & mask;
   }
 
-  std::uint64_t _Pcrel(std::uint64_t value) const {
+  constexpr std::uint64_t _Pcrel(std::uint64_t value) const {
     return value - pc - RELATIVE_ADDRESS_BASE;
   }
 
   template <std::size_t SIZE>
-  std::uint64_t _Sext(std::uint64_t value) const {
+  constexpr std::uint64_t _Sext(std::uint64_t value) const {
     return static_cast<std::uint64_t>(SEXT<SIZE>(value));
   }
 
   template <std::uint64_t BIAS>
-  std::uint64_t _Bias(std::uint64_t value) const {
+  constexpr std::uint64_t _Bias(std::uint64_t value) const {
     return value - BIAS;
   }
 
-  std::uint64_t _Invert(std::uint64_t value) const {
+  constexpr std::uint64_t _Invert(std::uint64_t value) const {
     return static_cast<std::uint64_t>(value == 0ull);
   }
 
-  std::uint64_t _Negate(std::uint64_t value) const {
+  constexpr std::uint64_t _Negate(std::uint64_t value) const {
     return static_cast<std::uint64_t>(-static_cast<std::int64_t>(value));
   }
 
   template <std::uint64_t LOG>
-  std::uint64_t _Log2(std::uint64_t value) const {
+  constexpr std::uint64_t _Log2(std::uint64_t value) const {
     return 1ull << value;
   }
 
   template <std::uint64_t FACTOR>
-  std::uint64_t _Multiply(std::uint64_t value) const {
+  constexpr std::uint64_t _Multiply(std::uint64_t value) const {
     static_assert(FACTOR != 0, "Multiplicative factor must be non-zero");
     return value / FACTOR;
   }
 
   template <std::uint64_t FACTOR>
-  std::uint64_t _Scale(std::uint64_t value) const {
+  constexpr std::uint64_t _Scale(std::uint64_t value) const {
     static_assert(FACTOR != 0, "Scale factor must be non-zero");
     constexpr std::uint64_t shift = sizeof(std::uint64_t) * CHAR_BIT - std::countl_zero(FACTOR) - 1;
     return value << shift;
@@ -1488,7 +1488,7 @@ protected:
 
   using IsSignedCallback = bool (AccessorBase::*)() const;
   template <IsSignedCallback IS_SIGNED>
-  std::uint64_t _Sign(std::uint64_t value) const {
+  constexpr std::uint64_t _Sign(std::uint64_t value) const {
     if (static_cast<std::int64_t>(value) == std::numeric_limits<std::int64_t>::min())
       return 0ull;
     const bool is_signed = (this->*IS_SIGNED)();
@@ -1499,7 +1499,7 @@ protected:
   }
 
   template <std::size_t SIZE>
-  std::uint64_t _F16(std::uint64_t value) const {
+  constexpr std::uint64_t _F16(std::uint64_t value) const {
     if constexpr (SIZE < 0x10)
       value <<= 0x10 - SIZE;
     value &= 0xffffull;
@@ -1512,7 +1512,7 @@ protected:
     } else if (exp == 0ull) {
       std::uint64_t newMantissa = (mantissa << 0xd) * 2;
       std::uint64_t newExp = 0x70;
-      while (newMantissa & 0x400000ull == 0ull) {
+      while ((newMantissa & 0x400000ull) == 0ull) {
         newMantissa *= 2; --newExp;
       }
       v = newMantissa & 0x7fffffull | newExp << 0x17 | sign << 0x1f;
@@ -1523,7 +1523,7 @@ protected:
   }
 
   template <std::size_t SIZE>
-  std::uint64_t _F32(std::uint64_t value) const {
+  constexpr std::uint64_t _F32(std::uint64_t value) const {
     if constexpr (SIZE < 0x20)
       value <<= 0x20 - SIZE;
     const std::uint32_t v = static_cast<std::uint32_t>(value);
@@ -1531,7 +1531,7 @@ protected:
   }
 
   template <std::size_t SIZE>
-  std::uint64_t _F64(std::uint64_t value) const {
+  constexpr std::uint64_t _F64(std::uint64_t value) const {
     if ((value & 0x7ff0000000000000ull) == 0x7ff0000000000000ull && (value & 0xfffffffffffffull) != 0ull)
       value != 0x8000000000000ull;
     if constexpr (SIZE < 0x40)
@@ -1539,7 +1539,7 @@ protected:
     return value;
   }
 
-  std::uint64_t _E6M9(std::uint64_t value) const {
+  constexpr std::uint64_t _E6M9(std::uint64_t value) const {
     const std::uint64_t sign = value >> 0xf & 1ull;
     const std::uint64_t exp = value >> 9 & 0x3full;
     const std::uint64_t mantissa = value & 0x1ffull;
@@ -1560,22 +1560,22 @@ protected:
     }
   }
 
-  std::uint64_t _BF16(std::uint64_t value) const {
+  constexpr std::uint64_t _BF16(std::uint64_t value) const {
     const std::uint32_t v = static_cast<std::uint32_t>(value << 0x10);
     return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
   }
 
-  std::uint64_t _TF32(std::uint64_t value) const {
+  constexpr std::uint64_t _TF32(std::uint64_t value) const {
     const std::uint32_t v = static_cast<std::uint32_t>(value);
     return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
   }
 
-  template <typename Encoding, typename... Args>
-  std::uint64_t GetImpl(std::uint64_t source, Args... funcs) const {
+  template <typename Encoding, ProcessingFunc... FUNCS>
+  constexpr std::uint64_t GetImpl(std::uint64_t source) const {
     std::uint64_t value = Encoding(source).value();
     ([&](ProcessingFunc func){
       value = (this->*func)(value); 
-    }(funcs), ...);
+    }(FUNCS), ...);
     return value;
   }
 
@@ -1585,7 +1585,7 @@ template <OpClass CLASS> struct Accessor;
 
 #define TABLE_FIELD(source, name, encoding, type, table, index, ...) \\
   type name() const { \\
-    const std::uint64_t raw = AccessorBase::GetImpl<encoding>(source, __VA_ARGS__); \\
+    const std::uint64_t raw = AccessorBase::GetImpl<encoding, __VA_ARGS__>(source); \\
     return static_cast<type>(static_cast<std::uint64_t>(std::get<index>(table(raw).value()))); \\
   }
 #define INST_TABLE_FIELD(name, encoding, type, table, index, ...) TABLE_FIELD(inst, name, encoding, type, table, index, __VA_ARGS__)
@@ -1593,7 +1593,7 @@ template <OpClass CLASS> struct Accessor;
 
 #define FIELD(source, name, encoding, type, ...) \\
   type name() const { \\
-    return static_cast<type>(AccessorBase::GetImpl<encoding>(source, __VA_ARGS__)); \\
+    return static_cast<type>(AccessorBase::GetImpl<encoding, __VA_ARGS__>(source)); \\
   }
 #define INST_FIELD(name, encoding, type, ...) FIELD(inst, name, encoding, type, __VA_ARGS__)
 #define SCHED_FIELD(name, encoding, type, ...) FIELD(sched, name, encoding, type, __VA_ARGS__)
@@ -1601,11 +1601,11 @@ template <OpClass CLASS> struct Accessor;
 #define FLOAT_FIELD(source, name, encoding, type, ...) \\
   type name() const { \\
     if constexpr (sizeof(type) == 8) \\
-      return std::bit_cast<type, std::uint64_t>(AccessorBase::GetImpl<encoding>(source, __VA_ARGS__)); \\
+      return std::bit_cast<type, std::uint64_t>(AccessorBase::GetImpl<encoding, __VA_ARGS__>(source)); \\
     else if constexpr (sizeof(type) == 4) \\
-      return std::bit_cast<type, std::uint32_t>(static_cast<std::uint32_t>(AccessorBase::GetImpl<encoding>(source, __VA_ARGS__))); \\
+      return std::bit_cast<type, std::uint32_t>(static_cast<std::uint32_t>(AccessorBase::GetImpl<encoding, __VA_ARGS__>(source))); \\
     else if constexpr (sizeof(type) == 2) \\
-      return std::bit_cast<type, std::uint16_t>(static_cast<std::uint16_t>(AccessorBase::GetImpl<encoding>(source, __VA_ARGS__))); \\
+      return std::bit_cast<type, std::uint16_t>(static_cast<std::uint16_t>(AccessorBase::GetImpl<encoding, __VA_ARGS__>(source))); \\
     else \\
       static_assert(false, "Unsupported floating point size"); \\
   }
