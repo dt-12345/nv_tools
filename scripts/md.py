@@ -1080,10 +1080,16 @@ class Architecture:
                 if encoding.ignored or isinstance(encoding.value, RegisterOperand) and len(encoding.encoding_ops) > 0:
                     continue
                 if isinstance(encoding.value, RegisterOperand):
-                    restrictions.append(EncodingRestriction(encoding, self._calc_value_restrictions([r.value for r in encoding.value.register.values.values()])))
+                    if encoding.field is None:
+                        restrictions.append(EncodingRestriction(encoding, self._calc_value_restrictions([r.value for r in encoding.value.register.values.values()])))
+                    else:
+                        restrictions.append(EncodingRestriction(encoding, [ValueRange(0, 2)]))
                 elif isinstance(encoding.value, ImmediateOperand):
-                    if encoding.value.bitwidth < 32:
-                        restrictions.append(EncodingRestriction(encoding, [ValueRange(0, 1 << encoding.value.bitwidth)]))
+                    if encoding.field is None:
+                        if encoding.value.bitwidth < 32:
+                            restrictions.append(EncodingRestriction(encoding, [ValueRange(0, 1 << encoding.value.bitwidth)]))
+                    else:
+                        restrictions.append(EncodingRestriction(encoding, [ValueRange(0, 2)]))
         return restrictions
 
     # generate masks and masked values for each opclass
@@ -1368,7 +1374,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
         source.write("      if (entry.restrictions == nullptr || entry.restrictionCount == 0)\n")
         source.write("        return std::make_optional<const DecodedInstruction>(inst, sched, entry.opcode, entry.opclass);\n")
         source.write("      if (std::all_of(entry.restrictions, entry.restrictions + entry.restrictionCount, [=](const auto& restriction) {\n")
-        source.write("        const std::uint32_t value = static_cast<std::uint32_t>(restriction.ReadFunc(sched ? restriction.isSched : inst));\n")
+        source.write("        const std::uint32_t value = static_cast<std::uint32_t>(restriction.ReadFunc(restriction.isSched ? sched : inst));\n")
         source.write("        return std::any_of(restriction.validRanges, restriction.validRanges + restriction.rangeCount, [=](const auto& range) {\n")
         source.write("          return value - range.min < range.max - range.min;\n")
         source.write("        });\n")
@@ -1414,6 +1420,8 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
   std::uint64_t inst;
   std::uint64_t sched;
   std::uint64_t pc;
+
+  constexpr AccessorBase(std::uint64_t _inst, std::uint64_t _sched, std::uint64_t _pc) noexcept : inst(_inst), sched(_sched), pc(_pc) {}
 
 protected:
   using ProcessingFunc = std::uint64_t (AccessorBase::*)(std::uint64_t) const;
@@ -1483,11 +1491,11 @@ protected:
   std::uint64_t _Sign(std::uint64_t value) const {
     if (static_cast<std::int64_t>(value) == std::numeric_limits<std::int64_t>::min())
       return 0ull;
-    const bool signed = (this->*IS_SIGNED)();
+    const bool is_signed = (this->*IS_SIGNED)();
     if (value == 0ull) {
-      return static_cast<std::uint64_t>(signed) + 1;
+      return static_cast<std::uint64_t>(is_signed) + 1;
     }
-    return signed ? static_cast<std::uint64_t>(-static_cast<std::int64_t>(value)) : value;
+    return is_signed ? static_cast<std::uint64_t>(-static_cast<std::int64_t>(value)) : value;
   }
 
   template <std::size_t SIZE>
@@ -1499,9 +1507,9 @@ protected:
     const std::uint64_t exp = value >> 10 & 0x1full;
     const std::uint64_t mantissa = value & 0x3ffull;
     std::uint32_t v;
-    if (exponent == 0x1full) {
+    if (exp == 0x1full) {
       v = (mantissa == 0ull ? 0ull : (mantissa << 0xd | 0x400000ull)) | 0xffull << 0x17 | sign << 0x1f;
-    } else if (exponent == 0ull) {
+    } else if (exp == 0ull) {
       std::uint64_t newMantissa = (mantissa << 0xd) * 2;
       std::uint64_t newExp = 0x70;
       while (newMantissa & 0x400000ull == 0ull) {
@@ -1509,7 +1517,7 @@ protected:
       }
       v = newMantissa & 0x7fffffull | newExp << 0x17 | sign << 0x1f;
     } else {
-      v = mantissa << 0xd | exponent + 0x70ull << 0x17 | sign << 0x1f;
+      v = mantissa << 0xd | exp + 0x70ull << 0x17 | sign << 0x1f;
     }
     return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
   }
@@ -1546,9 +1554,9 @@ protected:
       while ((newMantissa >> 0x34 & 1ull) == 0ull) {
         newMantissa *= 2; --newExp;
       }
-      return newMantissa & 0xffefffffffffffffull | newExp << 0x34 | sign << 0x3f;
+      return (newMantissa & 0xffefffffffffffffull) | newExp << 0x34 | sign << 0x3f;
     } else {
-      return mantissa << 0x2b | exp + 0x3e0ull << 0x34 | sign << 0x3f;
+      return mantissa << 0x2b | (exp + 0x3e0ull) << 0x34 | sign << 0x3f;
     }
   }
 
@@ -1705,9 +1713,10 @@ template <OpClass CLASS> struct Accessor;
             if field.fields is not None:
                 for modifier in field.fields:
                     handle_register_modifier(modifier, field, opclass)
-        header.write("template <> struct Accessor<OpClass::NOP_DEFAULT> : public AccessorBase {};\n\n")
+        header.write("template <> struct Accessor<OpClass::NOP_DEFAULT> : public AccessorBase { using AccessorBase::AccessorBase; };\n\n")
         for name, opclass in arch.funit.op_classes.items():
             header.write(f"template <> struct Accessor<OpClass::{fix_name(name)}> : public AccessorBase {{\n")
+            header.write("  using AccessorBase::AccessorBase;\n")
             for op in opclass.format:
                 for field in arch.get_encodable_fields(op, False):
                     if isinstance(field, OpcodeOperand):

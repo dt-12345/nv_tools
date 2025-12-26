@@ -12,6 +12,8 @@ struct AccessorBase {
   std::uint64_t sched;
   std::uint64_t pc;
 
+  constexpr AccessorBase(std::uint64_t _inst, std::uint64_t _sched, std::uint64_t _pc) noexcept : inst(_inst), sched(_sched), pc(_pc) {}
+
 protected:
   using ProcessingFunc = std::uint64_t (AccessorBase::*)(std::uint64_t) const;
 
@@ -80,11 +82,11 @@ protected:
   std::uint64_t _Sign(std::uint64_t value) const {
     if (static_cast<std::int64_t>(value) == std::numeric_limits<std::int64_t>::min())
       return 0ull;
-    const bool signed = (this->*IS_SIGNED)();
+    const bool is_signed = (this->*IS_SIGNED)();
     if (value == 0ull) {
-      return static_cast<std::uint64_t>(signed) + 1;
+      return static_cast<std::uint64_t>(is_signed) + 1;
     }
-    return signed ? static_cast<std::uint64_t>(-static_cast<std::int64_t>(value)) : value;
+    return is_signed ? static_cast<std::uint64_t>(-static_cast<std::int64_t>(value)) : value;
   }
 
   template <std::size_t SIZE>
@@ -96,9 +98,9 @@ protected:
     const std::uint64_t exp = value >> 10 & 0x1full;
     const std::uint64_t mantissa = value & 0x3ffull;
     std::uint32_t v;
-    if (exponent == 0x1full) {
+    if (exp == 0x1full) {
       v = (mantissa == 0ull ? 0ull : (mantissa << 0xd | 0x400000ull)) | 0xffull << 0x17 | sign << 0x1f;
-    } else if (exponent == 0ull) {
+    } else if (exp == 0ull) {
       std::uint64_t newMantissa = (mantissa << 0xd) * 2;
       std::uint64_t newExp = 0x70;
       while (newMantissa & 0x400000ull == 0ull) {
@@ -106,7 +108,7 @@ protected:
       }
       v = newMantissa & 0x7fffffull | newExp << 0x17 | sign << 0x1f;
     } else {
-      v = mantissa << 0xd | exponent + 0x70ull << 0x17 | sign << 0x1f;
+      v = mantissa << 0xd | exp + 0x70ull << 0x17 | sign << 0x1f;
     }
     return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
   }
@@ -143,9 +145,9 @@ protected:
       while ((newMantissa >> 0x34 & 1ull) == 0ull) {
         newMantissa *= 2; --newExp;
       }
-      return newMantissa & 0xffefffffffffffffull | newExp << 0x34 | sign << 0x3f;
+      return (newMantissa & 0xffefffffffffffffull) | newExp << 0x34 | sign << 0x3f;
     } else {
-      return mantissa << 0x2b | exp + 0x3e0ull << 0x34 | sign << 0x3f;
+      return mantissa << 0x2b | (exp + 0x3e0ull) << 0x34 | sign << 0x3f;
     }
   }
 
@@ -208,9 +210,10 @@ template <OpClass CLASS> struct Accessor;
 
 template <OpClass CLASS> struct Accessor;
 
-template <> struct Accessor<OpClass::NOP_DEFAULT> : public AccessorBase {};
+template <> struct Accessor<OpClass::NOP_DEFAULT> : public AccessorBase { using AccessorBase::AccessorBase; };
 
 template <> struct Accessor<OpClass::FFMA> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110011);
@@ -233,6 +236,7 @@ template <> struct Accessor<OpClass::FFMA> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_FFMA> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110011);
@@ -253,6 +257,7 @@ template <> struct Accessor<OpClass::Imm_FFMA> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_FFMA> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010011);
@@ -272,6 +277,7 @@ template <> struct Accessor<OpClass::Const_FFMA> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const1_FFMA> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100011);
@@ -291,6 +297,7 @@ template <> struct Accessor<OpClass::Const1_FFMA> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::FFMA32I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11);
@@ -307,6 +314,7 @@ template <> struct Accessor<OpClass::FFMA32I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::FFMA32I_2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11);
@@ -322,6 +330,7 @@ template <> struct Accessor<OpClass::FFMA32I_2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::FADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110001011);
@@ -343,6 +352,7 @@ template <> struct Accessor<OpClass::FADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_FADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110001011);
@@ -362,6 +372,7 @@ template <> struct Accessor<OpClass::Imm_FADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_FADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110001011);
@@ -379,6 +390,7 @@ template <> struct Accessor<OpClass::Const_FADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::FADD32I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10);
@@ -396,6 +408,7 @@ template <> struct Accessor<OpClass::FADD32I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::FCMP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110111010);
@@ -413,6 +426,7 @@ template <> struct Accessor<OpClass::FCMP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_FCMP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110111010);
@@ -428,6 +442,7 @@ template <> struct Accessor<OpClass::Imm_FCMP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_FCMP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010111010);
@@ -443,6 +458,7 @@ template <> struct Accessor<OpClass::Const_FCMP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const1_FCMP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100111010);
@@ -458,6 +474,7 @@ template <> struct Accessor<OpClass::Const1_FCMP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::FSWZADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011111);
@@ -475,6 +492,7 @@ template <> struct Accessor<OpClass::FSWZADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::FMUL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110001101);
@@ -495,6 +513,7 @@ template <> struct Accessor<OpClass::FMUL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_FMUL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110001101);
@@ -513,6 +532,7 @@ template <> struct Accessor<OpClass::Imm_FMUL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_FMUL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110001101);
@@ -530,6 +550,7 @@ template <> struct Accessor<OpClass::Const_FMUL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::FMUL32I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11110);
@@ -544,6 +565,7 @@ template <> struct Accessor<OpClass::FMUL32I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::FMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110001100);
@@ -563,6 +585,7 @@ template <> struct Accessor<OpClass::FMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_FMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110001100);
@@ -580,6 +603,7 @@ template <> struct Accessor<OpClass::Imm_FMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_FMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110001100);
@@ -595,6 +619,7 @@ template <> struct Accessor<OpClass::Const_FMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::FSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011000);
@@ -617,6 +642,7 @@ template <> struct Accessor<OpClass::FSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_FSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011000);
@@ -638,6 +664,7 @@ template <> struct Accessor<OpClass::NoBop_FSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_FSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11000);
@@ -658,6 +685,7 @@ template <> struct Accessor<OpClass::Imm_FSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Imm_FSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11000);
@@ -677,6 +705,7 @@ template <> struct Accessor<OpClass::NoBop_Imm_FSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_FSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1001000);
@@ -695,6 +724,7 @@ template <> struct Accessor<OpClass::Const_FSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Const_FSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1001000);
@@ -712,6 +742,7 @@ template <> struct Accessor<OpClass::NoBop_Const_FSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::FSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110111011);
@@ -731,6 +762,7 @@ template <> struct Accessor<OpClass::FSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_FSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110111011);
@@ -749,6 +781,7 @@ template <> struct Accessor<OpClass::NoBop_FSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_FSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110111011);
@@ -766,6 +799,7 @@ template <> struct Accessor<OpClass::Imm_FSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Imm_FSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110111011);
@@ -782,6 +816,7 @@ template <> struct Accessor<OpClass::NoBop_Imm_FSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_FSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010111011);
@@ -797,6 +832,7 @@ template <> struct Accessor<OpClass::Const_FSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Const_FSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010111011);
@@ -811,6 +847,7 @@ template <> struct Accessor<OpClass::NoBop_Const_FSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::IPA_1> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11100000);
@@ -825,6 +862,7 @@ template <> struct Accessor<OpClass::IPA_1> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_IPA_1> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11100000);
@@ -838,6 +876,7 @@ template <> struct Accessor<OpClass::I_IPA_1> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::IPA_2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11100000);
@@ -852,6 +891,7 @@ template <> struct Accessor<OpClass::IPA_2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_IPA_2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11100000);
@@ -865,6 +905,7 @@ template <> struct Accessor<OpClass::I_IPA_2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::RRO> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010010);
@@ -879,6 +920,7 @@ template <> struct Accessor<OpClass::RRO> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_RRO> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010010);
@@ -891,6 +933,7 @@ template <> struct Accessor<OpClass::Imm_RRO> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_RRO> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010010);
@@ -901,6 +944,7 @@ template <> struct Accessor<OpClass::Const_RRO> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::MUFU> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000010000);
@@ -913,6 +957,7 @@ template <> struct Accessor<OpClass::MUFU> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::FCHK> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010001);
@@ -930,6 +975,7 @@ template <> struct Accessor<OpClass::FCHK> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_FCHK> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010001);
@@ -945,6 +991,7 @@ template <> struct Accessor<OpClass::Imm_FCHK> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_FCHK> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010001);
@@ -958,6 +1005,7 @@ template <> struct Accessor<OpClass::Const_FCHK> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::DFMA> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110110111);
@@ -980,6 +1028,7 @@ template <> struct Accessor<OpClass::DFMA> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_DFMA> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110110111);
@@ -1000,6 +1049,7 @@ template <> struct Accessor<OpClass::Imm_DFMA> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_DFMA> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010110111);
@@ -1019,6 +1069,7 @@ template <> struct Accessor<OpClass::Const_DFMA> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const1_DFMA> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100110111);
@@ -1038,6 +1089,7 @@ template <> struct Accessor<OpClass::Const1_DFMA> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::DADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110001110);
@@ -1059,6 +1111,7 @@ template <> struct Accessor<OpClass::DADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_DADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110001110);
@@ -1078,6 +1131,7 @@ template <> struct Accessor<OpClass::Imm_DADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_DADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110001110);
@@ -1095,6 +1149,7 @@ template <> struct Accessor<OpClass::Const_DADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::DMUL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010000);
@@ -1114,6 +1169,7 @@ template <> struct Accessor<OpClass::DMUL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_DMUL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010000);
@@ -1131,6 +1187,7 @@ template <> struct Accessor<OpClass::Imm_DMUL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_DMUL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010000);
@@ -1147,6 +1204,7 @@ template <> struct Accessor<OpClass::Const_DMUL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::DMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110001010);
@@ -1158,6 +1216,7 @@ template <> struct Accessor<OpClass::DMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_DMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110001010);
@@ -1171,6 +1230,7 @@ template <> struct Accessor<OpClass::Imm_DMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_DMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110001010);
@@ -1182,6 +1242,7 @@ template <> struct Accessor<OpClass::Const_DMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::DSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110010);
@@ -1196,6 +1257,7 @@ template <> struct Accessor<OpClass::DSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_DSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110010);
@@ -1209,6 +1271,7 @@ template <> struct Accessor<OpClass::NoBop_DSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_DSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110010);
@@ -1225,6 +1288,7 @@ template <> struct Accessor<OpClass::Imm_DSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Imm_DSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110010);
@@ -1240,6 +1304,7 @@ template <> struct Accessor<OpClass::NoBop_Imm_DSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_DSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010010);
@@ -1254,6 +1319,7 @@ template <> struct Accessor<OpClass::Const_DSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Const_DSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010010);
@@ -1267,6 +1333,7 @@ template <> struct Accessor<OpClass::NoBop_Const_DSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::DSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110111000);
@@ -1279,6 +1346,7 @@ template <> struct Accessor<OpClass::DSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_DSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110111000);
@@ -1290,6 +1358,7 @@ template <> struct Accessor<OpClass::NoBop_DSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_DSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110111000);
@@ -1304,6 +1373,7 @@ template <> struct Accessor<OpClass::Imm_DSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Imm_DSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110111000);
@@ -1317,6 +1387,7 @@ template <> struct Accessor<OpClass::NoBop_Imm_DSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_DSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010111000);
@@ -1329,6 +1400,7 @@ template <> struct Accessor<OpClass::Const_DSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Const_DSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010111000);
@@ -1340,6 +1412,7 @@ template <> struct Accessor<OpClass::NoBop_Const_DSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::IMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110100);
@@ -1357,6 +1430,7 @@ template <> struct Accessor<OpClass::IMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_IMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110100);
@@ -1375,6 +1449,7 @@ template <> struct Accessor<OpClass::Imm_IMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_IMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010100);
@@ -1392,6 +1467,7 @@ template <> struct Accessor<OpClass::Const_IMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const1_IMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100100);
@@ -1409,6 +1485,7 @@ template <> struct Accessor<OpClass::Const1_IMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::IMAD32I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100);
@@ -1424,6 +1501,7 @@ template <> struct Accessor<OpClass::IMAD32I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::IMADSP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110101);
@@ -1438,6 +1516,7 @@ template <> struct Accessor<OpClass::IMADSP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_IMADSP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110101);
@@ -1452,6 +1531,7 @@ template <> struct Accessor<OpClass::Imm_IMADSP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_IMADSP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010101);
@@ -1466,6 +1546,7 @@ template <> struct Accessor<OpClass::Const_IMADSP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const1_IMADSP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100101);
@@ -1480,6 +1561,7 @@ template <> struct Accessor<OpClass::Const1_IMADSP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::IMUL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110000111);
@@ -1494,6 +1576,7 @@ template <> struct Accessor<OpClass::IMUL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_IMUL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110000111);
@@ -1508,6 +1591,7 @@ template <> struct Accessor<OpClass::Imm_IMUL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_IMUL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110000111);
@@ -1522,6 +1606,7 @@ template <> struct Accessor<OpClass::Const_IMUL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::IMUL32I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11111);
@@ -1536,6 +1621,7 @@ template <> struct Accessor<OpClass::IMUL32I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::IADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110000010);
@@ -1555,6 +1641,7 @@ template <> struct Accessor<OpClass::IADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_IADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110000010);
@@ -1572,6 +1659,7 @@ template <> struct Accessor<OpClass::Imm_IADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_IADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110000010);
@@ -1588,6 +1676,7 @@ template <> struct Accessor<OpClass::Const_IADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::IADD3> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10111001100);
@@ -1612,6 +1701,7 @@ template <> struct Accessor<OpClass::IADD3> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BImm_IADD3> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111001100);
@@ -1630,6 +1720,7 @@ template <> struct Accessor<OpClass::BImm_IADD3> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BConst_IADD3> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10011001100);
@@ -1647,6 +1738,7 @@ template <> struct Accessor<OpClass::BConst_IADD3> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::IADD32I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110);
@@ -1663,6 +1755,7 @@ template <> struct Accessor<OpClass::IADD32I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ISCADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110000011);
@@ -1680,6 +1773,7 @@ template <> struct Accessor<OpClass::ISCADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_ISCADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110000011);
@@ -1695,6 +1789,7 @@ template <> struct Accessor<OpClass::Imm_ISCADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_ISCADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110000011);
@@ -1709,6 +1804,7 @@ template <> struct Accessor<OpClass::Const_ISCADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ISCADD32I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101);
@@ -1721,6 +1817,7 @@ template <> struct Accessor<OpClass::ISCADD32I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::IMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110000100);
@@ -1737,6 +1834,7 @@ template <> struct Accessor<OpClass::IMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_IMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110000100);
@@ -1751,6 +1849,7 @@ template <> struct Accessor<OpClass::Imm_IMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_IMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110000100);
@@ -1765,6 +1864,7 @@ template <> struct Accessor<OpClass::Const_IMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BFE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110000000);
@@ -1781,6 +1881,7 @@ template <> struct Accessor<OpClass::BFE> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_BFE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110000000);
@@ -1795,6 +1896,7 @@ template <> struct Accessor<OpClass::Imm_BFE> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_BFE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110000000);
@@ -1809,6 +1911,7 @@ template <> struct Accessor<OpClass::Const_BFE> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BFI> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101101111110);
@@ -1825,6 +1928,7 @@ template <> struct Accessor<OpClass::BFI> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_BFI> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111110);
@@ -1839,6 +1943,7 @@ template <> struct Accessor<OpClass::Imm_BFI> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_BFI> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100101111110);
@@ -1853,6 +1958,7 @@ template <> struct Accessor<OpClass::Const_BFI> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const1_BFI> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101001111110);
@@ -1867,6 +1973,7 @@ template <> struct Accessor<OpClass::Const1_BFI> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110000101);
@@ -1885,6 +1992,7 @@ template <> struct Accessor<OpClass::SHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_SHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110000101);
@@ -1901,6 +2009,7 @@ template <> struct Accessor<OpClass::Imm_SHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_SHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110000101);
@@ -1917,6 +2026,7 @@ template <> struct Accessor<OpClass::Const_SHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110001001);
@@ -1933,6 +2043,7 @@ template <> struct Accessor<OpClass::SHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_SHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110001001);
@@ -1947,6 +2058,7 @@ template <> struct Accessor<OpClass::Imm_SHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_SHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110001001);
@@ -1961,6 +2073,7 @@ template <> struct Accessor<OpClass::Const_SHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SHF_L_imm> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111111);
@@ -1978,6 +2091,7 @@ template <> struct Accessor<OpClass::SHF_L_imm> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SHF_R_imm> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110011111);
@@ -1995,6 +2109,7 @@ template <> struct Accessor<OpClass::SHF_R_imm> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SHF_L_reg> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101101111111);
@@ -2014,6 +2129,7 @@ template <> struct Accessor<OpClass::SHF_L_reg> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SHF_R_reg> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110011111);
@@ -2033,6 +2149,7 @@ template <> struct Accessor<OpClass::SHF_R_reg> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LOP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110001000);
@@ -2052,6 +2169,7 @@ template <> struct Accessor<OpClass::LOP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_LOP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110001000);
@@ -2069,6 +2187,7 @@ template <> struct Accessor<OpClass::Imm_LOP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_LOP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110001000);
@@ -2085,6 +2204,7 @@ template <> struct Accessor<OpClass::Const_LOP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LOP32I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1);
@@ -2101,6 +2221,7 @@ template <> struct Accessor<OpClass::LOP32I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LOP3_LUT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101101111100);
@@ -2119,6 +2240,7 @@ template <> struct Accessor<OpClass::LOP3_LUT> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LOP3_LUT_BImm> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111);
@@ -2134,6 +2256,7 @@ template <> struct Accessor<OpClass::LOP3_LUT_BImm> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LOP3_LUT_BConst> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1);
@@ -2149,6 +2272,7 @@ template <> struct Accessor<OpClass::LOP3_LUT_BConst> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LOP3> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101101111100);
@@ -2171,6 +2295,7 @@ template <> struct Accessor<OpClass::LOP3> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LOP3_BImm> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111);
@@ -2190,6 +2315,7 @@ template <> struct Accessor<OpClass::LOP3_BImm> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LOP3_Bconst> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1);
@@ -2208,6 +2334,7 @@ template <> struct Accessor<OpClass::LOP3_Bconst> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::FLO> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110000110);
@@ -2221,6 +2348,7 @@ template <> struct Accessor<OpClass::FLO> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_FLO> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110000110);
@@ -2235,6 +2363,7 @@ template <> struct Accessor<OpClass::Imm_FLO> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_FLO> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110000110);
@@ -2248,6 +2377,7 @@ template <> struct Accessor<OpClass::Const_FLO> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ISET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110110101);
@@ -2267,6 +2397,7 @@ template <> struct Accessor<OpClass::ISET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_ISET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110110101);
@@ -2285,6 +2416,7 @@ template <> struct Accessor<OpClass::NoBop_ISET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_ISET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110110101);
@@ -2302,6 +2434,7 @@ template <> struct Accessor<OpClass::Imm_ISET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Imm_ISET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110110101);
@@ -2318,6 +2451,7 @@ template <> struct Accessor<OpClass::NoBop_Imm_ISET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_ISET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010110101);
@@ -2335,6 +2469,7 @@ template <> struct Accessor<OpClass::Const_ISET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Const_ISET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010110101);
@@ -2351,6 +2486,7 @@ template <> struct Accessor<OpClass::NoBop_Const_ISET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ISET_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110110101);
@@ -2370,6 +2506,7 @@ template <> struct Accessor<OpClass::ISET_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_ISET_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110110101);
@@ -2388,6 +2525,7 @@ template <> struct Accessor<OpClass::NoBop_ISET_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_ISET_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110110101);
@@ -2405,6 +2543,7 @@ template <> struct Accessor<OpClass::Imm_ISET_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Imm_ISET_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110110101);
@@ -2421,6 +2560,7 @@ template <> struct Accessor<OpClass::NoBop_Imm_ISET_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_ISET_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010110101);
@@ -2438,6 +2578,7 @@ template <> struct Accessor<OpClass::Const_ISET_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Const_ISET_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010110101);
@@ -2454,6 +2595,7 @@ template <> struct Accessor<OpClass::NoBop_Const_ISET_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ISETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110110110);
@@ -2470,6 +2612,7 @@ template <> struct Accessor<OpClass::ISETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_ISETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110110110);
@@ -2485,6 +2628,7 @@ template <> struct Accessor<OpClass::NoBop_ISETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_ISETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110110110);
@@ -2499,6 +2643,7 @@ template <> struct Accessor<OpClass::Imm_ISETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Imm_ISETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110110110);
@@ -2512,6 +2657,7 @@ template <> struct Accessor<OpClass::NoBop_Imm_ISETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_ISETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010110110);
@@ -2526,6 +2672,7 @@ template <> struct Accessor<OpClass::Const_ISETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Const_ISETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010110110);
@@ -2539,6 +2686,7 @@ template <> struct Accessor<OpClass::NoBop_Const_ISETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ISETP_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110110110);
@@ -2555,6 +2703,7 @@ template <> struct Accessor<OpClass::ISETP_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_ISETP_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110110110);
@@ -2570,6 +2719,7 @@ template <> struct Accessor<OpClass::NoBop_ISETP_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_ISETP_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110110110);
@@ -2584,6 +2734,7 @@ template <> struct Accessor<OpClass::Imm_ISETP_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Imm_ISETP_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110110110);
@@ -2597,6 +2748,7 @@ template <> struct Accessor<OpClass::NoBop_Imm_ISETP_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_ISETP_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010110110);
@@ -2611,6 +2763,7 @@ template <> struct Accessor<OpClass::Const_ISETP_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Const_ISETP_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010110110);
@@ -2624,6 +2777,7 @@ template <> struct Accessor<OpClass::NoBop_Const_ISETP_U> : public AccessorBase 
 };
 
 template <> struct Accessor<OpClass::ICMP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110110100);
@@ -2641,6 +2795,7 @@ template <> struct Accessor<OpClass::ICMP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_ICMP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110110100);
@@ -2656,6 +2811,7 @@ template <> struct Accessor<OpClass::Imm_ICMP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_ICMP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010110100);
@@ -2671,6 +2827,7 @@ template <> struct Accessor<OpClass::Const_ICMP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const1_ICMP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100110100);
@@ -2686,6 +2843,7 @@ template <> struct Accessor<OpClass::Const1_ICMP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ICMP_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110110100);
@@ -2703,6 +2861,7 @@ template <> struct Accessor<OpClass::ICMP_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_ICMP_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110110100);
@@ -2718,6 +2877,7 @@ template <> struct Accessor<OpClass::Imm_ICMP_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_ICMP_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010110100);
@@ -2733,6 +2893,7 @@ template <> struct Accessor<OpClass::Const_ICMP_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const1_ICMP_U> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100110100);
@@ -2748,6 +2909,7 @@ template <> struct Accessor<OpClass::Const1_ICMP_U> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::POPC> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110000001);
@@ -2758,6 +2920,7 @@ template <> struct Accessor<OpClass::POPC> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_POPC> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110000001);
@@ -2769,6 +2932,7 @@ template <> struct Accessor<OpClass::Imm_POPC> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_POPC> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110000001);
@@ -2779,6 +2943,7 @@ template <> struct Accessor<OpClass::Const_POPC> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::XMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101101100);
@@ -2803,6 +2968,7 @@ template <> struct Accessor<OpClass::XMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ImmB_XMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101100);
@@ -2824,6 +2990,7 @@ template <> struct Accessor<OpClass::ImmB_XMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SImmB_XMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101100);
@@ -2844,6 +3011,7 @@ template <> struct Accessor<OpClass::SImmB_XMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ConstB_XMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100111);
@@ -2866,6 +3034,7 @@ template <> struct Accessor<OpClass::ConstB_XMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ConstC_XMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100010);
@@ -2886,6 +3055,7 @@ template <> struct Accessor<OpClass::ConstC_XMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -2912,6 +3082,7 @@ template <> struct Accessor<OpClass::VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -2938,6 +3109,7 @@ template <> struct Accessor<OpClass::a8_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -2955,6 +3127,7 @@ template <> struct Accessor<OpClass::a32_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b8_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -2981,6 +3154,7 @@ template <> struct Accessor<OpClass::b8_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b8_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -3007,6 +3181,7 @@ template <> struct Accessor<OpClass::a8_b8_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b8_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -3024,6 +3199,7 @@ template <> struct Accessor<OpClass::a32_b8_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b32_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -3041,6 +3217,7 @@ template <> struct Accessor<OpClass::b32_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b32_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -3058,6 +3235,7 @@ template <> struct Accessor<OpClass::a8_b32_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b32_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -3074,6 +3252,7 @@ template <> struct Accessor<OpClass::a32_b32_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -3096,6 +3275,7 @@ template <> struct Accessor<OpClass::Imm_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SImm_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -3118,6 +3298,7 @@ template <> struct Accessor<OpClass::SImm_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_Imm_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -3140,6 +3321,7 @@ template <> struct Accessor<OpClass::a8_Imm_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_SImm_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -3162,6 +3344,7 @@ template <> struct Accessor<OpClass::a8_SImm_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_Imm_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -3178,6 +3361,7 @@ template <> struct Accessor<OpClass::a32_Imm_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_SImm_VMAD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1011111);
@@ -3194,6 +3378,7 @@ template <> struct Accessor<OpClass::a32_SImm_VMAD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3220,6 +3405,7 @@ template <> struct Accessor<OpClass::VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3246,6 +3432,7 @@ template <> struct Accessor<OpClass::a8_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3271,6 +3458,7 @@ template <> struct Accessor<OpClass::a32_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b8_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3297,6 +3485,7 @@ template <> struct Accessor<OpClass::b8_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b8_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3323,6 +3512,7 @@ template <> struct Accessor<OpClass::a8_b8_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b8_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3348,6 +3538,7 @@ template <> struct Accessor<OpClass::a32_b8_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b32_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3373,6 +3564,7 @@ template <> struct Accessor<OpClass::b32_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b32_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3398,6 +3590,7 @@ template <> struct Accessor<OpClass::a8_b32_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b32_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3422,6 +3615,7 @@ template <> struct Accessor<OpClass::a32_b32_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3444,6 +3638,7 @@ template <> struct Accessor<OpClass::Imm_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SImm_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3466,6 +3661,7 @@ template <> struct Accessor<OpClass::SImm_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_Imm_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3488,6 +3684,7 @@ template <> struct Accessor<OpClass::a8_Imm_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_SImm_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3510,6 +3707,7 @@ template <> struct Accessor<OpClass::a8_SImm_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_Imm_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3531,6 +3729,7 @@ template <> struct Accessor<OpClass::a32_Imm_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_SImm_VADD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1000);
@@ -3552,6 +3751,7 @@ template <> struct Accessor<OpClass::a32_SImm_VADD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3575,6 +3775,7 @@ template <> struct Accessor<OpClass::VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3598,6 +3799,7 @@ template <> struct Accessor<OpClass::a8_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3620,6 +3822,7 @@ template <> struct Accessor<OpClass::a32_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b8_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3643,6 +3846,7 @@ template <> struct Accessor<OpClass::b8_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b8_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3666,6 +3870,7 @@ template <> struct Accessor<OpClass::a8_b8_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b8_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3688,6 +3893,7 @@ template <> struct Accessor<OpClass::a32_b8_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b32_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3710,6 +3916,7 @@ template <> struct Accessor<OpClass::b32_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b32_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3732,6 +3939,7 @@ template <> struct Accessor<OpClass::a8_b32_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b32_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3753,6 +3961,7 @@ template <> struct Accessor<OpClass::a32_b32_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3773,6 +3982,7 @@ template <> struct Accessor<OpClass::Imm_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SImm_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3793,6 +4003,7 @@ template <> struct Accessor<OpClass::SImm_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_Imm_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3813,6 +4024,7 @@ template <> struct Accessor<OpClass::a8_Imm_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_SImm_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3833,6 +4045,7 @@ template <> struct Accessor<OpClass::a8_SImm_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_Imm_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3852,6 +4065,7 @@ template <> struct Accessor<OpClass::a32_Imm_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_SImm_VABSDIFF> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010100);
@@ -3871,6 +4085,7 @@ template <> struct Accessor<OpClass::a32_SImm_VABSDIFF> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -3895,6 +4110,7 @@ template <> struct Accessor<OpClass::VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -3919,6 +4135,7 @@ template <> struct Accessor<OpClass::a8_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -3942,6 +4159,7 @@ template <> struct Accessor<OpClass::a32_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b8_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -3966,6 +4184,7 @@ template <> struct Accessor<OpClass::b8_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b8_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -3990,6 +4209,7 @@ template <> struct Accessor<OpClass::a8_b8_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b8_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -4013,6 +4233,7 @@ template <> struct Accessor<OpClass::a32_b8_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b32_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -4036,6 +4257,7 @@ template <> struct Accessor<OpClass::b32_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b32_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -4059,6 +4281,7 @@ template <> struct Accessor<OpClass::a8_b32_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b32_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -4081,6 +4304,7 @@ template <> struct Accessor<OpClass::a32_b32_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -4102,6 +4326,7 @@ template <> struct Accessor<OpClass::Imm_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SImm_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -4123,6 +4348,7 @@ template <> struct Accessor<OpClass::SImm_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_Imm_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -4144,6 +4370,7 @@ template <> struct Accessor<OpClass::a8_Imm_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_SImm_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -4165,6 +4392,7 @@ template <> struct Accessor<OpClass::a8_SImm_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_Imm_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -4185,6 +4413,7 @@ template <> struct Accessor<OpClass::a32_Imm_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_SImm_VMNMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -4205,6 +4434,7 @@ template <> struct Accessor<OpClass::a32_SImm_VMNMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4227,6 +4457,7 @@ template <> struct Accessor<OpClass::VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4249,6 +4480,7 @@ template <> struct Accessor<OpClass::a8_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4270,6 +4502,7 @@ template <> struct Accessor<OpClass::a32_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b8_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4292,6 +4525,7 @@ template <> struct Accessor<OpClass::b8_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b8_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4314,6 +4548,7 @@ template <> struct Accessor<OpClass::a8_b8_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b8_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4335,6 +4570,7 @@ template <> struct Accessor<OpClass::a32_b8_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b32_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4356,6 +4592,7 @@ template <> struct Accessor<OpClass::b32_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b32_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4377,6 +4614,7 @@ template <> struct Accessor<OpClass::a8_b32_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b32_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4397,6 +4635,7 @@ template <> struct Accessor<OpClass::a32_b32_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4416,6 +4655,7 @@ template <> struct Accessor<OpClass::Imm_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SImm_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4435,6 +4675,7 @@ template <> struct Accessor<OpClass::SImm_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_Imm_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4454,6 +4695,7 @@ template <> struct Accessor<OpClass::a8_Imm_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_SImm_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4473,6 +4715,7 @@ template <> struct Accessor<OpClass::a8_SImm_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_Imm_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4491,6 +4734,7 @@ template <> struct Accessor<OpClass::a32_Imm_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_SImm_VSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100000);
@@ -4509,6 +4753,7 @@ template <> struct Accessor<OpClass::a32_SImm_VSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4526,6 +4771,7 @@ template <> struct Accessor<OpClass::VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4543,6 +4789,7 @@ template <> struct Accessor<OpClass::a8_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4559,6 +4806,7 @@ template <> struct Accessor<OpClass::a32_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b8_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4576,6 +4824,7 @@ template <> struct Accessor<OpClass::b8_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b8_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4593,6 +4842,7 @@ template <> struct Accessor<OpClass::a8_b8_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b8_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4609,6 +4859,7 @@ template <> struct Accessor<OpClass::a32_b8_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b32_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4625,6 +4876,7 @@ template <> struct Accessor<OpClass::b32_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b32_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4641,6 +4893,7 @@ template <> struct Accessor<OpClass::a8_b32_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b32_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4656,6 +4909,7 @@ template <> struct Accessor<OpClass::a32_b32_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4670,6 +4924,7 @@ template <> struct Accessor<OpClass::Imm_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SImm_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4684,6 +4939,7 @@ template <> struct Accessor<OpClass::SImm_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_Imm_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4698,6 +4954,7 @@ template <> struct Accessor<OpClass::a8_Imm_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_SImm_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4712,6 +4969,7 @@ template <> struct Accessor<OpClass::a8_SImm_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_Imm_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4725,6 +4983,7 @@ template <> struct Accessor<OpClass::a32_Imm_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_SImm_VSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4738,6 +4997,7 @@ template <> struct Accessor<OpClass::a32_SImm_VSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4756,6 +5016,7 @@ template <> struct Accessor<OpClass::VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4774,6 +5035,7 @@ template <> struct Accessor<OpClass::a8_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4791,6 +5053,7 @@ template <> struct Accessor<OpClass::a32_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b8_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4809,6 +5072,7 @@ template <> struct Accessor<OpClass::b8_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b8_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4827,6 +5091,7 @@ template <> struct Accessor<OpClass::a8_b8_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b8_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4844,6 +5109,7 @@ template <> struct Accessor<OpClass::a32_b8_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b32_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4861,6 +5127,7 @@ template <> struct Accessor<OpClass::b32_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b32_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4878,6 +5145,7 @@ template <> struct Accessor<OpClass::a8_b32_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b32_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4894,6 +5162,7 @@ template <> struct Accessor<OpClass::a32_b32_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4909,6 +5178,7 @@ template <> struct Accessor<OpClass::Imm_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SImm_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4924,6 +5194,7 @@ template <> struct Accessor<OpClass::SImm_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_Imm_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4939,6 +5210,7 @@ template <> struct Accessor<OpClass::a8_Imm_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_SImm_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4954,6 +5226,7 @@ template <> struct Accessor<OpClass::a8_SImm_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_Imm_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4968,6 +5241,7 @@ template <> struct Accessor<OpClass::a32_Imm_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_SImm_VSETP_bop> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011110);
@@ -4982,6 +5256,7 @@ template <> struct Accessor<OpClass::a32_SImm_VSETP_bop> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5006,6 +5281,7 @@ template <> struct Accessor<OpClass::VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5030,6 +5306,7 @@ template <> struct Accessor<OpClass::a8_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5053,6 +5330,7 @@ template <> struct Accessor<OpClass::a32_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b8_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5077,6 +5355,7 @@ template <> struct Accessor<OpClass::b8_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b8_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5101,6 +5380,7 @@ template <> struct Accessor<OpClass::a8_b8_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b8_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5124,6 +5404,7 @@ template <> struct Accessor<OpClass::a32_b8_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b32_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5147,6 +5428,7 @@ template <> struct Accessor<OpClass::b32_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b32_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5170,6 +5452,7 @@ template <> struct Accessor<OpClass::a8_b32_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b32_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5192,6 +5475,7 @@ template <> struct Accessor<OpClass::a32_b32_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5213,6 +5497,7 @@ template <> struct Accessor<OpClass::Imm_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SImm_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5234,6 +5519,7 @@ template <> struct Accessor<OpClass::SImm_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_Imm_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5255,6 +5541,7 @@ template <> struct Accessor<OpClass::a8_Imm_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_SImm_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5276,6 +5563,7 @@ template <> struct Accessor<OpClass::a8_SImm_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_Imm_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5296,6 +5584,7 @@ template <> struct Accessor<OpClass::a32_Imm_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_SImm_VSHL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010111);
@@ -5316,6 +5605,7 @@ template <> struct Accessor<OpClass::a32_SImm_VSHL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5340,6 +5630,7 @@ template <> struct Accessor<OpClass::VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5364,6 +5655,7 @@ template <> struct Accessor<OpClass::a8_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5387,6 +5679,7 @@ template <> struct Accessor<OpClass::a32_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b8_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5411,6 +5704,7 @@ template <> struct Accessor<OpClass::b8_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b8_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5435,6 +5729,7 @@ template <> struct Accessor<OpClass::a8_b8_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b8_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5458,6 +5753,7 @@ template <> struct Accessor<OpClass::a32_b8_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b32_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5481,6 +5777,7 @@ template <> struct Accessor<OpClass::b32_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_b32_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5504,6 +5801,7 @@ template <> struct Accessor<OpClass::a8_b32_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_b32_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5526,6 +5824,7 @@ template <> struct Accessor<OpClass::a32_b32_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5547,6 +5846,7 @@ template <> struct Accessor<OpClass::Imm_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SImm_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5568,6 +5868,7 @@ template <> struct Accessor<OpClass::SImm_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_Imm_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5589,6 +5890,7 @@ template <> struct Accessor<OpClass::a8_Imm_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a8_SImm_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5610,6 +5912,7 @@ template <> struct Accessor<OpClass::a8_SImm_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_Imm_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5630,6 +5933,7 @@ template <> struct Accessor<OpClass::a32_Imm_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::a32_SImm_VSHR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1010110);
@@ -5650,6 +5954,7 @@ template <> struct Accessor<OpClass::a32_SImm_VSHR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::VABSDIFF4> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100000);
@@ -5674,6 +5979,7 @@ template <> struct Accessor<OpClass::VABSDIFF4> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_VABSDIFF4> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100000);
@@ -5695,6 +6001,7 @@ template <> struct Accessor<OpClass::Imm_VABSDIFF4> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SImm_VABSDIFF4> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100000);
@@ -5716,6 +6023,7 @@ template <> struct Accessor<OpClass::SImm_VABSDIFF4> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::F2F_1> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010101);
@@ -5731,6 +6039,7 @@ template <> struct Accessor<OpClass::F2F_1> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::F2F_2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010101);
@@ -5746,6 +6055,7 @@ template <> struct Accessor<OpClass::F2F_2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::F2F_2_64_32> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010101);
@@ -5761,6 +6071,7 @@ template <> struct Accessor<OpClass::F2F_2_64_32> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::F2F_1_16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010101);
@@ -5777,6 +6088,7 @@ template <> struct Accessor<OpClass::F2F_1_16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::F2F_2_16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010101);
@@ -5793,6 +6105,7 @@ template <> struct Accessor<OpClass::F2F_2_16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::F2F_2_64_16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010101);
@@ -5809,6 +6122,7 @@ template <> struct Accessor<OpClass::F2F_2_64_16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::F2F_1_64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010101);
@@ -5824,6 +6138,7 @@ template <> struct Accessor<OpClass::F2F_1_64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::F2F_2_64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010101);
@@ -5839,6 +6154,7 @@ template <> struct Accessor<OpClass::F2F_2_64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_F2F_1> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010101);
@@ -5856,6 +6172,7 @@ template <> struct Accessor<OpClass::Imm_F2F_1> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_F2F_2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010101);
@@ -5873,6 +6190,7 @@ template <> struct Accessor<OpClass::Imm_F2F_2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_F2F_2_64_32> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010101);
@@ -5890,6 +6208,7 @@ template <> struct Accessor<OpClass::Imm_F2F_2_64_32> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_F2F_1_16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010101);
@@ -5908,6 +6227,7 @@ template <> struct Accessor<OpClass::Imm_F2F_1_16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_F2F_2_16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010101);
@@ -5926,6 +6246,7 @@ template <> struct Accessor<OpClass::Imm_F2F_2_16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_F2F_2_64_16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010101);
@@ -5944,6 +6265,7 @@ template <> struct Accessor<OpClass::Imm_F2F_2_64_16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_F2F_1_64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010101);
@@ -5961,6 +6283,7 @@ template <> struct Accessor<OpClass::Imm_F2F_1_64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_F2F_2_64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010101);
@@ -5978,6 +6301,7 @@ template <> struct Accessor<OpClass::Imm_F2F_2_64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_F2F_1> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010101);
@@ -5993,6 +6317,7 @@ template <> struct Accessor<OpClass::Const_F2F_1> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_F2F_2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010101);
@@ -6008,6 +6333,7 @@ template <> struct Accessor<OpClass::Const_F2F_2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_F2F_2_64_32> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010101);
@@ -6023,6 +6349,7 @@ template <> struct Accessor<OpClass::Const_F2F_2_64_32> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_F2F_1_16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010101);
@@ -6039,6 +6366,7 @@ template <> struct Accessor<OpClass::Const_F2F_1_16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_F2F_2_16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010101);
@@ -6055,6 +6383,7 @@ template <> struct Accessor<OpClass::Const_F2F_2_16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_F2F_2_64_16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010101);
@@ -6071,6 +6400,7 @@ template <> struct Accessor<OpClass::Const_F2F_2_64_16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_F2F_1_64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010101);
@@ -6086,6 +6416,7 @@ template <> struct Accessor<OpClass::Const_F2F_1_64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_F2F_2_64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010101);
@@ -6101,6 +6432,7 @@ template <> struct Accessor<OpClass::Const_F2F_2_64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::F2I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010110);
@@ -6117,6 +6449,7 @@ template <> struct Accessor<OpClass::F2I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::F2I_I64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010110);
@@ -6133,6 +6466,7 @@ template <> struct Accessor<OpClass::F2I_I64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::F2I_16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010110);
@@ -6149,6 +6483,7 @@ template <> struct Accessor<OpClass::F2I_16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::F2I_64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010110);
@@ -6165,6 +6500,7 @@ template <> struct Accessor<OpClass::F2I_64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_F2I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010110);
@@ -6183,6 +6519,7 @@ template <> struct Accessor<OpClass::Imm_F2I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_F2I_I64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010110);
@@ -6201,6 +6538,7 @@ template <> struct Accessor<OpClass::Imm_F2I_I64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_F2I_16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010110);
@@ -6219,6 +6557,7 @@ template <> struct Accessor<OpClass::Imm_F2I_16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_F2I_64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010110);
@@ -6237,6 +6576,7 @@ template <> struct Accessor<OpClass::Imm_F2I_64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_F2I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010110);
@@ -6253,6 +6593,7 @@ template <> struct Accessor<OpClass::Const_F2I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_F2I_I64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010110);
@@ -6269,6 +6610,7 @@ template <> struct Accessor<OpClass::Const_F2I_I64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_F2I_16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010110);
@@ -6285,6 +6627,7 @@ template <> struct Accessor<OpClass::Const_F2I_16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_F2I_64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010110);
@@ -6301,6 +6644,7 @@ template <> struct Accessor<OpClass::Const_F2I_64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I2F> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010111);
@@ -6316,6 +6660,7 @@ template <> struct Accessor<OpClass::I2F> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I2F_F64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010111);
@@ -6331,6 +6676,7 @@ template <> struct Accessor<OpClass::I2F_F64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I2F64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010111);
@@ -6346,6 +6692,7 @@ template <> struct Accessor<OpClass::I2F64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I2F16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010111);
@@ -6361,6 +6708,7 @@ template <> struct Accessor<OpClass::I2F16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_I2F> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010111);
@@ -6378,6 +6726,7 @@ template <> struct Accessor<OpClass::Imm_I2F> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_I2F_F64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010111);
@@ -6395,6 +6744,7 @@ template <> struct Accessor<OpClass::Imm_I2F_F64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_I2F64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010111);
@@ -6412,6 +6762,7 @@ template <> struct Accessor<OpClass::Imm_I2F64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_I2F16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010111);
@@ -6429,6 +6780,7 @@ template <> struct Accessor<OpClass::Imm_I2F16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_I2F> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010111);
@@ -6444,6 +6796,7 @@ template <> struct Accessor<OpClass::Const_I2F> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_I2F_F64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010111);
@@ -6459,6 +6812,7 @@ template <> struct Accessor<OpClass::Const_I2F_F64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_I2F64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010111);
@@ -6474,6 +6828,7 @@ template <> struct Accessor<OpClass::Const_I2F64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_I2F16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010111);
@@ -6489,6 +6844,7 @@ template <> struct Accessor<OpClass::Const_I2F16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I2I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110011100);
@@ -6504,6 +6860,7 @@ template <> struct Accessor<OpClass::I2I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I2I16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110011100);
@@ -6519,6 +6876,7 @@ template <> struct Accessor<OpClass::I2I16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_I2I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110011100);
@@ -6536,6 +6894,7 @@ template <> struct Accessor<OpClass::Imm_I2I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_I2I16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110011100);
@@ -6553,6 +6912,7 @@ template <> struct Accessor<OpClass::Imm_I2I16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_I2I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110011100);
@@ -6568,6 +6928,7 @@ template <> struct Accessor<OpClass::Const_I2I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_I2I16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110011100);
@@ -6583,6 +6944,7 @@ template <> struct Accessor<OpClass::Const_I2I16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::MOV> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010011);
@@ -6594,6 +6956,7 @@ template <> struct Accessor<OpClass::MOV> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_MOV> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010011);
@@ -6603,6 +6966,7 @@ template <> struct Accessor<OpClass::Imm_MOV> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_MOV> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010011);
@@ -6612,6 +6976,7 @@ template <> struct Accessor<OpClass::Const_MOV> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::MOV32I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10000);
@@ -6621,6 +6986,7 @@ template <> struct Accessor<OpClass::MOV32I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SEL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110010100);
@@ -6634,6 +7000,7 @@ template <> struct Accessor<OpClass::SEL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_SEL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010100);
@@ -6645,6 +7012,7 @@ template <> struct Accessor<OpClass::Imm_SEL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_SEL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010100);
@@ -6656,6 +7024,7 @@ template <> struct Accessor<OpClass::Const_SEL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::PRMT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110111100);
@@ -6672,6 +7041,7 @@ template <> struct Accessor<OpClass::PRMT> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_PRMT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110111100);
@@ -6686,6 +7056,7 @@ template <> struct Accessor<OpClass::Imm_PRMT> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_PRMT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10010111100);
@@ -6700,6 +7071,7 @@ template <> struct Accessor<OpClass::Const_PRMT> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const1_PRMT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100111100);
@@ -6714,6 +7086,7 @@ template <> struct Accessor<OpClass::Const1_PRMT> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SHFL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111100010);
@@ -6725,6 +7098,7 @@ template <> struct Accessor<OpClass::SHFL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::b_SHFL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111100010);
@@ -6736,6 +7110,7 @@ template <> struct Accessor<OpClass::b_SHFL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::c_b_SHFL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111100010);
@@ -6747,6 +7122,7 @@ template <> struct Accessor<OpClass::c_b_SHFL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::c_SHFL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111100010);
@@ -6758,6 +7134,7 @@ template <> struct Accessor<OpClass::c_SHFL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::P2R> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110011101);
@@ -6772,6 +7149,7 @@ template <> struct Accessor<OpClass::P2R> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_P2R> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110011101);
@@ -6784,6 +7162,7 @@ template <> struct Accessor<OpClass::Imm_P2R> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_P2R> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110011101);
@@ -6796,6 +7175,7 @@ template <> struct Accessor<OpClass::Const_P2R> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Simple_P2R> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110011101);
@@ -6806,6 +7186,7 @@ template <> struct Accessor<OpClass::Simple_P2R> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::R2P> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110011110);
@@ -6819,6 +7200,7 @@ template <> struct Accessor<OpClass::R2P> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_R2P> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110011110);
@@ -6830,6 +7212,7 @@ template <> struct Accessor<OpClass::Imm_R2P> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_R2P> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110011110);
@@ -6841,6 +7224,7 @@ template <> struct Accessor<OpClass::Const_R2P> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000010011);
@@ -6854,6 +7238,7 @@ template <> struct Accessor<OpClass::CSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_CSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000010011);
@@ -6866,6 +7251,7 @@ template <> struct Accessor<OpClass::NoBop_CSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000010100);
@@ -6876,6 +7262,7 @@ template <> struct Accessor<OpClass::CSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_CSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000010100);
@@ -6885,6 +7272,7 @@ template <> struct Accessor<OpClass::NoBop_CSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::PSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000010001);
@@ -6898,6 +7286,7 @@ template <> struct Accessor<OpClass::PSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_PSET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000010001);
@@ -6910,6 +7299,7 @@ template <> struct Accessor<OpClass::NoBop_PSET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::PSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000010010);
@@ -6920,6 +7310,7 @@ template <> struct Accessor<OpClass::PSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_PSETP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000010010);
@@ -6929,6 +7320,7 @@ template <> struct Accessor<OpClass::NoBop_PSETP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::STP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111010100);
   INST_FIELD(stpmode, STPModeEncoding, STPMode, &Accessor::_Reg)
   SCHED_FIELD(phase, OETexPhaseEncoding, TPhase, &Accessor::_Reg)
@@ -6937,6 +7329,7 @@ template <> struct Accessor<OpClass::STP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TEX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11000);
@@ -6954,6 +7347,7 @@ template <> struct Accessor<OpClass::TEX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TEX_legacy_style> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11000);
@@ -6971,6 +7365,7 @@ template <> struct Accessor<OpClass::TEX_legacy_style> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TEX_B> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111010);
@@ -6988,6 +7383,7 @@ template <> struct Accessor<OpClass::TEX_B> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TEX_B_legacy_style> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111010);
@@ -7005,6 +7401,7 @@ template <> struct Accessor<OpClass::TEX_B_legacy_style> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TEXS_RZ> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101100);
@@ -7019,6 +7416,7 @@ template <> struct Accessor<OpClass::TEXS_RZ> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TEXS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101100);
@@ -7033,6 +7431,7 @@ template <> struct Accessor<OpClass::TEXS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TEXS_F16_RZ> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101000);
@@ -7047,6 +7446,7 @@ template <> struct Accessor<OpClass::TEXS_F16_RZ> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TEXS_F16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101000);
@@ -7061,6 +7461,7 @@ template <> struct Accessor<OpClass::TEXS_F16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TLDS_RZ> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101101);
@@ -7076,6 +7477,7 @@ template <> struct Accessor<OpClass::TLDS_RZ> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TLDS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101101);
@@ -7091,6 +7493,7 @@ template <> struct Accessor<OpClass::TLDS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TLDS_F16_RZ> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101001);
@@ -7106,6 +7509,7 @@ template <> struct Accessor<OpClass::TLDS_F16_RZ> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TLDS_F16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101001);
@@ -7121,6 +7525,7 @@ template <> struct Accessor<OpClass::TLDS_F16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TLD4S> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111100);
@@ -7136,6 +7541,7 @@ template <> struct Accessor<OpClass::TLD4S> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TLD4S_F16> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111110);
@@ -7151,6 +7557,7 @@ template <> struct Accessor<OpClass::TLD4S_F16> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TLD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11011100);
@@ -7167,6 +7574,7 @@ template <> struct Accessor<OpClass::TLD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TLD_B> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11011101);
@@ -7183,6 +7591,7 @@ template <> struct Accessor<OpClass::TLD_B> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TLD4> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11001);
@@ -7199,6 +7608,7 @@ template <> struct Accessor<OpClass::TLD4> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TLD4_B> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111011);
@@ -7215,6 +7625,7 @@ template <> struct Accessor<OpClass::TLD4_B> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TLD4_Legacy_Style> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11001);
@@ -7231,6 +7642,7 @@ template <> struct Accessor<OpClass::TLD4_Legacy_Style> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TLD4_B_Legacy_Style> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111011);
@@ -7247,6 +7659,7 @@ template <> struct Accessor<OpClass::TLD4_B_Legacy_Style> : public AccessorBase 
 };
 
 template <> struct Accessor<OpClass::TMML> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101011);
@@ -7260,6 +7673,7 @@ template <> struct Accessor<OpClass::TMML> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TMML_Legacy_Style> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101011);
@@ -7273,6 +7687,7 @@ template <> struct Accessor<OpClass::TMML_Legacy_Style> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TMML_B> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101100);
@@ -7286,6 +7701,7 @@ template <> struct Accessor<OpClass::TMML_B> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TMML_B_Legacy_Style> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101100);
@@ -7299,6 +7715,7 @@ template <> struct Accessor<OpClass::TMML_B_Legacy_Style> : public AccessorBase 
 };
 
 template <> struct Accessor<OpClass::TXD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111000);
@@ -7313,6 +7730,7 @@ template <> struct Accessor<OpClass::TXD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TXD_Legacy_Style> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111000);
@@ -7327,6 +7745,7 @@ template <> struct Accessor<OpClass::TXD_Legacy_Style> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TXD_B> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111001);
@@ -7341,6 +7760,7 @@ template <> struct Accessor<OpClass::TXD_B> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TXD_B_Legacy_Style> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111001);
@@ -7355,6 +7775,7 @@ template <> struct Accessor<OpClass::TXD_B_Legacy_Style> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TXQ> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101001);
@@ -7367,6 +7788,7 @@ template <> struct Accessor<OpClass::TXQ> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TXQ_Legacy_Style> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101001);
@@ -7379,6 +7801,7 @@ template <> struct Accessor<OpClass::TXQ_Legacy_Style> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TXQ_Imm> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101001);
@@ -7391,6 +7814,7 @@ template <> struct Accessor<OpClass::TXQ_Imm> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TXQ_Imm_Legacy_Style> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101001);
@@ -7403,6 +7827,7 @@ template <> struct Accessor<OpClass::TXQ_Imm_Legacy_Style> : public AccessorBase
 };
 
 template <> struct Accessor<OpClass::TXQ_B> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101010);
@@ -7415,6 +7840,7 @@ template <> struct Accessor<OpClass::TXQ_B> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TXQ_B_Legacy_Style> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101010);
@@ -7427,6 +7853,7 @@ template <> struct Accessor<OpClass::TXQ_B_Legacy_Style> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TXQ_B_Imm> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101010);
@@ -7439,6 +7866,7 @@ template <> struct Accessor<OpClass::TXQ_B_Imm> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TXQ_B_Imm_Legacy_Style> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101010);
@@ -7451,6 +7879,7 @@ template <> struct Accessor<OpClass::TXQ_B_Imm_Legacy_Style> : public AccessorBa
 };
 
 template <> struct Accessor<OpClass::TXA> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101000);
@@ -7464,6 +7893,7 @@ template <> struct Accessor<OpClass::TXA> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::TXA_Legacy_Style> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101000);
@@ -7477,6 +7907,7 @@ template <> struct Accessor<OpClass::TXA_Legacy_Style> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::DEPBAR_LE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000011110);
@@ -7485,6 +7916,7 @@ template <> struct Accessor<OpClass::DEPBAR_LE> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::DEPBAR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000011110);
@@ -7493,6 +7925,7 @@ template <> struct Accessor<OpClass::DEPBAR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::DEPBAR_ALL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000011110);
@@ -7501,6 +7934,7 @@ template <> struct Accessor<OpClass::DEPBAR_ALL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::AL2P> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111110100);
@@ -7513,6 +7947,7 @@ template <> struct Accessor<OpClass::AL2P> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_AL2P> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111110100);
@@ -7525,6 +7960,7 @@ template <> struct Accessor<OpClass::I_AL2P> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_ALD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111011);
@@ -7538,6 +7974,7 @@ template <> struct Accessor<OpClass::I_ALD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_ALD_PATCH> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111011);
@@ -7551,6 +7988,7 @@ template <> struct Accessor<OpClass::I_ALD_PATCH> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ALD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111011);
@@ -7564,6 +8002,7 @@ template <> struct Accessor<OpClass::ALD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ALD_PHYS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111011);
@@ -7577,6 +8016,7 @@ template <> struct Accessor<OpClass::ALD_PHYS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_AST> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111110);
@@ -7589,6 +8029,7 @@ template <> struct Accessor<OpClass::I_AST> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_AST_PATCH> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111110);
@@ -7601,6 +8042,7 @@ template <> struct Accessor<OpClass::I_AST_PATCH> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::AST> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111110);
@@ -7613,6 +8055,7 @@ template <> struct Accessor<OpClass::AST> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::AST_PHYS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111110);
@@ -7625,6 +8068,7 @@ template <> struct Accessor<OpClass::AST_PHYS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::OUT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111101111100);
@@ -7636,6 +8080,7 @@ template <> struct Accessor<OpClass::OUT> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_OUT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111101111100);
@@ -7647,6 +8092,7 @@ template <> struct Accessor<OpClass::Imm_OUT> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_OUT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101111100);
@@ -7658,6 +8104,7 @@ template <> struct Accessor<OpClass::Const_OUT> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::PIXLD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111101);
@@ -7670,6 +8117,7 @@ template <> struct Accessor<OpClass::PIXLD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_PIXLD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111101);
@@ -7682,6 +8130,7 @@ template <> struct Accessor<OpClass::I_PIXLD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::PIXLD_simple> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111101);
@@ -7693,6 +8142,7 @@ template <> struct Accessor<OpClass::PIXLD_simple> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LDC> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111110010);
@@ -7706,6 +8156,7 @@ template <> struct Accessor<OpClass::LDC> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_LDC> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111110010);
@@ -7719,6 +8170,7 @@ template <> struct Accessor<OpClass::I_LDC> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LDC_64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111110010);
@@ -7731,6 +8183,7 @@ template <> struct Accessor<OpClass::LDC_64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_LDC_64> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111110010);
@@ -7743,6 +8196,7 @@ template <> struct Accessor<OpClass::I_LDC_64> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100);
@@ -7757,6 +8211,7 @@ template <> struct Accessor<OpClass::LD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_LD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100);
@@ -7771,6 +8226,7 @@ template <> struct Accessor<OpClass::I_LD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LDG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111011010);
@@ -7785,6 +8241,7 @@ template <> struct Accessor<OpClass::LDG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_LDG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111011010);
@@ -7799,6 +8256,7 @@ template <> struct Accessor<OpClass::I_LDG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LDG_SPARSE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111011001);
@@ -7813,6 +8271,7 @@ template <> struct Accessor<OpClass::LDG_SPARSE> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_LDG_SPARSE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111011001);
@@ -7827,6 +8286,7 @@ template <> struct Accessor<OpClass::I_LDG_SPARSE> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LDL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111101000);
@@ -7840,6 +8300,7 @@ template <> struct Accessor<OpClass::LDL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_LDL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111101000);
@@ -7853,6 +8314,7 @@ template <> struct Accessor<OpClass::I_LDL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LDS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111101001);
@@ -7865,6 +8327,7 @@ template <> struct Accessor<OpClass::LDS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_LDS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111101001);
@@ -7877,6 +8340,7 @@ template <> struct Accessor<OpClass::I_LDS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LEA_LO_REG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101101111010);
@@ -7893,6 +8357,7 @@ template <> struct Accessor<OpClass::LEA_LO_REG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LEA_LO_IMM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111010);
@@ -7907,6 +8372,7 @@ template <> struct Accessor<OpClass::LEA_LO_IMM> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LEA_LO_CONST> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100101111010);
@@ -7921,6 +8387,7 @@ template <> struct Accessor<OpClass::LEA_LO_CONST> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LEA_HI_REG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101101111011);
@@ -7939,6 +8406,7 @@ template <> struct Accessor<OpClass::LEA_HI_REG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LEA_HI_CONST> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110);
@@ -7955,6 +8423,7 @@ template <> struct Accessor<OpClass::LEA_HI_CONST> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ST> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101);
@@ -7969,6 +8438,7 @@ template <> struct Accessor<OpClass::ST> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_ST> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101);
@@ -7983,6 +8453,7 @@ template <> struct Accessor<OpClass::I_ST> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::STG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111011011);
@@ -7997,6 +8468,7 @@ template <> struct Accessor<OpClass::STG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_STG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111011011);
@@ -8011,6 +8483,7 @@ template <> struct Accessor<OpClass::I_STG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::STL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111101010);
@@ -8024,6 +8497,7 @@ template <> struct Accessor<OpClass::STL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_STL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111101010);
@@ -8037,6 +8511,7 @@ template <> struct Accessor<OpClass::I_STL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::STS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111101011);
@@ -8049,6 +8524,7 @@ template <> struct Accessor<OpClass::STS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_STS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111101011);
@@ -8061,6 +8537,7 @@ template <> struct Accessor<OpClass::I_STS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ATOM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101101);
@@ -8075,6 +8552,7 @@ template <> struct Accessor<OpClass::ATOM> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_ATOM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101101);
@@ -8089,6 +8567,7 @@ template <> struct Accessor<OpClass::I_ATOM> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ATOM_CAS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011101111);
@@ -8102,6 +8581,7 @@ template <> struct Accessor<OpClass::ATOM_CAS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_ATOM_CAS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011101111);
@@ -8115,6 +8595,7 @@ template <> struct Accessor<OpClass::I_ATOM_CAS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ATOM_CAS_Rb_and_RZ> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011101111);
@@ -8128,6 +8609,7 @@ template <> struct Accessor<OpClass::ATOM_CAS_Rb_and_RZ> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_ATOM_CAS_Rb_and_RZ> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011101111);
@@ -8141,6 +8623,7 @@ template <> struct Accessor<OpClass::I_ATOM_CAS_Rb_and_RZ> : public AccessorBase
 };
 
 template <> struct Accessor<OpClass::ATOM_CAS_RZ_and_Rc> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011101111);
@@ -8154,6 +8637,7 @@ template <> struct Accessor<OpClass::ATOM_CAS_RZ_and_Rc> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_ATOM_CAS_RZ_and_Rc> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011101111);
@@ -8167,6 +8651,7 @@ template <> struct Accessor<OpClass::I_ATOM_CAS_RZ_and_Rc> : public AccessorBase
 };
 
 template <> struct Accessor<OpClass::ATOM_SPARSE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011100110);
@@ -8181,6 +8666,7 @@ template <> struct Accessor<OpClass::ATOM_SPARSE> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ATOM_CAS_SPARSE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011100111);
@@ -8194,6 +8680,7 @@ template <> struct Accessor<OpClass::ATOM_CAS_SPARSE> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ATOM_CAS_RZ_and_Rc_SPARSE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011100111);
@@ -8207,6 +8694,7 @@ template <> struct Accessor<OpClass::ATOM_CAS_RZ_and_Rc_SPARSE> : public Accesso
 };
 
 template <> struct Accessor<OpClass::ATOM_CAS_Rb_and_RZ_SPARSE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011100111);
@@ -8220,6 +8708,7 @@ template <> struct Accessor<OpClass::ATOM_CAS_Rb_and_RZ_SPARSE> : public Accesso
 };
 
 template <> struct Accessor<OpClass::ATOMS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101100);
@@ -8233,6 +8722,7 @@ template <> struct Accessor<OpClass::ATOMS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_ATOMS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101100);
@@ -8246,6 +8736,7 @@ template <> struct Accessor<OpClass::I_ATOMS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ATOMS_CAS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101110010);
@@ -8258,6 +8749,7 @@ template <> struct Accessor<OpClass::ATOMS_CAS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_ATOMS_CAS> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101110010);
@@ -8270,6 +8762,7 @@ template <> struct Accessor<OpClass::I_ATOMS_CAS> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ATOMS_CAS_Rb_and_RZ> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101110010);
@@ -8282,6 +8775,7 @@ template <> struct Accessor<OpClass::ATOMS_CAS_Rb_and_RZ> : public AccessorBase 
 };
 
 template <> struct Accessor<OpClass::I_ATOMS_CAS_Rb_and_RZ> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101110010);
@@ -8294,6 +8788,7 @@ template <> struct Accessor<OpClass::I_ATOMS_CAS_Rb_and_RZ> : public AccessorBas
 };
 
 template <> struct Accessor<OpClass::ATOMS_CAS_RZ_and_Rc> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101110010);
@@ -8306,6 +8801,7 @@ template <> struct Accessor<OpClass::ATOMS_CAS_RZ_and_Rc> : public AccessorBase 
 };
 
 template <> struct Accessor<OpClass::I_ATOMS_CAS_RZ_and_Rc> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101110010);
@@ -8318,6 +8814,7 @@ template <> struct Accessor<OpClass::I_ATOMS_CAS_RZ_and_Rc> : public AccessorBas
 };
 
 template <> struct Accessor<OpClass::ATOMS_CAST> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111000);
@@ -8331,6 +8828,7 @@ template <> struct Accessor<OpClass::ATOMS_CAST> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_ATOMS_CAST> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111000);
@@ -8344,6 +8842,7 @@ template <> struct Accessor<OpClass::I_ATOMS_CAST> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ATOMS_CAST_Rb_and_RZ> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111000);
@@ -8357,6 +8856,7 @@ template <> struct Accessor<OpClass::ATOMS_CAST_Rb_and_RZ> : public AccessorBase
 };
 
 template <> struct Accessor<OpClass::I_ATOMS_CAST_Rb_and_RZ> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111000);
@@ -8370,6 +8870,7 @@ template <> struct Accessor<OpClass::I_ATOMS_CAST_Rb_and_RZ> : public AccessorBa
 };
 
 template <> struct Accessor<OpClass::ATOMS_CAST_RZ_and_Rc> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111000);
@@ -8383,6 +8884,7 @@ template <> struct Accessor<OpClass::ATOMS_CAST_RZ_and_Rc> : public AccessorBase
 };
 
 template <> struct Accessor<OpClass::I_ATOMS_CAST_RZ_and_Rc> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111000);
@@ -8396,6 +8898,7 @@ template <> struct Accessor<OpClass::I_ATOMS_CAST_RZ_and_Rc> : public AccessorBa
 };
 
 template <> struct Accessor<OpClass::RED> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101111111);
@@ -8410,6 +8913,7 @@ template <> struct Accessor<OpClass::RED> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_RED> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101111111);
@@ -8424,6 +8928,7 @@ template <> struct Accessor<OpClass::I_RED> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CCTL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101111011);
@@ -8438,6 +8943,7 @@ template <> struct Accessor<OpClass::CCTL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_CCTL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101111011);
@@ -8452,6 +8958,7 @@ template <> struct Accessor<OpClass::I_CCTL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CCTL_IVALL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101111011);
@@ -8465,6 +8972,7 @@ template <> struct Accessor<OpClass::CCTL_IVALL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CCTL_CI_IVALL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101111011);
@@ -8476,6 +8984,7 @@ template <> struct Accessor<OpClass::CCTL_CI_IVALL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CCTL_QRY> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101111011);
@@ -8490,6 +8999,7 @@ template <> struct Accessor<OpClass::CCTL_QRY> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_CCTL_QRY> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101111011);
@@ -8504,6 +9014,7 @@ template <> struct Accessor<OpClass::I_CCTL_QRY> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CCTLL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111110000);
@@ -8517,6 +9028,7 @@ template <> struct Accessor<OpClass::CCTLL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::I_CCTLL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111110000);
@@ -8530,6 +9042,7 @@ template <> struct Accessor<OpClass::I_CCTLL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CCTLL_IVALL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111110000);
@@ -8541,6 +9054,7 @@ template <> struct Accessor<OpClass::CCTLL_IVALL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CCTLL_CRS_WBALL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111110000);
@@ -8553,6 +9067,7 @@ template <> struct Accessor<OpClass::CCTLL_CRS_WBALL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CCTLT_REG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101111101);
@@ -8564,6 +9079,7 @@ template <> struct Accessor<OpClass::CCTLT_REG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CCTLT_IDX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101111110);
@@ -8575,6 +9091,7 @@ template <> struct Accessor<OpClass::CCTLT_IDX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CCTLT_IVALL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101111110);
@@ -8586,6 +9103,7 @@ template <> struct Accessor<OpClass::CCTLT_IVALL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::MEMBAR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111110011);
@@ -8598,6 +9116,7 @@ template <> struct Accessor<OpClass::MEMBAR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SULD_D_REG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100010);
@@ -8614,6 +9133,7 @@ template <> struct Accessor<OpClass::SULD_D_REG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SULD_D_IMM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100011);
@@ -8630,6 +9150,7 @@ template <> struct Accessor<OpClass::SULD_D_IMM> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SULD_P_REG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100000);
@@ -8645,6 +9166,7 @@ template <> struct Accessor<OpClass::SULD_P_REG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SULD_P_IMM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100001);
@@ -8660,6 +9182,7 @@ template <> struct Accessor<OpClass::SULD_P_IMM> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SUST_D_REG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100110);
@@ -8676,6 +9199,7 @@ template <> struct Accessor<OpClass::SUST_D_REG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SUST_D_IMM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100111);
@@ -8692,6 +9216,7 @@ template <> struct Accessor<OpClass::SUST_D_IMM> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SUST_P_REG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100100);
@@ -8707,6 +9232,7 @@ template <> struct Accessor<OpClass::SUST_P_REG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SUST_P_IMM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100101);
@@ -8722,6 +9248,7 @@ template <> struct Accessor<OpClass::SUST_P_IMM> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SURED_D_REG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101101010);
@@ -8738,6 +9265,7 @@ template <> struct Accessor<OpClass::SURED_D_REG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SURED_D_IMM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101101011);
@@ -8754,6 +9282,7 @@ template <> struct Accessor<OpClass::SURED_D_IMM> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SURED_P_REG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101101000);
@@ -8768,6 +9297,7 @@ template <> struct Accessor<OpClass::SURED_P_REG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SURED_P_IMM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101101001);
@@ -8782,6 +9312,7 @@ template <> struct Accessor<OpClass::SURED_P_IMM> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SUATOM_D_REG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101001110);
@@ -8798,6 +9329,7 @@ template <> struct Accessor<OpClass::SUATOM_D_REG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SUATOM_D_REG_SPARSE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101110);
@@ -8814,6 +9346,7 @@ template <> struct Accessor<OpClass::SUATOM_D_REG_SPARSE> : public AccessorBase 
 };
 
 template <> struct Accessor<OpClass::SUATOM_D_IMM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101000);
@@ -8830,6 +9363,7 @@ template <> struct Accessor<OpClass::SUATOM_D_IMM> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SUATOM_P_REG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101001100);
@@ -8844,6 +9378,7 @@ template <> struct Accessor<OpClass::SUATOM_P_REG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SUATOM_P_IMM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101001101);
@@ -8858,6 +9393,7 @@ template <> struct Accessor<OpClass::SUATOM_P_IMM> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SUATOM_D_CAS_REG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101011010);
@@ -8873,6 +9409,7 @@ template <> struct Accessor<OpClass::SUATOM_D_CAS_REG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SUATOM_D_CAS_IMM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101010);
@@ -8888,6 +9425,7 @@ template <> struct Accessor<OpClass::SUATOM_D_CAS_IMM> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SUATOM_P_CAS_REG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101011000);
@@ -8902,6 +9440,7 @@ template <> struct Accessor<OpClass::SUATOM_P_CAS_REG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SUATOM_P_CAS_IMM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101011001);
@@ -8916,6 +9455,7 @@ template <> struct Accessor<OpClass::SUATOM_P_CAS_IMM> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BRA> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100100);
@@ -8928,6 +9468,7 @@ template <> struct Accessor<OpClass::BRA> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BRA_c> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100100);
@@ -8940,6 +9481,7 @@ template <> struct Accessor<OpClass::BRA_c> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BRX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100101);
@@ -8951,6 +9493,7 @@ template <> struct Accessor<OpClass::BRX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BRX_c> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100101);
@@ -8963,6 +9506,7 @@ template <> struct Accessor<OpClass::BRX_c> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::JMP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100001);
@@ -8975,6 +9519,7 @@ template <> struct Accessor<OpClass::JMP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::JMP_c> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100001);
@@ -8987,6 +9532,7 @@ template <> struct Accessor<OpClass::JMP_c> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::JMX> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100000);
@@ -8998,6 +9544,7 @@ template <> struct Accessor<OpClass::JMX> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::JMX_c> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100000);
@@ -9010,6 +9557,7 @@ template <> struct Accessor<OpClass::JMX_c> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CAL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100110);
   INST_FIELD(inc, INCEncoding, INC, &Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9017,6 +9565,7 @@ template <> struct Accessor<OpClass::CAL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CAL_c> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100110);
   INST_FIELD(inc, INCEncoding, INC, &Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9024,6 +9573,7 @@ template <> struct Accessor<OpClass::CAL_c> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::PRET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100111);
   INST_FIELD(inc, INCEncoding, INC, &Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9031,6 +9581,7 @@ template <> struct Accessor<OpClass::PRET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::PRET_c> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100111);
   INST_FIELD(inc, INCEncoding, INC, &Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9038,6 +9589,7 @@ template <> struct Accessor<OpClass::PRET_c> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::JCAL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100010);
   INST_FIELD(inc, INCEncoding, INC, &Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9045,6 +9597,7 @@ template <> struct Accessor<OpClass::JCAL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::JCAL_c> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100010);
   INST_FIELD(inc, INCEncoding, INC, &Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9052,54 +9605,63 @@ template <> struct Accessor<OpClass::JCAL_c> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SSY> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101001);
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, &Accessor::_Reg)
 };
 
 template <> struct Accessor<OpClass::SSY_c> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101001);
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, &Accessor::_Reg)
 };
 
 template <> struct Accessor<OpClass::PLONGJMP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101000);
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, &Accessor::_Reg)
 };
 
 template <> struct Accessor<OpClass::PLONGJMP_c> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101000);
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, &Accessor::_Reg)
 };
 
 template <> struct Accessor<OpClass::PBK> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101010);
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, &Accessor::_Reg)
 };
 
 template <> struct Accessor<OpClass::PBK_c> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101010);
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, &Accessor::_Reg)
 };
 
 template <> struct Accessor<OpClass::PCNT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101011);
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, &Accessor::_Reg)
 };
 
 template <> struct Accessor<OpClass::PCNT_c> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101011);
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, &Accessor::_Reg)
 };
 
 template <> struct Accessor<OpClass::RET> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000110010);
@@ -9109,6 +9671,7 @@ template <> struct Accessor<OpClass::RET> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LONGJMP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000110001);
@@ -9118,6 +9681,7 @@ template <> struct Accessor<OpClass::LONGJMP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::KIL> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000110011);
@@ -9127,6 +9691,7 @@ template <> struct Accessor<OpClass::KIL> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BRK> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000110100);
@@ -9136,6 +9701,7 @@ template <> struct Accessor<OpClass::BRK> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CONT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000110101);
@@ -9145,6 +9711,7 @@ template <> struct Accessor<OpClass::CONT> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::EXIT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000110000);
@@ -9155,24 +9722,28 @@ template <> struct Accessor<OpClass::EXIT> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::PEXIT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100011);
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, &Accessor::_Reg)
 };
 
 template <> struct Accessor<OpClass::SAM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000110111);
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, &Accessor::_Reg)
 };
 
 template <> struct Accessor<OpClass::RAM> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000111000);
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, &Accessor::_Reg)
 };
 
 template <> struct Accessor<OpClass::BPT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000111010);
   INST_FIELD(bpt, BptEncoding, BPTMode, &Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9180,6 +9751,7 @@ template <> struct Accessor<OpClass::BPT> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::RTT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000110110);
   INST_FIELD(rttop, RTTOpEncoding, RTTOp, &Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9187,6 +9759,7 @@ template <> struct Accessor<OpClass::RTT> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::IDE_EN> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000111001);
   CONSTANT_FIELD(req, REQ, REQ::req)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -9195,6 +9768,7 @@ template <> struct Accessor<OpClass::IDE_EN> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::IDE_DI> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000111001);
   CONSTANT_FIELD(di, IDEActionDIOnly, IDEActionDIOnly::DI)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9204,6 +9778,7 @@ template <> struct Accessor<OpClass::IDE_DI> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SYNC> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000011111);
@@ -9213,6 +9788,7 @@ template <> struct Accessor<OpClass::SYNC> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NOP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000010110);
@@ -9223,6 +9799,7 @@ template <> struct Accessor<OpClass::NOP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NOP_trig> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000010110);
@@ -9233,6 +9810,7 @@ template <> struct Accessor<OpClass::NOP_trig> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::S2R> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000011001);
@@ -9243,6 +9821,7 @@ template <> struct Accessor<OpClass::S2R> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::CS2R> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011001);
@@ -9251,6 +9830,7 @@ template <> struct Accessor<OpClass::CS2R> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::B2R_BAR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010111);
@@ -9262,6 +9842,7 @@ template <> struct Accessor<OpClass::B2R_BAR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::B2R_RESULT> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010111);
@@ -9273,6 +9854,7 @@ template <> struct Accessor<OpClass::B2R_RESULT> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::B2R_WARP> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010111);
@@ -9284,6 +9866,7 @@ template <> struct Accessor<OpClass::B2R_WARP> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::R2B> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000011000);
@@ -9295,6 +9878,7 @@ template <> struct Accessor<OpClass::R2B> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::LEPC> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011010);
@@ -9303,6 +9887,7 @@ template <> struct Accessor<OpClass::LEPC> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Sync> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9314,6 +9899,7 @@ template <> struct Accessor<OpClass::BAR_Sync> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Sync_b> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9325,6 +9911,7 @@ template <> struct Accessor<OpClass::BAR_Sync_b> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Sync_a_b> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9336,6 +9923,7 @@ template <> struct Accessor<OpClass::BAR_Sync_a_b> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Sync_a> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9347,6 +9935,7 @@ template <> struct Accessor<OpClass::BAR_Sync_a> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Arv> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9358,6 +9947,7 @@ template <> struct Accessor<OpClass::BAR_Arv> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Arv_a> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9369,6 +9959,7 @@ template <> struct Accessor<OpClass::BAR_Arv_a> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Arv_imm> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9380,6 +9971,7 @@ template <> struct Accessor<OpClass::BAR_Arv_imm> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Arv_imm_a> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9391,6 +9983,7 @@ template <> struct Accessor<OpClass::BAR_Arv_imm_a> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Red> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9403,6 +9996,7 @@ template <> struct Accessor<OpClass::BAR_Red> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Red_b> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9415,6 +10009,7 @@ template <> struct Accessor<OpClass::BAR_Red_b> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Red_a_b> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9427,6 +10022,7 @@ template <> struct Accessor<OpClass::BAR_Red_a_b> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Red_a> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9439,6 +10035,7 @@ template <> struct Accessor<OpClass::BAR_Red_a> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_syncall> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
   INST_FIELD(barmode, BarOpEncoding, BarSYNCALL, &Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9448,6 +10045,7 @@ template <> struct Accessor<OpClass::BAR_syncall> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Scan> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9459,6 +10057,7 @@ template <> struct Accessor<OpClass::BAR_Scan> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_Scan_a> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9470,6 +10069,7 @@ template <> struct Accessor<OpClass::BAR_Scan_a> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_scan_imm> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9481,6 +10081,7 @@ template <> struct Accessor<OpClass::BAR_scan_imm> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::BAR_scan_imm_a> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000010101);
@@ -9492,6 +10093,7 @@ template <> struct Accessor<OpClass::BAR_scan_imm_a> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::VOTE_VTG> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011100);
@@ -9501,6 +10103,7 @@ template <> struct Accessor<OpClass::VOTE_VTG> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::VOTE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011011);
@@ -9511,6 +10114,7 @@ template <> struct Accessor<OpClass::VOTE> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SETCRSPTR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101110);
   CONSTANT_FIELD(req, REQ, REQ::req)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -9519,6 +10123,7 @@ template <> struct Accessor<OpClass::SETCRSPTR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::GETCRSPTR> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101100);
   CONSTANT_FIELD(req, REQ, REQ::req)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -9527,6 +10132,7 @@ template <> struct Accessor<OpClass::GETCRSPTR> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::SETLMEMBASE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101111);
   CONSTANT_FIELD(req, REQ, REQ::req)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -9535,6 +10141,7 @@ template <> struct Accessor<OpClass::SETLMEMBASE> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::GETLMEMBASE> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101101);
   CONSTANT_FIELD(req, REQ, REQ::req)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -9543,6 +10150,7 @@ template <> struct Accessor<OpClass::GETLMEMBASE> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::ISBERD> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111010);
@@ -9558,6 +10166,7 @@ template <> struct Accessor<OpClass::ISBERD> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hfma2__v2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hfma2__v2_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hfma2__v2_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110100000);
@@ -9583,6 +10192,7 @@ template <> struct Accessor<OpClass::hfma2__v2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hfma2__v1> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hfma2__v1_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hfma2__v1_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11100);
@@ -9603,6 +10213,7 @@ template <> struct Accessor<OpClass::hfma2__v1> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hfma2__v0> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hfma2__v0_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hfma2__v0_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101);
@@ -9624,6 +10235,7 @@ template <> struct Accessor<OpClass::hfma2__v0> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hset2__v2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hset2__v2_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hset2__v2_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110100011);
@@ -9648,6 +10260,7 @@ template <> struct Accessor<OpClass::hset2__v2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hset2__v1> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hset2__v1_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hset2__v1_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111100);
@@ -9667,6 +10280,7 @@ template <> struct Accessor<OpClass::hset2__v1> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hset2__v0> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hset2__v0_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hset2__v0_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111101);
@@ -9686,6 +10300,7 @@ template <> struct Accessor<OpClass::hset2__v0> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hset2_bop__v1> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hset2_bop__v1_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hset2_bop__v1_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111100);
@@ -9704,6 +10319,7 @@ template <> struct Accessor<OpClass::hset2_bop__v1> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hset2_bop__v0> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hset2_bop__v0_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hset2_bop__v0_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111101);
@@ -9722,6 +10338,7 @@ template <> struct Accessor<OpClass::hset2_bop__v0> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hmul2_32i_> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hmul2_32i__PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hmul2_32i__PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10101);
@@ -9737,6 +10354,7 @@ template <> struct Accessor<OpClass::hmul2_32i_> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hset2_bop__v2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hset2_bop__v2_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hset2_bop__v2_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110100011);
@@ -9760,6 +10378,7 @@ template <> struct Accessor<OpClass::hset2_bop__v2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hadd2__v0> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hadd2__v0_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hadd2__v0_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111011);
@@ -9778,6 +10397,7 @@ template <> struct Accessor<OpClass::hadd2__v0> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hadd2__v1> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hadd2__v1_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hadd2__v1_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111010);
@@ -9796,6 +10416,7 @@ template <> struct Accessor<OpClass::hadd2__v1> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hadd2__v2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hadd2__v2_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hadd2__v2_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110100010);
@@ -9819,6 +10440,7 @@ template <> struct Accessor<OpClass::hadd2__v2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hmul2__v2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hmul2__v2_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hmul2__v2_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110100001);
@@ -9842,6 +10464,7 @@ template <> struct Accessor<OpClass::hmul2__v2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hadd2_32i_> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hadd2_32i__PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hadd2_32i__PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10110);
@@ -9858,6 +10481,7 @@ template <> struct Accessor<OpClass::hadd2_32i_> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hmul2__v1> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hmul2__v1_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hmul2__v1_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000);
@@ -9876,6 +10500,7 @@ template <> struct Accessor<OpClass::hmul2__v1> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::hmul2__v0> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, hmul2__v0_PgEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, hmul2__v0_PgNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111001);
@@ -9894,6 +10519,7 @@ template <> struct Accessor<OpClass::hmul2__v0> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::HSETP2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110100100);
@@ -9918,6 +10544,7 @@ template <> struct Accessor<OpClass::HSETP2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_HSETP2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110100100);
@@ -9941,6 +10568,7 @@ template <> struct Accessor<OpClass::NoBop_HSETP2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Imm_HSETP2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111110);
@@ -9960,6 +10588,7 @@ template <> struct Accessor<OpClass::Imm_HSETP2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Imm_HSETP2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111110);
@@ -9978,6 +10607,7 @@ template <> struct Accessor<OpClass::NoBop_Imm_HSETP2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::Const_HSETP2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111111);
@@ -9997,6 +10627,7 @@ template <> struct Accessor<OpClass::Const_HSETP2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::NoBop_Const_HSETP2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111111);
@@ -10015,6 +10646,7 @@ template <> struct Accessor<OpClass::NoBop_Const_HSETP2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::HFMA2_32I> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100);
@@ -10031,6 +10663,7 @@ template <> struct Accessor<OpClass::HFMA2_32I> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::HFMA2_32I_2> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b10100);
@@ -10046,6 +10679,7 @@ template <> struct Accessor<OpClass::HFMA2_32I_2> : public AccessorBase {
 };
 
 template <> struct Accessor<OpClass::HFMA2_CCST> : public AccessorBase {
+  using AccessorBase::AccessorBase;
   INST_FIELD(Pg, PredEncoding, Predicate, &Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, &Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11001);

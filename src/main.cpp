@@ -1,4 +1,5 @@
 #include "Maxwell.hpp"
+#include "MaxwellAccessor.hpp"
 
 #include <fstream>
 #include <format>
@@ -35,14 +36,18 @@ int main() {
             const std::uint64_t inst = data[i * 4 + j + 1];
             const std::uint64_t sched = schedFlags >> j * 21 & 0x1fffffull;
             const auto decoded = Maxwell::Decode(inst, sched);
+            const std::uint64_t pc = i * 0x20 + j * 8 + 8 - start * 0x20;
             if (decoded.has_value()) {
-                std::cout << std::format("{:#010x}: {}\n", i * 0x20 + j * 8, decoded->opcode);
+                std::cout << std::format("{:#010x}: {}\n", pc, decoded->opcode);
                 if (decoded->opclass == Maxwell::OpClass::EXIT) {
                     shouldBreak = true;
                     break;
+                } else if (decoded->opclass == Maxwell::OpClass::TXQ) {
+                    const auto accessor = Maxwell::Accessor<Maxwell::OpClass::TXQ>(inst, sched, pc);
+                    std::cout << "Opcode: " << accessor.Opcode() << ", TexPhase: " << static_cast<std::uint32_t>(accessor.phase()) << "\n";
                 }
             } else {
-                std::cout << std::format("Failed to decode instruction at {:#010x} ({:#010x} {:#010x})\n", i * 0x20 + j * 8, inst, sched);
+                std::cout << std::format("Failed to decode instruction at {:#010x} ({:#010x} {:#010x})\n", pc, inst, sched);
             }
         }
         if (shouldBreak) {
