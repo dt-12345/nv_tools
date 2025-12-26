@@ -45,7 +45,7 @@ int main() {
                 } else if (decoded->opclass == Maxwell::OpClass::TXQ) {
                     const auto accessor = Maxwell::Accessor<Maxwell::OpClass::TXQ>(inst, sched, pc);
                     std::cout << "Opcode: " << accessor.Opcode() << ", TexPhase: " << static_cast<std::uint32_t>(accessor.phase()) << "\n";
-                    std::cout << "TextureID: " << accessor.tid() << ", Query: " << static_cast<int>(accessor.query()) << "\n";
+                    std::cout << "TextureID: " << accessor.tid() << ", Query: " << static_cast<int>(accessor.query()) << " WMsk: " << +accessor.wmsk() << "\n";
                 }
             } else {
                 std::cout << std::format("Failed to decode instruction at {:#010x} ({:#010x} {:#010x})\n", pc, inst, sched);

@@ -1422,86 +1422,70 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
 
   constexpr AccessorBase(std::uint64_t _inst, std::uint64_t _sched, std::uint64_t _pc) noexcept : inst(_inst), sched(_sched), pc(_pc) {}
 
-  using ProcessingFunc = std::uint64_t (AccessorBase::*)(std::uint64_t) const;
+  using ProcessingFunc = std::uint64_t (*)(std::uint64_t, std::uint64_t);
 
-  constexpr std::uint64_t _Bool(std::uint64_t value) const {
+  static constexpr std::uint64_t _Bool(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     return value & 1ull;
   }
 
-  constexpr std::uint64_t _Reg(std::uint64_t value) const {
+  static constexpr std::uint64_t _Reg(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     return value & 0xffffull;
   }
 
   template <std::uint64_t XOR>
-  constexpr std::uint64_t _Xor(std::uint64_t value) const {
+  static constexpr std::uint64_t _Xor(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     return value ^ XOR;
   }
 
   template <std::uint64_t ROR, std::size_t SIZE>
-  constexpr std::uint64_t _Rotate(std::uint64_t value) const {
+  static constexpr std::uint64_t _Rotate(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     static_assert(ROR < SIZE, "Rotation must be less than the size of the field!");
     constexpr std::uint64_t mask = SIZE >= 0x40 ? 0xfffffffffffffff : (1ull << SIZE) - 1;
     return value >> (SIZE - ROR) | value << (ROR) & mask;
   }
 
-  constexpr std::uint64_t _Pcrel(std::uint64_t value) const {
-    return value - pc - RELATIVE_ADDRESS_BASE;
+  static constexpr std::uint64_t _Pcrel(std::uint64_t value, std::uint64_t programCounter) {
+    return value - programCounter - RELATIVE_ADDRESS_BASE;
   }
 
   template <std::size_t SIZE>
-  constexpr std::uint64_t _Sext(std::uint64_t value) const {
+  static constexpr std::uint64_t _Sext(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     return static_cast<std::uint64_t>(SEXT<SIZE>(value));
   }
 
   template <std::uint64_t BIAS>
-  constexpr std::uint64_t _Bias(std::uint64_t value) const {
+  static constexpr std::uint64_t _Bias(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     return value - BIAS;
   }
 
-  constexpr std::uint64_t _Invert(std::uint64_t value) const {
+  static constexpr std::uint64_t _Invert(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     return static_cast<std::uint64_t>(value == 0ull);
   }
 
-  constexpr std::uint64_t _Negate(std::uint64_t value) const {
+  static constexpr std::uint64_t _Negate(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     return static_cast<std::uint64_t>(-static_cast<std::int64_t>(value));
   }
 
   template <std::uint64_t LOG>
-  constexpr std::uint64_t _Log2(std::uint64_t value) const {
+  static constexpr std::uint64_t _Log2(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     return 1ull << value;
   }
 
   template <std::uint64_t FACTOR>
-  constexpr std::uint64_t _Multiply(std::uint64_t value) const {
+  static constexpr std::uint64_t _Multiply(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     static_assert(FACTOR != 0, "Multiplicative factor must be non-zero");
     return value / FACTOR;
   }
 
   template <std::uint64_t FACTOR>
-  constexpr std::uint64_t _Scale(std::uint64_t value) const {
+  static constexpr std::uint64_t _Scale(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     static_assert(FACTOR != 0, "Scale factor must be non-zero");
     constexpr std::uint64_t shift = sizeof(std::uint64_t) * CHAR_BIT - std::countl_zero(FACTOR) - 1;
     return value << shift;
   }
 
-  template <typename T>
-  using IsSignedCallback = bool (T::*)() const;
-  template <typename T, IsSignedCallback<T> IS_SIGNED>
-  constexpr std::uint64_t _Sign(std::uint64_t value) const {
-    static_assert(std::is_same_v<AccessorBase, T> || std::is_base_of_v<AccessorBase, T>, "Callback must be from a derived class");
-    static_assert(sizeof(AccessorBase) == sizeof(T) && alignof(AccessorBase) == alignof(T), "Callback must be for a class of the same size and alignment!");
-    if (static_cast<std::int64_t>(value) == std::numeric_limits<std::int64_t>::min())
-      return 0ull;
-    // not safe to do but whatever
-    const bool is_signed = (reinterpret_cast<const T*>(this)->*IS_SIGNED)();
-    if (value == 0ull) {
-      return static_cast<std::uint64_t>(is_signed) + 1;
-    }
-    return is_signed ? static_cast<std::uint64_t>(-static_cast<std::int64_t>(value)) : value;
-  }
-
   template <std::size_t SIZE>
-  constexpr std::uint64_t _F16(std::uint64_t value) const {
+  static constexpr std::uint64_t _F16(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     if constexpr (SIZE < 0x10)
       value <<= 0x10 - SIZE;
     value &= 0xffffull;
@@ -1525,7 +1509,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
   }
 
   template <std::size_t SIZE>
-  constexpr std::uint64_t _F32(std::uint64_t value) const {
+  static constexpr std::uint64_t _F32(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     if constexpr (SIZE < 0x20)
       value <<= 0x20 - SIZE;
     const std::uint32_t v = static_cast<std::uint32_t>(value);
@@ -1533,7 +1517,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
   }
 
   template <std::size_t SIZE>
-  constexpr std::uint64_t _F64(std::uint64_t value) const {
+  static constexpr std::uint64_t _F64(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     if ((value & 0x7ff0000000000000ull) == 0x7ff0000000000000ull && (value & 0xfffffffffffffull) != 0ull)
       value != 0x8000000000000ull;
     if constexpr (SIZE < 0x40)
@@ -1541,7 +1525,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
     return value;
   }
 
-  constexpr std::uint64_t _E6M9(std::uint64_t value) const {
+  static constexpr std::uint64_t _E6M9(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     const std::uint64_t sign = value >> 0xf & 1ull;
     const std::uint64_t exp = value >> 9 & 0x3full;
     const std::uint64_t mantissa = value & 0x1ffull;
@@ -1562,12 +1546,12 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
     }
   }
 
-  constexpr std::uint64_t _BF16(std::uint64_t value) const {
+  static constexpr std::uint64_t _BF16(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     const std::uint32_t v = static_cast<std::uint32_t>(value << 0x10);
     return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
   }
 
-  constexpr std::uint64_t _TF32(std::uint64_t value) const {
+  static constexpr std::uint64_t _TF32(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     const std::uint32_t v = static_cast<std::uint32_t>(value);
     return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
   }
@@ -1576,7 +1560,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
   constexpr std::uint64_t GetImpl(std::uint64_t source) const {
     std::uint64_t value = Encoding(source).value();
     ([&](ProcessingFunc func){
-      value = (this->*func)(value); 
+      value = func(value, pc); 
     }(FUNCS), ...);
     return value;
   }
@@ -1599,6 +1583,20 @@ template <OpClass CLASS> struct Accessor;
   }
 #define INST_FIELD(name, encoding, type, ...) FIELD(inst, name, encoding, type, __VA_ARGS__)
 #define SCHED_FIELD(name, encoding, type, ...) FIELD(sched, name, encoding, type, __VA_ARGS__)
+
+#define SIGNED_FIELD(source, name, encoding, type, ...) \\
+  type name() const { \\
+    std::uint64_t value = AccessorBase::GetImpl<encoding __VA_OPT__(,) __VA_ARGS__>(source); \\
+    if (static_cast<std::int64_t>(value) == std::numeric_limits<std::int64_t>::min()) \\
+      return static_cast<type>(0ull); \\
+    const bool is_signed = name ## _sign(); \\
+    if (value == 0ull) { \\
+      return static_cast<type>(static_cast<std::uint64_t>(is_signed) + 1); \\
+    } \\
+    return static_cast<type>(is_signed ? static_cast<std::uint64_t>(-static_cast<std::int64_t>(value)) : value); \\
+  }
+#define SIGNED_INST_FIELD(name, encoding, type, ...) SIGNED_FIELD(inst, name, encoding, type, __VA_ARGS__)
+#define SIGNED_SCHED_FIELD(name, encoding, type, ...) SIGNED_FIELD(sched, name, encoding, type, __VA_ARGS__)
 
 #define FLOAT_FIELD(source, name, encoding, type, ...) \\
   type name() const { \\
@@ -1680,12 +1678,11 @@ template <OpClass CLASS> struct Accessor;
                     encoding = opclass.encoded_fields[field.name]
                 else:
                     encoding = opclass.encoded_fields[field.register.name]
-                post_ops: str = "Accessor::_Reg"
-                if field.fields is not None and OperandField.SIGN in field.fields:
-                    post_ops = f"Accessor::_Reg, Accessor::_Sign<Accessor, {fix_name(field.name)}_sign>"
                 if isinstance(encoding, EncodingField):
                     macro: str = "INST_FIELD" if all(r.start < 64 for r in arch.funit.encodings[encoding.encoding]) else "SCHED_FIELD"
-                    header.write(f"  {macro}({fix_name(field.name)}, {fix_name(encoding.encoding)}Encoding, {fix_name(field.register.name)}{get_post_ops(encoding)}, {post_ops})\n")
+                    if field.fields is not None and OperandField.SIGN in field.fields:
+                        macro = f"SIGNED_{macro}"
+                    header.write(f"  {macro}({fix_name(field.name)}, {fix_name(encoding.encoding)}Encoding, {fix_name(field.register.name)}{get_post_ops(encoding)}, Accessor::_Reg)\n")
                 else:
                     if arch.tables[encoding.table].lookup_type == 1:
                         macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
@@ -1696,7 +1693,7 @@ template <OpClass CLASS> struct Accessor;
                                 break
                         if index == -1:
                             raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
-                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {fix_name(field.register.name)}, {encoding.table}, {index}, {post_ops})\n")
+                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {fix_name(field.register.name)}, {encoding.table}, {index}, Accessor::_Reg)\n")
                     elif arch.tables[encoding.table].lookup_type == 0:
                         macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
                         index: int = -1
@@ -1706,7 +1703,7 @@ template <OpClass CLASS> struct Accessor;
                                 break
                         if index == -1:
                             raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
-                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {fix_name(field.register.name)}, {encoding.table}<{fix_name(field.register.name)}>, {index}, {post_ops})\n")
+                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {fix_name(field.register.name)}, {encoding.table}<{fix_name(field.register.name)}>, {index}, Accessor::_Reg)\n")
                     elif arch.tables[encoding.table].lookup_type in [11, 12]:
                         macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
                         index: int = -1
@@ -1720,7 +1717,7 @@ template <OpClass CLASS> struct Accessor;
                         header.write(f"  using {fix_name(field.name)}Encoding = MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>;\n")
                         assert isinstance(encoding.arguments[1].value, ImmediateOperand), f"Offset for const banks must be an immediate!"
                         bitwidth: int = encoding.arguments[1].value.bitwidth
-                        header.write(f"  {macro}({fix_name(field.name)}, {fix_name(field.name)}Encoding, {fix_name(field.register.name)}, {encoding.table}<{bitwidth}>, {index}, {post_ops})\n")
+                        header.write(f"  {macro}({fix_name(field.name)}, {fix_name(field.name)}Encoding, {fix_name(field.register.name)}, {encoding.table}<{bitwidth}>, {index}, Accessor::_Reg)\n")
                     else:
                         raise ValueError(f"Unsupported table type: {encoding.table} ({arch.tables[encoding.table].lookup_type})")
             else:
@@ -1755,15 +1752,14 @@ template <OpClass CLASS> struct Accessor;
         def handle_immediate_operand(field: ImmediateOperand, opclass: OperationClass) -> None:
             if field.name in opclass.encoded_fields:
                 encoding: EncodingField | MultiEncodingField = opclass.encoded_fields[field.name]
-                post_ops: str = ""
-                if field.fields is not None and OperandField.SIGN in field.fields and f"{fix_name(field.name)}@sign" in opclass.encoded_fields:
-                    post_ops = f", Accessor::_Sign<Accessor, {fix_name(field.name)}_sign>"
                 typename: str = get_immediate_typename(field)
                 if isinstance(encoding, EncodingField):
                     macro: str = "INST_FIELD" if all(r.start < 64 for r in arch.funit.encodings[encoding.encoding]) else "SCHED_FIELD"
                     if typename == "double":
                         macro = f"FLOAT_{macro}"
-                    header.write(f"  {macro}({fix_name(field.name)}, {fix_name(encoding.encoding)}Encoding, {typename}{get_post_ops(encoding)}{post_ops})\n")
+                    elif field.fields is not None and OperandField.SIGN in field.fields and f"{fix_name(field.name)}@sign" in opclass.encoded_fields:
+                        macro = f"SIGNED_{macro}"
+                    header.write(f"  {macro}({fix_name(field.name)}, {fix_name(encoding.encoding)}Encoding, {typename}{get_post_ops(encoding)})\n")
                 else:
                     if arch.tables[encoding.table].lookup_type == 1:
                         macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
@@ -1774,7 +1770,7 @@ template <OpClass CLASS> struct Accessor;
                                 break
                         if index == -1:
                             raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
-                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {typename}, {encoding.table}, {index}{post_ops})\n")
+                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {typename}, {encoding.table}, {index})\n")
                     elif arch.tables[encoding.table].lookup_type == 0:
                         macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
                         index: int = -1
@@ -1784,7 +1780,7 @@ template <OpClass CLASS> struct Accessor;
                                 break
                         if index == -1:
                             raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
-                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {typename}, {encoding.table}<{typename}>, {index}{post_ops})\n")
+                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {typename}, {encoding.table}<{typename}>, {index})\n")
                     elif arch.tables[encoding.table].lookup_type in [11, 12]:
                         macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
                         index: int = -1
@@ -1798,7 +1794,7 @@ template <OpClass CLASS> struct Accessor;
                         header.write(f"  using {fix_name(field.name)}Encoding = MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>;\n")
                         assert isinstance(encoding.arguments[1].value, ImmediateOperand), f"Offset for const banks must be an immediate!"
                         bitwidth: int = encoding.arguments[1].value.bitwidth
-                        header.write(f"  {macro}({fix_name(field.name)}, {fix_name(field.name)}Encoding, {typename}, {encoding.table}<{bitwidth}>, {index}{post_ops})\n")
+                        header.write(f"  {macro}({fix_name(field.name)}, {fix_name(field.name)}Encoding, {typename}, {encoding.table}<{bitwidth}>, {index})\n")
                     else:
                         raise ValueError(f"Unsupported table type: {encoding.table} ({arch.tables[encoding.table].lookup_type})")
             else:
