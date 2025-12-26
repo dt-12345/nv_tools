@@ -48,6 +48,8 @@ template <typename... RANGES>
 struct Encoding {
     static_assert((detail::IsBitRange<RANGES>::value && ... && true), "Only for use with BitRange<OFFSET, NBITS>");
 
+    static constexpr std::size_t cTotalSize = (RANGES::cNBits + ...);
+
     constexpr Encoding(std::uint64_t _raw) noexcept : raw(_raw) {}
 
     constexpr operator std::uint64_t() const {
@@ -73,3 +75,32 @@ private:
     std::uint64_t raw;
 };
 static_assert(Encoding<BitRange<2, 5>, BitRange<8, 1>>(0x12345ull) == 0x31ull);
+
+template <typename... ENCODINGS>
+struct MultiEncoding {
+    static constexpr std::size_t cTotalSize = (ENCODINGS::cTotalSize + ...);
+
+    constexpr MultiEncoding(std::uint64_t _raw) noexcept : raw(_raw) {}
+
+    constexpr operator std::uint64_t() const {
+        return value();
+    }
+
+    constexpr std::uint64_t value() const {
+        std::uint64_t value = 0ull;
+        std::size_t offset = 0;
+        ([&]<typename ENCODING>(ENCODING v){
+            value |= v << offset;
+            offset += ENCODING::cTotalSize;
+        }(ENCODINGS(raw)), ...);
+        return value;
+    }
+
+    static constexpr std::uint64_t Read(std::uint64_t value) {
+        return MultiEncoding(value);
+    }
+
+private:
+    std::uint64_t raw;
+};
+static_assert(MultiEncoding<Encoding<BitRange<2, 5>, BitRange<8, 1>>, Encoding<BitRange<13, 1>>>(0x12345ull) == 0x71ull);

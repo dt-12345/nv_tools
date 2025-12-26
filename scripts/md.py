@@ -256,6 +256,7 @@ class OperationClass:
     encodings: list[EncodingField | MultiEncodingField] = dataclasses.field(default_factory=list)
     # for convenience
     encodable_fields: dict[str, EncodableOperand] = dataclasses.field(default_factory=dict)
+    encoded_fields: dict[str, EncodingField | MultiEncodingField] = dataclasses.field(default_factory=dict)
 
 @dataclasses.dataclass(slots=True)
 class FunctionalUnit:
@@ -607,6 +608,7 @@ class Architecture:
                             except:
                                 assert opclass is not None, f"Line {scanner.line}: Cannot have references to operands without an opclass ({group})"
                                 enc.arguments.append(Argument(opclass.encodable_fields[group[i]]))
+                                opclass.encoded_fields[group[i]] = enc
                             i += 1
                         elif group[i] == "`":
                             assert group[i + 2] == "@", f"Line {scanner.line}: Expected @ for register value"
@@ -625,11 +627,21 @@ class Architecture:
                             operand: EncodableOperand = opclass.encodable_fields[group[i]]
                             assert operand.fields is not None and field in operand.fields, f"Line {scanner.line}: {field} is not applicable for {group[i]}"
                             enc.arguments.append(Argument(operand, field))
+                            for f in field:
+                                fieldname: str = {
+                                    OperandField.NOT : "not",
+                                    OperandField.INVERT : "invert",
+                                    OperandField.NEGATE : "negate",
+                                    OperandField.ABSOLUTE : "absolute",
+                                    OperandField.SIGN : "sign",
+                                }[f]
+                                opclass.encoded_fields[f"{group[i]}@{fieldname}"] = enc
                             i += 3
                         else:
                             # reference to existing field
                             assert opclass is not None, f"Line {scanner.line}: Cannot have references to operands without an opclass ({group})"
                             enc.arguments.append(Argument(opclass.encodable_fields[group[i]]))
+                            opclass.encoded_fields[group[i]] = enc
                             i += 1
                     encoding.append(enc)
                 else:
@@ -656,6 +668,15 @@ class Architecture:
                         operand: EncodableOperand = opclass.encodable_fields[group[base]]
                         assert operand.fields is not None and field in operand.fields, f"Line {scanner.line}: {field} is not applicable for {group[base]}"
                         encoding.append(EncodingField(group[0], operand, field))
+                        for f in field:
+                            fieldname: str = {
+                                OperandField.NOT : "not",
+                                OperandField.INVERT : "invert",
+                                OperandField.NEGATE : "negate",
+                                OperandField.ABSOLUTE : "absolute",
+                                OperandField.SIGN : "sign",
+                            }[f]
+                            opclass.encoded_fields[f"{group[base]}@{fieldname}"] = encoding[-1]
                         encoding_ops = group[base + 3:-1]
                         # add operand-dependent encoding ops
                         if isinstance(encoding[-1].field, ImmediateOperand):
@@ -671,6 +692,7 @@ class Architecture:
                         except:
                             assert opclass is not None, f"Line {scanner.line}: Cannot have references to operands without an opclass ({group})"
                             encoding.append(EncodingField(group[0], opclass.encodable_fields[value]))
+                            opclass.encoded_fields[value] = encoding[-1]
                             # add operand-dependent encoding ops
                             if isinstance(encoding[-1].field, ImmediateOperand):
                                 if encoding[-1].field.signed_storage:
@@ -726,7 +748,7 @@ class Architecture:
             token = scanner.next_token()
         else:
             if operand.register.default is not None:
-                operand.default = operand.register.default
+                operand.default = operand.register.values[operand.register.default]
         encoded: bool = True
         if token == "@":
             encoded = False
@@ -917,17 +939,17 @@ class Architecture:
             case _:     # otherwise it's probably a register
                 return self._read_register_operand(scanner)
     
-    def _get_encodable_fields(self, op: Operand) -> list[EncodableOperand]:
+    def get_encodable_fields(self, op: Operand, exclude_unencoded: bool = True) -> list[EncodableOperand]:
         if isinstance(op, EncodableOperand):
-            if isinstance(op, OpcodeOperand) or op.encoded:
+            if isinstance(op, OpcodeOperand) or (exclude_unencoded and op.encoded):
                 return [op]
             return []
         elif isinstance(op, UnitOperand) or isinstance(op, GroupOperand):
-            return [inner_op for outer_op in op.fields for inner_op in self._get_encodable_fields(outer_op)]
+            return [inner_op for outer_op in op.fields for inner_op in self.get_encodable_fields(outer_op)]
         elif isinstance(op, PredicateOperand):
-            return self._get_encodable_fields(op.register)
+            return self.get_encodable_fields(op.register)
         elif isinstance(op, MemoryOperand):
-            return [inner_op for outer_op in op.values.fields for inner_op in self._get_encodable_fields(outer_op)]
+            return [inner_op for outer_op in op.values.fields for inner_op in self.get_encodable_fields(outer_op)]
         else:
             return []
 
@@ -946,7 +968,7 @@ class Architecture:
                 break
             opclass.format.append(operand)
         for field in opclass.format:
-            for op in self._get_encodable_fields(field):
+            for op in self.get_encodable_fields(field):
                 if isinstance(op, OpcodeOperand):
                     opclass.encodable_fields["Opcode"] = op
                 else:
@@ -1095,15 +1117,36 @@ class Architecture:
                 if isinstance(encoding, EncodingField):
                     if isinstance(encoding.value, Register):
                         registers.add(encoding.value.group.name)
+                        if encoding.value.group.is_composite:
+                            registers.update(encoding.value.group.contained)
                     elif isinstance(encoding.value, RegisterOperand):
                         registers.add(encoding.value.register.name)
+                        if encoding.value.register.is_composite:
+                            registers.update(encoding.value.register.contained)
                 else:
                     for arg_type in self.tables[encoding.table].arg_types:
                         if isinstance(arg_type, RegisterGroup):
                             registers.add(arg_type.name)
                             if arg_type.is_composite:
                                 registers.update(arg_type.contained)
+            for op in opclass.format:
+                for field in self.get_encodable_fields(op, True):
+                    if isinstance(field, RegisterOperand):
+                        registers.add(field.register.name)
+                        if field.register.is_composite:
+                            registers.update(field.register.contained)
         return sorted(registers, key=lambda name: (self.register_groups[name].is_composite, name))
+
+    def get_used_encodings(self) -> list[str]:
+        encodings: set[str] = set()
+        for opclass in self.funit.op_classes.values():
+            for encoding in opclass.encodings:
+                if isinstance(encoding, EncodingField):
+                    if not encoding.ignored:
+                        encodings.add(encoding.encoding)
+                else:
+                    encodings.update(encoding.encodings)
+        return sorted(encodings)
 
     # I have no idea what the exact grammar of this format is, they completely fucked the formatting (shitty obfuscation???)
     @classmethod
@@ -1171,8 +1214,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
         header.write("enum class OpClass : std::uint32_t {\n")
         for i, opclass in enumerate(arch.funit.op_classes):
             header.write(f"  {fix_name(opclass):<25} = {i:>#5x}, // {opclass}\n")
-        if not any(info.opcode == "NOP" for info in decoding_info):
-            header.write(f"  {"NOP":<25} = {len(arch.funit.op_classes):>#5x}, // NOP\n")
+        header.write(f"  {"NOP_DEFAULT":<25} = {len(arch.funit.op_classes):>#5x}, // NOP\n")
         header.write("};\n\n")
         header.write("struct DecodedInstruction {\n")
         header.write("  std::uint64_t inst;\n")
@@ -1182,6 +1224,16 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
         header.write("};\n\n")
         header.write("std::optional<const DecodedInstruction> Decode(std::uint64_t inst, std::uint64_t sched);\n\n")
         header.write(f"#define MAX_CONST_BANK {arch.parameters["MAX_CONST_BANK"]}\n\n")
+        header.write(f"#define RELATIVE_ADDRESS_BASE {arch.rel_addr_base}ull\n\n")
+        for encoding in arch.get_used_encodings():
+            enc: list[BitRange] = arch.funit.encodings[encoding]
+            if all(r.start < 64 for r in enc):
+                header.write(f"using {fix_name(encoding)}Encoding = Encoding<{", ".join(f"BitRange<{r.start}, {r.nbits}>" for r in enc)}>;\n")
+            elif all(r.start >= 64 for r in enc):
+                header.write(f"using {fix_name(encoding)}Encoding = Encoding<{", ".join(f"BitRange<{r.start - 64}, {r.nbits}>" for r in enc)}>;\n")
+            else:
+                raise Exception(enc, encoding) # I'm too lazy to handle this case
+        header.write("\n")
         seen_registers: dict[tuple[RegisterComparator, ...], str] = {}
         for register in arch.get_used_registers():
             reg: RegisterGroup = arch.register_groups[register]
@@ -1190,10 +1242,17 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
                 if len(registers) == 1:
                     header.write(f"using {fix_name(register)} = {fix_name(list(registers)[0])};\n")
                 else:
-                    types: list[str] = ["std::uint64_t"] + sorted(
+                    types: list[str] = sorted(
                         set(v.group.name for v in reg.values.values()), key=lambda name: min(r.value for r in arch.register_groups[name].values.values())
                     )
-                    header.write(f"using {fix_name(register)} = std::variant<{", ".join(fix_name(r) for r in types)}>;\n")
+                    header.write(f"struct {fix_name(register)} {{\n")
+                    header.write("  std::uint32_t raw;\n")
+                    header.write(f"  constexpr {fix_name(register)}(std::uint32_t _raw) noexcept : raw(_raw) {{}}\n")
+                    header.write("  constexpr operator std::uint32_t() const { return raw; }\n")
+                    for r in types:
+                        header.write(f"  constexpr explicit {fix_name(register)}({fix_name(r)} _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {{}}\n")
+                        header.write(f"  constexpr explicit operator {fix_name(r)}() const {{ return static_cast<{fix_name(r)}>(raw); }}\n")
+                    header.write("};\n")
             else:
                 reg_key: tuple[RegisterComparator, ...] = tuple(RegisterComparator(name, value.value) for name, value in sorted(reg.values.items(), key=lambda i: (i[1].value, i[0])))
                 if reg_key in seen_registers:
@@ -1288,15 +1347,15 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
                 # this is not guaranteed but it's easier to deal with if we assume it to be true
                 encoding: str = restriction.encoding.encoding if isinstance(restriction.encoding, EncodingField) else restriction.encoding.encodings[0]
                 if all(r.start < 64 for r in arch.funit.encodings[encoding]):
-                    source.write(f"  EncodingRestriction{{ {f"Encoding<{", ".join(f"BitRange<{r.start}, {r.nbits}>" for r in arch.funit.encodings[encoding])}>::Read":<50}, {f"{unique_ranges[tuple(restriction.ranges)]}":<10}, {len(restriction.ranges):<5} }},\n")
+                    source.write(f"  EncodingRestriction{{ {f"{fix_name(encoding)}Encoding::Read":<45}, {f"{unique_ranges[tuple(restriction.ranges)]}":<10}, {len(restriction.ranges):<5} }},\n")
                 elif all(r.start >= 64 for r in arch.funit.encodings[encoding]):
-                    source.write(f"  EncodingRestriction{{ {f"Encoding<{", ".join(f"BitRange<{r.start - 64}, {r.nbits}>" for r in arch.funit.encodings[encoding])}>::Read":<50}, {f"{unique_ranges[tuple(restriction.ranges)]}":<10}, {len(restriction.ranges):<5}, 1u }},\n")
+                    source.write(f"  EncodingRestriction{{ {f"{fix_name(encoding)}Encoding::Read":<45}, {f"{unique_ranges[tuple(restriction.ranges)]}":<10}, {len(restriction.ranges):<5}, 1u }},\n")
                 else:
                     raise Exception
             source.write("};\n\n")
         source.write(f"static constexpr const std::array<DecodingInfo, {len(decoding_info) + 1}> sDecodingTable = {{\n")
         # default NOP is the highest priority instruction (there can be normal NOPs as well)
-        source.write(f"  DecodingInfo{{ {nop.mask & 0xffffffffffffffff:#018x}ull, {nop.value & 0xffffffffffffffff:#018x}ull, {nop.mask >> 64:#018x}ull, {nop.value >> 64:#018x}ull, {f"\"NOP\"":<15}, {f"OpClass::NOP":<34} }},\n")
+        source.write(f"  DecodingInfo{{ {nop.mask & 0xffffffffffffffff:#018x}ull, {nop.value & 0xffffffffffffffff:#018x}ull, {nop.mask >> 64:#018x}ull, {nop.value >> 64:#018x}ull, {f"\"NOP\"":<15}, {f"OpClass::NOP_DEFAULT":<34} }},\n")
         for entry in decoding_info:
             if len(entry.restrictions) == 0:
                 source.write(f"  DecodingInfo{{ {entry.mask.mask & 0xffffffffffffffff:#018x}ull, {entry.mask.value & 0xffffffffffffffff:#018x}ull, {entry.mask.mask >> 64:#018x}ull, {entry.mask.value >> 64:#018x}ull, {f"\"{entry.opcode}\"":<15}, {f"OpClass::{fix_name(entry.opclass.name)}":<34} }},\n")
@@ -1339,10 +1398,326 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
                         continue
                     seen_values.add(entry.value)
                     value: str = ", ".join(f"{fix_name(arg.group.name)}::{fix_name(arg.name)}" if isinstance(arg, Register) else f"{arg}ull" if isinstance(arg, int) else f"'{arg}'" for arg in entry.arguments)
-                    source.write(f"  std::pair{{ {entry.value}ull, std::tuple{{ {value} }} }},\n")
+                    source.write(f"  std::pair{{ {entry.value}ull, std::tuple<{types}>{{ {value} }} }},\n")
                 source.write("};\n")
                 source.write(f"TABLE_LOOKUP({fix_name(tbl.name)}, {types})\n")
         source.write(f"}} // namespace {arch.name}")
+    
+    with open(os.path.join(include_path, f"{arch.name}Accessor.hpp"), "w", encoding="utf-8") as header:
+        header.write("#pragma once\n\n")
+        header.write(f"#include \"{arch.name}.hpp\"\n\n")
+        header.write("#include <bit>\n")
+        header.write("#include <limits>\n\n")
+        header.write(f"namespace {arch.name} {{\n\n")
+        header.write(
+"""struct AccessorBase {
+  std::uint64_t inst;
+  std::uint64_t sched;
+  std::uint64_t pc;
+
+protected:
+  using ProcessingFunc = std::uint64_t (AccessorBase::*)(std::uint64_t) const;
+
+  std::uint64_t _Bool(std::uint64_t value) const {
+    return value & 1ull;
+  }
+
+  std::uint64_t _Reg(std::uint64_t value) const {
+    return value & 0xffffull;
+  }
+
+  template <std::uint64_t XOR>
+  std::uint64_t _Xor(std::uint64_t value) const {
+    return value ^ XOR;
+  }
+
+  template <std::uint64_t ROR, std::size_t SIZE>
+  std::uint64_t _Rotate(std::uint64_t value) const {
+    static_assert(ROR < SIZE, "Rotation must be less than the size of the field!");
+    constexpr std::uint64_t mask = SIZE >= 0x40 ? 0xfffffffffffffff : (1ull << SIZE) - 1;
+    return value >> (SIZE - ROR) | value << (ROR) & mask;
+  }
+
+  std::uint64_t _Pcrel(std::uint64_t value) const {
+    return value - pc - RELATIVE_ADDRESS_BASE;
+  }
+
+  template <std::size_t SIZE>
+  std::uint64_t _Sext(std::uint64_t value) const {
+    return static_cast<std::uint64_t>(SEXT<SIZE>(value));
+  }
+
+  template <std::uint64_t BIAS>
+  std::uint64_t _Bias(std::uint64_t value) const {
+    return value - BIAS;
+  }
+
+  std::uint64_t _Invert(std::uint64_t value) const {
+    return static_cast<std::uint64_t>(value == 0ull);
+  }
+
+  std::uint64_t _Negate(std::uint64_t value) const {
+    return static_cast<std::uint64_t>(-static_cast<std::int64_t>(value));
+  }
+
+  template <std::uint64_t LOG>
+  std::uint64_t _Log2(std::uint64_t value) const {
+    return 1ull << value;
+  }
+
+  template <std::uint64_t FACTOR>
+  std::uint64_t _Multiply(std::uint64_t value) const {
+    static_assert(FACTOR != 0, "Multiplicative factor must be non-zero");
+    return value / FACTOR;
+  }
+
+  template <std::uint64_t FACTOR>
+  std::uint64_t _Scale(std::uint64_t value) const {
+    static_assert(FACTOR != 0, "Scale factor must be non-zero");
+    constexpr std::uint64_t shift = sizeof(std::uint64_t) * CHAR_BIT - std::countl_zero(FACTOR) - 1;
+    return value << shift;
+  }
+
+  using IsSignedCallback = bool (AccessorBase::*)() const;
+  template <IsSignedCallback IS_SIGNED>
+  std::uint64_t _Sign(std::uint64_t value) const {
+    if (static_cast<std::int64_t>(value) == std::numeric_limits<std::int64_t>::min())
+      return 0ull;
+    const bool signed = (this->*IS_SIGNED)();
+    if (value == 0ull) {
+      return static_cast<std::uint64_t>(signed) + 1;
+    }
+    return signed ? static_cast<std::uint64_t>(-static_cast<std::int64_t>(value)) : value;
+  }
+
+  template <std::size_t SIZE>
+  std::uint64_t _F16(std::uint64_t value) const {
+    if constexpr (SIZE < 0x10)
+      value <<= 0x10 - SIZE;
+    value &= 0xffffull;
+    const std::uint64_t sign = value >> 0xf & 1ull;
+    const std::uint64_t exp = value >> 10 & 0x1full;
+    const std::uint64_t mantissa = value & 0x3ffull;
+    std::uint32_t v;
+    if (exponent == 0x1full) {
+      v = (mantissa == 0ull ? 0ull : (mantissa << 0xd | 0x400000ull)) | 0xffull << 0x17 | sign << 0x1f;
+    } else if (exponent == 0ull) {
+      std::uint64_t newMantissa = (mantissa << 0xd) * 2;
+      std::uint64_t newExp = 0x70;
+      while (newMantissa & 0x400000ull == 0ull) {
+        newMantissa *= 2; --newExp;
+      }
+      v = newMantissa & 0x7fffffull | newExp << 0x17 | sign << 0x1f;
+    } else {
+      v = mantissa << 0xd | exponent + 0x70ull << 0x17 | sign << 0x1f;
+    }
+    return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
+  }
+
+  template <std::size_t SIZE>
+  std::uint64_t _F32(std::uint64_t value) const {
+    if constexpr (SIZE < 0x20)
+      value <<= 0x20 - SIZE;
+    const std::uint32_t v = static_cast<std::uint32_t>(value);
+    return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
+  }
+
+  template <std::size_t SIZE>
+  std::uint64_t _F64(std::uint64_t value) const {
+    if ((value & 0x7ff0000000000000ull) == 0x7ff0000000000000ull && (value & 0xfffffffffffffull) != 0ull)
+      value != 0x8000000000000ull;
+    if constexpr (SIZE < 0x40)
+      value <<= 0x40 - SIZE;
+    return value;
+  }
+
+  std::uint64_t _E6M9(std::uint64_t value) const {
+    const std::uint64_t sign = value >> 0xf & 1ull;
+    const std::uint64_t exp = value >> 9 & 0x3full;
+    const std::uint64_t mantissa = value & 0x1ffull;
+    if (exp == 0x3full) {
+      return mantissa << 0x2b | 0x7ff0000000000000ull | sign << 0x3f;
+    } else if (exp == 0ull) {
+      if (mantissa == 0) {
+        return sign << 0x3f;
+      }
+      std::uint64_t newMantissa = (mantissa << 0x2b) * 2;
+      std::uint64_t newExp = 0x3e0ull;
+      while ((newMantissa >> 0x34 & 1ull) == 0ull) {
+        newMantissa *= 2; --newExp;
+      }
+      return newMantissa & 0xffefffffffffffffull | newExp << 0x34 | sign << 0x3f;
+    } else {
+      return mantissa << 0x2b | exp + 0x3e0ull << 0x34 | sign << 0x3f;
+    }
+  }
+
+  std::uint64_t _BF16(std::uint64_t value) const {
+    const std::uint32_t v = static_cast<std::uint32_t>(value << 0x10);
+    return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
+  }
+
+  std::uint64_t _TF32(std::uint64_t value) const {
+    const std::uint32_t v = static_cast<std::uint32_t>(value);
+    return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
+  }
+
+  template <typename Encoding, typename... Args>
+  std::uint64_t GetImpl(std::uint64_t source, Args... funcs) const {
+    std::uint64_t value = Encoding(source).value();
+    ([&](ProcessingFunc func){
+      value = (this->*func)(value); 
+    }(funcs), ...);
+    return value;
+  }
+
+};
+
+template <OpClass CLASS> struct Accessor;
+
+#define TABLE_FIELD(source, name, encoding, type, table, index, ...) \\
+  type name() const { \\
+    const std::uint64_t raw = AccessorBase::GetImpl<encoding>(source, __VA_ARGS__); \\
+    return static_cast<type>(static_cast<std::uint64_t>(std::get<index>(table(raw).value()))); \\
+  }
+#define INST_TABLE_FIELD(name, encoding, type, table, index, ...) TABLE_FIELD(inst, name, encoding, type, table, index, __VA_ARGS__)
+#define SCHED_TABLE_FIELD(name, encoding, type, table, index, ...) TABLE_FIELD(sched, name, encoding, type, table, index, __VA_ARGS__)
+
+#define FIELD(source, name, encoding, type, ...) \\
+  type name() const { \\
+    return static_cast<type>(AccessorBase::GetImpl<encoding>(source, __VA_ARGS__)); \\
+  }
+#define INST_FIELD(name, encoding, type, ...) FIELD(inst, name, encoding, type, __VA_ARGS__)
+#define SCHED_FIELD(name, encoding, type, ...) FIELD(sched, name, encoding, type, __VA_ARGS__)
+
+#define FLOAT_FIELD(source, name, encoding, type, ...) \\
+  type name() const { \\
+    if constexpr (sizeof(type) == 8) \\
+      return std::bit_cast<type, std::uint64_t>(AccessorBase::GetImpl<encoding>(source, __VA_ARGS__)); \\
+    else if constexpr (sizeof(type) == 4) \\
+      return std::bit_cast<type, std::uint32_t>(static_cast<std::uint32_t>(AccessorBase::GetImpl<encoding>(source, __VA_ARGS__))); \\
+    else if constexpr (sizeof(type) == 2) \\
+      return std::bit_cast<type, std::uint16_t>(static_cast<std::uint16_t>(AccessorBase::GetImpl<encoding>(source, __VA_ARGS__))); \\
+    else \\
+      static_assert(false, "Unsupported floating point size"); \\
+  }
+#define FLOAT_INST_FIELD(name, encoding, type, ...) FLOAT_FIELD(inst, name, encoding, type, __VA_ARGS__)
+#define FLOAT_SCHED_FIELD(name, encoding, type, ...) FLOAT_FIELD(sched, name, encoding, type, __VA_ARGS__)
+
+#define CONSTANT_FIELD(name, type, value) \\
+  type name() const { \\
+    return value; \\
+  }
+
+template <OpClass CLASS> struct Accessor;
+
+"""
+        )
+        # accessors should access fields either by encoding name or by field name
+        def find_op(ops: list[EncodingOp], op_type: ReferenceType) -> EncodingOp | None:
+            for op in ops:
+                if op.op_type == op_type:
+                    return op
+            return None
+        def get_post_ops(encoding: EncodingField) -> str:
+            fixups: list[str] = []
+            if (op := find_op(encoding.encoding_ops, ReferenceType.XOR)) is not None:
+                fixups.append(f"_Xor<{op.value}ull>")
+            if (op := find_op(encoding.encoding_ops, ReferenceType.ROTATION)) is not None:
+                fixups.append(f"_Rotate<{op.value}ull, {sum(r.nbits for r in arch.funit.encodings[encoding.encoding])}>")
+            if (op := find_op(encoding.encoding_ops, ReferenceType.SIGN_EXT)) is not None:
+                fixups.append(f"_Sext<{sum(r.nbits for r in arch.funit.encodings[encoding.encoding])}>")
+            if (op := find_op(encoding.encoding_ops, ReferenceType.INVERT)) is not None:
+                fixups.append("_Invert")
+            if (op := find_op(encoding.encoding_ops, ReferenceType.NEGATE)) is not None:
+                fixups.append("_Negate")
+            if (op := find_op(encoding.encoding_ops, ReferenceType.LOG2)) is not None:
+                fixups.append(f"_Log2<{op.value}ull>")
+            if (op := find_op(encoding.encoding_ops, ReferenceType.PCREL)) is not None:
+                fixups.append("_Pcrel")
+            if (op := find_op(encoding.encoding_ops, ReferenceType.SCALE)) is not None:
+                fixups.append(f"_Scale<{op.value}ull>")
+            if (op := find_op(encoding.encoding_ops, ReferenceType.MULTIPLY)) is not None:
+                fixups.append(f"_Multiply<{op.value}ull>")
+            if fixups:
+                return f", {", ".join(f"&Accessor::{fixup}" for fixup in fixups)}"
+            else:
+                return ""
+        def handle_register_modifier(modifier: OperandField, field: RegisterOperand, opclass: OperationClass) -> None:
+            modifier_name: str = {
+                OperandField.NOT : "not",
+                OperandField.INVERT : "invert",
+                OperandField.NEGATE : "negate",
+                OperandField.ABSOLUTE : "absolute",
+                OperandField.SIGN : "sign",
+            }[modifier]
+            name: str = f"{field.name}@{modifier_name}"
+            encoding: EncodingField | MultiEncodingField = opclass.encoded_fields[name]
+            if isinstance(encoding, EncodingField):
+                macro: str = "INST_FIELD" if all(r.start < 64 for r in arch.funit.encodings[encoding.encoding]) else "SCHED_FIELD"
+                header.write(f"  {macro}({fix_name(name).replace("@", "_")}, {fix_name(encoding.encoding)}Encoding, bool{get_post_ops(encoding)}, &Accessor::_Bool)\n")
+            else:
+                if arch.tables[encoding.table].lookup_type == 1:
+                    macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
+                    index: int = -1
+                    for i, arg in enumerate(encoding.arguments):
+                        if arg.value == field and arg.field == modifier:
+                            index = i
+                            break
+                    if index == -1:
+                        raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
+                    header.write(f"  {macro}({fix_name(name).replace("@", "_")}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, bool, {encoding.table}, {index}, &Accessor::_Bool)\n")
+        def handle_register_operand(field: RegisterOperand, opclass: OperationClass) -> None:
+            if field.name in opclass.encoded_fields or field.register.name in opclass.encoded_fields:
+                encoding: EncodingField | MultiEncodingField
+                if field.name in opclass.encoded_fields:
+                    encoding = opclass.encoded_fields[field.name]
+                else:
+                    encoding = opclass.encoded_fields[field.register.name]
+                post_ops: str = "&Accessor::_Reg"
+                if field.fields is not None and OperandField.SIGN in field.fields:
+                    post_ops = f"&Accessor::_Reg, &Accessor::_Sign<{fix_name(field.name)}_sign"
+                if isinstance(encoding, EncodingField):
+                    macro: str = "INST_FIELD" if all(r.start < 64 for r in arch.funit.encodings[encoding.encoding]) else "SCHED_FIELD"
+                    header.write(f"  {macro}({fix_name(field.name)}, {fix_name(encoding.encoding)}Encoding, {fix_name(field.register.name)}{get_post_ops(encoding)}, {post_ops})\n")
+                else:
+                    if arch.tables[encoding.table].lookup_type == 1:
+                        macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
+                        index: int = -1
+                        for i, arg in enumerate(encoding.arguments):
+                            if arg.value == field:
+                                index = i
+                                break
+                        if index == -1:
+                            raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
+                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {fix_name(field.register.name)}, {encoding.table}, {index}, {post_ops})\n")
+                    # TODO IDENTICAL and const banks
+                    elif arch.tables[encoding.table].lookup_type == 0:
+                        pass
+                    elif arch.tables[encoding.table].lookup_type == 11:
+                        pass
+                    elif arch.tables[encoding.table].lookup_type == 12:
+                        pass
+            else:
+                if field.default is not None:
+                    header.write(f"  CONSTANT_FIELD({fix_name(field.name)}, {fix_name(field.register.name)}, {fix_name(field.register.name)}::{fix_name(field.default.name)})\n")
+                # otherwise the field only exists to have modifiers
+            if field.fields is not None:
+                for modifier in field.fields:
+                    handle_register_modifier(modifier, field, opclass)
+        header.write("template <> struct Accessor<OpClass::NOP_DEFAULT> : public AccessorBase {};\n\n")
+        for name, opclass in arch.funit.op_classes.items():
+            header.write(f"template <> struct Accessor<OpClass::{fix_name(name)}> : public AccessorBase {{\n")
+            for op in opclass.format:
+                for field in arch.get_encodable_fields(op, False):
+                    if isinstance(field, OpcodeOperand):
+                        header.write(f"  CONSTANT_FIELD(Opcode, std::uint64_t, {list(opclass.opcodes.values())[0]:#b});\n")
+                    elif isinstance(field, RegisterOperand):
+                        handle_register_operand(field, opclass)
+                    else:
+                        pass
+            header.write("};\n\n")
+        header.write(f"}} // namespace {arch.name}")
 
 if __name__ == "__main__":
     import argparse

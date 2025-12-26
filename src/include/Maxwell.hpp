@@ -643,6 +643,7 @@ enum class OpClass : std::uint32_t {
   HFMA2_32I                 = 0x275, // HFMA2_32I
   HFMA2_32I_2               = 0x276, // HFMA2_32I_2
   HFMA2_CCST                = 0x277, // HFMA2_CCST
+  NOP_DEFAULT               = 0x278, // NOP
 };
 
 struct DecodedInstruction {
@@ -656,6 +657,672 @@ std::optional<const DecodedInstruction> Decode(std::uint64_t inst, std::uint64_t
 
 #define MAX_CONST_BANK 17
 
+#define RELATIVE_ADDRESS_BASE 8ull
+
+using AFix_BAREncoding = Encoding<BitRange<44, 1>>;
+using AIOEncoding = Encoding<BitRange<32, 1>>;
+using ALSizeEncoding = Encoding<BitRange<47, 2>>;
+using AOFFIEncoding = Encoding<BitRange<54, 1>>;
+using AOFFI2Encoding = Encoding<BitRange<51, 1>>;
+using AOFFIBEncoding = Encoding<BitRange<36, 1>>;
+using ASignedEncoding = Encoding<BitRange<40, 1>>;
+using ASigned2Encoding = Encoding<BitRange<54, 1>>;
+using ASigned3Encoding = Encoding<BitRange<48, 1>>;
+using ASigned5Encoding = Encoding<BitRange<48, 1>>;
+using AVGMode2Encoding = Encoding<BitRange<56, 2>>;
+using AVGMode3Encoding = Encoding<BitRange<53, 2>>;
+using AdModeEncoding = Encoding<BitRange<44, 2>>;
+using ApartEncoding = Encoding<BitRange<35, 2>>;
+using AtomEEncoding = Encoding<BitRange<48, 1>>;
+using AtomOpEncoding = Encoding<BitRange<52, 4>>;
+using AtomOp2Encoding = Encoding<BitRange<44, 4>>;
+using AtomSizeEncoding = Encoding<BitRange<49, 3>>;
+using AtomSize1Encoding = Encoding<BitRange<49, 1>>;
+using AtomsSizeEncoding = Encoding<BitRange<28, 2>>;
+using AtomsSize1Encoding = Encoding<BitRange<52, 1>>;
+using BAEncoding = Encoding<BitRange<23, 1>>;
+using BFix_BAREncoding = Encoding<BitRange<43, 1>>;
+using BFix_SHFLEncoding = Encoding<BitRange<28, 1>>;
+using BSignedEncoding = Encoding<BitRange<41, 1>>;
+using BSigned2Encoding = Encoding<BitRange<55, 1>>;
+using BSigned3Encoding = Encoding<BitRange<53, 1>>;
+using BSigned4Encoding = Encoding<BitRange<57, 1>>;
+using BSigned5Encoding = Encoding<BitRange<49, 1>>;
+using BValEncoding = Encoding<BitRange<44, 1>>;
+using BVal1Encoding = Encoding<BitRange<52, 1>>;
+using BVideoEncoding = Encoding<BitRange<50, 1>>;
+using BarNameEncoding = Encoding<BitRange<28, 4>>;
+using BarOpEncoding = Encoding<BitRange<32, 3>>;
+using BarRedOpEncoding = Encoding<BitRange<35, 2>>;
+using BarmdEncoding = Encoding<BitRange<32, 2>>;
+using BcaddrEncoding = Encoding<BitRange<20, 14>>;
+using BcbankEncoding = Encoding<BitRange<34, 5>>;
+using BconstEncoding = Encoding<BitRange<20, 19>, BitRange<56, 1>>;
+using BimmH0Encoding = Encoding<BitRange<20, 10>>;
+using BimmH1Encoding = Encoding<BitRange<30, 9>, BitRange<56, 1>>;
+using BopEncoding = Encoding<BitRange<45, 2>>;
+using Bop0Encoding = Encoding<BitRange<24, 2>>;
+using BpartEncoding = Encoding<BitRange<33, 2>>;
+using BptEncoding = Encoding<BitRange<6, 3>>;
+using BrevEncoding = Encoding<BitRange<40, 1>>;
+using ByEncoding = Encoding<BitRange<41, 2>>;
+using ByteEncoding = Encoding<BitRange<41, 2>>;
+using CAEncoding = Encoding<BitRange<5, 1>>;
+using CBankEncoding = Encoding<BitRange<36, 5>>;
+using CCC_1Encoding = Encoding<BitRange<0, 5>>;
+using CCC_2Encoding = Encoding<BitRange<8, 5>>;
+using CCPREncoding = Encoding<BitRange<40, 1>>;
+using CCTLOpEncoding = Encoding<BitRange<0, 4>>;
+using CCTLTOpEncoding = Encoding<BitRange<0, 2>>;
+using CFix_SHFLEncoding = Encoding<BitRange<29, 1>>;
+using CLEncoding = Encoding<BitRange<54, 1>>;
+using COPEncoding = Encoding<BitRange<56, 2>>;
+using COP2Encoding = Encoding<BitRange<44, 2>>;
+using COP4Encoding = Encoding<BitRange<46, 2>>;
+using COP5Encoding = Encoding<BitRange<24, 2>>;
+using CacheEncoding = Encoding<BitRange<4, 2>>;
+using Cache3Encoding = Encoding<BitRange<4, 3>>;
+using ChkModeFEncoding = Encoding<BitRange<39, 6>>;
+using Clamp4Encoding = Encoding<BitRange<49, 2>>;
+using CpartEncoding = Encoding<BitRange<31, 2>>;
+using DCEncoding = Encoding<BitRange<50, 1>>;
+using DFormatEncoding = Encoding<BitRange<38, 1>>;
+using DFormat2Encoding = Encoding<BitRange<54, 1>>;
+using DIEncoding = Encoding<BitRange<5, 1>>;
+using DestEncoding = Encoding<BitRange<0, 8>>;
+using Dest2Encoding = Encoding<BitRange<28, 8>>;
+using DstFmtEncoding = Encoding<BitRange<8, 2>>;
+using DstPredEncoding = Encoding<BitRange<45, 3>>;
+using DstPred1Encoding = Encoding<BitRange<44, 3>>;
+using EEncoding = Encoding<BitRange<52, 1>>;
+using E2Encoding = Encoding<BitRange<45, 1>>;
+using FCompEncoding = Encoding<BitRange<48, 4>>;
+using FComp2Encoding = Encoding<BitRange<35, 4>>;
+using FComp3Encoding = Encoding<BitRange<49, 4>>;
+using FMZEncoding = Encoding<BitRange<53, 2>>;
+using FMZHighEncoding = Encoding<BitRange<53, 2>>;
+using FMZLowEncoding = Encoding<BitRange<44, 2>>;
+using FMZ_HEncoding = Encoding<BitRange<55, 2>>;
+using FMZ_H2Encoding = Encoding<BitRange<57, 2>>;
+using FTZEncoding = Encoding<BitRange<44, 1>>;
+using FTZ2Encoding = Encoding<BitRange<47, 1>>;
+using FTZ3Encoding = Encoding<BitRange<55, 1>>;
+using FTZHEncoding = Encoding<BitRange<6, 1>>;
+using FimmH0Encoding = Encoding<BitRange<20, 16>>;
+using FimmH1Encoding = Encoding<BitRange<36, 16>>;
+using HILOEncoding = Encoding<BitRange<39, 1>>;
+using HILO2Encoding = Encoding<BitRange<53, 1>>;
+using HILO3Encoding = Encoding<BitRange<54, 1>>;
+using HILO4Encoding = Encoding<BitRange<35, 1>>;
+using HILO5Encoding = Encoding<BitRange<52, 1>>;
+using H_andEncoding = Encoding<BitRange<49, 1>>;
+using H_and2Encoding = Encoding<BitRange<53, 1>>;
+using IBaseEncoding = Encoding<BitRange<33, 2>>;
+using ICompEncoding = Encoding<BitRange<49, 3>>;
+using IDstFmtEncoding = Encoding<BitRange<8, 2>, BitRange<12, 1>>;
+using INCEncoding = Encoding<BitRange<6, 1>>;
+using IPAIDXEncoding = Encoding<BitRange<38, 1>>;
+using IPAImm10Encoding = Encoding<BitRange<28, 10>>;
+using IPAOpEncoding = Encoding<BitRange<54, 2>>;
+using IRRndEncoding = Encoding<BitRange<39, 2>, BitRange<42, 1>>;
+using ISrcFmtEncoding = Encoding<BitRange<10, 2>, BitRange<13, 1>>;
+using Imm06_shfEncoding = Encoding<BitRange<20, 6>>;
+using Imm10Encoding = Encoding<BitRange<20, 10>>;
+using Imm11Encoding = Encoding<BitRange<20, 11>>;
+using Imm12Encoding = Encoding<BitRange<20, 12>>;
+using Imm13Encoding = Encoding<BitRange<34, 13>>;
+using Imm16Encoding = Encoding<BitRange<20, 16>>;
+using Imm20Encoding = Encoding<BitRange<20, 20>>;
+using Imm20aEncoding = Encoding<BitRange<28, 20>>;
+using Imm22aEncoding = Encoding<BitRange<22, 22>>;
+using Imm22atomsEncoding = Encoding<BitRange<30, 22>>;
+using Imm24Encoding = Encoding<BitRange<20, 24>>;
+using Imm28Encoding = Encoding<BitRange<20, 28>>;
+using Imm30aEncoding = Encoding<BitRange<22, 30>>;
+using Imm32Encoding = Encoding<BitRange<20, 32>>;
+using Imm5IEncoding = Encoding<BitRange<39, 5>>;
+using Imm5IbEncoding = Encoding<BitRange<53, 5>>;
+using Imm6Encoding = Encoding<BitRange<0, 6>>;
+using Imm8Encoding = Encoding<BitRange<20, 8>>;
+using ImmU5Encoding = Encoding<BitRange<39, 5>>;
+using ImmU5_2Encoding = Encoding<BitRange<28, 5>>;
+using ImmU5_3Encoding = Encoding<BitRange<51, 5>>;
+using IvallEncoding = Encoding<BitRange<0, 2>>;
+using KeepRefCntEncoding = Encoding<BitRange<5, 1>>;
+using LCEncoding = Encoding<BitRange<58, 1>>;
+using LCBEncoding = Encoding<BitRange<40, 1>>;
+using LCDEncoding = Encoding<BitRange<50, 1>>;
+using LDSSizeEncoding = Encoding<BitRange<44, 1>, BitRange<48, 3>>;
+using LEEncoding = Encoding<BitRange<29, 1>>;
+using LMTEncoding = Encoding<BitRange<6, 1>>;
+using LODEncoding = Encoding<BitRange<55, 3>>;
+using LOD1Encoding = Encoding<BitRange<55, 1>>;
+using LODBEncoding = Encoding<BitRange<37, 3>>;
+using LOPEncoding = Encoding<BitRange<41, 2>>;
+using LOPImmEncoding = Encoding<BitRange<28, 8>>;
+using LOPImm2Encoding = Encoding<BitRange<48, 8>>;
+using LOP_IEncoding = Encoding<BitRange<53, 2>>;
+using LRSEncoding = Encoding<BitRange<37, 2>>;
+using LSSizeEncoding = Encoding<BitRange<53, 3>>;
+using LSSize2Encoding = Encoding<BitRange<48, 3>>;
+using LaneMask4Encoding = Encoding<BitRange<36, 2>, BitRange<51, 2>>;
+using MEncoding = Encoding<BitRange<39, 1>>;
+using MN2Encoding = Encoding<BitRange<56, 1>>;
+using MRGEncoding = Encoding<BitRange<37, 1>>;
+using MRG2Encoding = Encoding<BitRange<56, 1>>;
+using MSEncoding = Encoding<BitRange<50, 1>>;
+using MSIEncoding = Encoding<BitRange<52, 2>>;
+using MVEncoding = Encoding<BitRange<49, 1>>;
+using M_HEncoding = Encoding<BitRange<50, 1>>;
+using MaxShiftEncoding = Encoding<BitRange<37, 2>>;
+using MembarLEncoding = Encoding<BitRange<8, 2>>;
+using MufuOpEncoding = Encoding<BitRange<20, 4>>;
+using NDVEncoding = Encoding<BitRange<35, 1>>;
+using NDV2Encoding = Encoding<BitRange<38, 1>>;
+using NODEPEncoding = Encoding<BitRange<49, 1>>;
+using OECoupledEncoding = Encoding<BitRange<20, 1>>;
+using OEReuseAEncoding = Encoding<BitRange<17, 1>>;
+using OEReuseBEncoding = Encoding<BitRange<18, 1>>;
+using OEReuseCEncoding = Encoding<BitRange<19, 1>>;
+using OETexPhaseEncoding = Encoding<BitRange<17, 2>>;
+using OEUSchedInfoEncoding = Encoding<BitRange<0, 5>>;
+using OEVarLatDestEncoding = Encoding<BitRange<5, 3>>;
+using OEVarLatSrcEncoding = Encoding<BitRange<8, 3>>;
+using OEWaitOnSbEncoding = Encoding<BitRange<11, 6>>;
+using OfmtEncoding = Encoding<BitRange<49, 2>>;
+using Opcode10Encoding = Encoding<BitRange<54, 10>>;
+using Opcode11Encoding = Encoding<BitRange<53, 11>>;
+using Opcode12Encoding = Encoding<BitRange<52, 12>>;
+using Opcode13Encoding = Encoding<BitRange<51, 13>>;
+using Opcode3Encoding = Encoding<BitRange<61, 3>>;
+using Opcode5Encoding = Encoding<BitRange<59, 5>>;
+using Opcode5b1Encoding = Encoding<BitRange<55, 1>, BitRange<59, 5>>;
+using Opcode6Encoding = Encoding<BitRange<58, 6>>;
+using Opcode7Encoding = Encoding<BitRange<57, 7>>;
+using Opcode7b1Encoding = Encoding<BitRange<55, 1>, BitRange<57, 7>>;
+using Opcode7b2Encoding = Encoding<BitRange<54, 2>, BitRange<57, 7>>;
+using Opcode7b4Encoding = Encoding<BitRange<52, 4>, BitRange<57, 7>>;
+using Opcode7b5Encoding = Encoding<BitRange<51, 5>, BitRange<57, 7>>;
+using Opcode8Encoding = Encoding<BitRange<56, 8>>;
+using Opcode9Encoding = Encoding<BitRange<55, 9>>;
+using OutTypeEncoding = Encoding<BitRange<39, 2>>;
+using PEncoding = Encoding<BitRange<31, 1>>;
+using PDestEncoding = Encoding<BitRange<3, 3>>;
+using PModeEncoding = Encoding<BitRange<48, 4>>;
+using PNDestEncoding = Encoding<BitRange<0, 3>>;
+using PNWordEncoding = Encoding<BitRange<28, 8>>;
+using POPEncoding = Encoding<BitRange<44, 2>>;
+using POP2Encoding = Encoding<BitRange<36, 2>>;
+using PSLEncoding = Encoding<BitRange<36, 1>>;
+using PSL2Encoding = Encoding<BitRange<55, 1>>;
+using PSignEncoding = Encoding<BitRange<48, 2>>;
+using PSign2Encoding = Encoding<BitRange<55, 2>>;
+using PSign3Encoding = Encoding<BitRange<51, 2>>;
+using ParamAEncoding = Encoding<BitRange<28, 3>>;
+using PendCntEncoding = Encoding<BitRange<20, 6>>;
+using PixModeEncoding = Encoding<BitRange<31, 3>>;
+using PredEncoding = Encoding<BitRange<16, 3>>;
+using PredDestEncoding = Encoding<BitRange<48, 3>>;
+using PredDest2Encoding = Encoding<BitRange<30, 3>>;
+using PredDest3Encoding = Encoding<BitRange<51, 3>>;
+using PredDest4Encoding = Encoding<BitRange<41, 3>>;
+using PredDstEncoding = Encoding<BitRange<51, 3>>;
+using PredDstLopEncoding = Encoding<BitRange<48, 3>>;
+using PredNotEncoding = Encoding<BitRange<19, 1>>;
+using PredSrcEncoding = Encoding<BitRange<47, 3>>;
+using PredSrcNotEncoding = Encoding<BitRange<50, 1>>;
+using PredSrcldstEncoding = Encoding<BitRange<58, 3>>;
+using QuadMaskEncoding = Encoding<BitRange<39, 4>>;
+using QuadMask2Encoding = Encoding<BitRange<12, 4>>;
+using RROOpEncoding = Encoding<BitRange<39, 1>>;
+using RTTOpEncoding = Encoding<BitRange<0, 2>>;
+using RedOpEncoding = Encoding<BitRange<23, 3>>;
+using RedSizeEncoding = Encoding<BitRange<20, 3>>;
+using RegAEncoding = Encoding<BitRange<8, 8>>;
+using RegBEncoding = Encoding<BitRange<20, 8>>;
+using RegBALDEncoding = Encoding<BitRange<39, 8>>;
+using RegBASTEncoding = Encoding<BitRange<0, 8>>;
+using RegCEncoding = Encoding<BitRange<39, 8>>;
+using RndEncoding = Encoding<BitRange<51, 2>>;
+using Rnd3Encoding = Encoding<BitRange<50, 2>>;
+using RndLowEncoding = Encoding<BitRange<39, 2>>;
+using Rnd_1Encoding = Encoding<BitRange<39, 2>>;
+using SABCExtEncoding = Encoding<BitRange<48, 7>>;
+using SBIDEncoding = Encoding<BitRange<26, 3>>;
+using SHEncoding = Encoding<BitRange<41, 1>>;
+using SRegEncoding = Encoding<BitRange<20, 8>>;
+using STPModeEncoding = Encoding<BitRange<31, 1>>;
+using SUDimEncoding = Encoding<BitRange<33, 3>>;
+using SURGBAEncoding = Encoding<BitRange<20, 4>>;
+using SURedOpEncoding = Encoding<BitRange<24, 3>>;
+using SUSizeEncoding = Encoding<BitRange<20, 3>>;
+using SatEncoding = Encoding<BitRange<50, 1>>;
+using Sat2Encoding = Encoding<BitRange<54, 1>>;
+using SatHighEncoding = Encoding<BitRange<55, 1>>;
+using SatLowEncoding = Encoding<BitRange<51, 1>>;
+using ScaleLowEncoding = Encoding<BitRange<41, 3>>;
+using ShflmdEncoding = Encoding<BitRange<30, 2>>;
+using SignedEncoding = Encoding<BitRange<48, 1>>;
+using Size1RegBCEncoding = Encoding<BitRange<20, 8>, BitRange<49, 1>>;
+using Src1NotEncoding = Encoding<BitRange<32, 1>>;
+using Src1PredEncoding = Encoding<BitRange<29, 3>>;
+using Src2NotEncoding = Encoding<BitRange<15, 1>>;
+using Src2PredEncoding = Encoding<BitRange<12, 3>>;
+using SrcDstFmtEncoding = Encoding<BitRange<8, 4>>;
+using SrcFmtEncoding = Encoding<BitRange<10, 2>>;
+using SrcFmt2Encoding = Encoding<BitRange<10, 2>, BitRange<13, 1>>;
+using SrcNotEncoding = Encoding<BitRange<42, 1>>;
+using SrcPredEncoding = Encoding<BitRange<39, 3>>;
+using TOFF1Encoding = Encoding<BitRange<35, 1>>;
+using TOFF2Encoding = Encoding<BitRange<54, 2>>;
+using TOFF2BEncoding = Encoding<BitRange<36, 2>>;
+using TexCompEncoding = Encoding<BitRange<56, 2>>;
+using TexComp2Encoding = Encoding<BitRange<52, 2>>;
+using TexCompBEncoding = Encoding<BitRange<38, 2>>;
+using TexQueryEncoding = Encoding<BitRange<22, 6>>;
+using TidBEncoding = Encoding<BitRange<36, 13>>;
+using TidBSAMPEncoding = Encoding<BitRange<44, 5>>;
+using TidBTEXEncoding = Encoding<BitRange<36, 8>>;
+using TrigEncoding = Encoding<BitRange<13, 1>>;
+using TsIdx13Encoding = Encoding<BitRange<36, 13>>;
+using UEncoding = Encoding<BitRange<7, 1>>;
+using VComp2Encoding = Encoding<BitRange<54, 3>>;
+using VComp3Encoding = Encoding<BitRange<43, 2>, BitRange<47, 1>>;
+using VModeEncoding = Encoding<BitRange<48, 2>>;
+using VOPEncoding = Encoding<BitRange<51, 3>>;
+using VPDestEncoding = Encoding<BitRange<45, 3>>;
+using VRedEncoding = Encoding<BitRange<53, 2>>;
+using VScaleEncoding = Encoding<BitRange<51, 2>>;
+using WmskEncoding = Encoding<BitRange<31, 4>>;
+using Wmsk3Encoding = Encoding<BitRange<50, 3>>;
+using WriteCCEncoding = Encoding<BitRange<47, 1>>;
+using WriteCCIEncoding = Encoding<BitRange<52, 1>>;
+using XMADCopEncoding = Encoding<BitRange<50, 3>>;
+using XMADCop2Encoding = Encoding<BitRange<50, 2>>;
+using XModeEncoding = Encoding<BitRange<43, 2>>;
+using XmEncoding = Encoding<BitRange<43, 1>>;
+using Xm10Encoding = Encoding<BitRange<56, 1>>;
+using Xm2Encoding = Encoding<BitRange<53, 1>>;
+using Xm3Encoding = Encoding<BitRange<49, 1>>;
+using Xm4Encoding = Encoding<BitRange<46, 1>>;
+using Xm5Encoding = Encoding<BitRange<38, 1>>;
+using Xm6Encoding = Encoding<BitRange<57, 1>>;
+using Xm7Encoding = Encoding<BitRange<38, 1>>;
+using Xm8Encoding = Encoding<BitRange<54, 1>>;
+using Xm9Encoding = Encoding<BitRange<48, 1>>;
+using Xm_IEncoding = Encoding<BitRange<57, 1>>;
+using XmdSHFEncoding = Encoding<BitRange<48, 2>>;
+using aA2Encoding = Encoding<BitRange<46, 1>>;
+using aA3Encoding = Encoding<BitRange<54, 1>>;
+using aA4Encoding = Encoding<BitRange<7, 1>>;
+using aAHEncoding = Encoding<BitRange<44, 1>>;
+using aBEncoding = Encoding<BitRange<49, 1>>;
+using aB2Encoding = Encoding<BitRange<44, 1>>;
+using aBHEncoding = Encoding<BitRange<30, 1>>;
+using aBH2Encoding = Encoding<BitRange<54, 1>>;
+using aSelectEncoding = Encoding<BitRange<36, 3>, BitRange<48, 1>>;
+using asSize1RegBCEncoding = Encoding<BitRange<20, 8>, BitRange<52, 1>>;
+using asel4Encoding = Encoding<BitRange<32, 4>>;
+using atomsbcRZEncoding = Encoding<BitRange<28, 2>>;
+using atomscSPINEncoding = Encoding<BitRange<53, 1>>;
+using bSelectEncoding = Encoding<BitRange<28, 3>, BitRange<49, 1>>;
+using bSelectUEncoding = Encoding<BitRange<28, 3>>;
+using bcRZEncoding = Encoding<BitRange<50, 2>>;
+using bsel4Encoding = Encoding<BitRange<28, 4>>;
+using hadd2_32i__PgEncoding = Encoding<BitRange<16, 3>>;
+using hadd2_32i__PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hadd2_32i__RaEncoding = Encoding<BitRange<8, 8>>;
+using hadd2_32i__Ra_iswz_Ra_32i_modEncoding = Encoding<BitRange<53, 2>>;
+using hadd2_32i__Ra_negateEncoding = Encoding<BitRange<56, 1>>;
+using hadd2_32i__RdEncoding = Encoding<BitRange<0, 8>>;
+using hadd2_32i__dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hadd2_32i__ftzEncoding = Encoding<BitRange<55, 1>>;
+using hadd2_32i__immEncoding = Encoding<BitRange<36, 16>>;
+using hadd2_32i__imm2Encoding = Encoding<BitRange<20, 16>>;
+using hadd2_32i__opcodeEncoding = Encoding<BitRange<57, 7>>;
+using hadd2_32i__req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hadd2_32i__satEncoding = Encoding<BitRange<52, 1>>;
+using hadd2_32i__src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hadd2_32i__usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hadd2__v0_PgEncoding = Encoding<BitRange<16, 3>>;
+using hadd2__v0_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hadd2__v0_RaEncoding = Encoding<BitRange<8, 8>>;
+using hadd2__v0_Ra_absoluteEncoding = Encoding<BitRange<44, 1>>;
+using hadd2__v0_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hadd2__v0_Ra_negateEncoding = Encoding<BitRange<43, 1>>;
+using hadd2__v0_RdEncoding = Encoding<BitRange<0, 8>>;
+using hadd2__v0_Sb_absoluteEncoding = Encoding<BitRange<54, 1>>;
+using hadd2__v0_Sb_negateEncoding = Encoding<BitRange<56, 1>>;
+using hadd2__v0_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hadd2__v0_ftzEncoding = Encoding<BitRange<39, 1>>;
+using hadd2__v0_ofmtEncoding = Encoding<BitRange<49, 2>>;
+using hadd2__v0_opcodeEncoding = Encoding<BitRange<55, 1>, BitRange<57, 7>>;
+using hadd2__v0_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hadd2__v0_satEncoding = Encoding<BitRange<52, 1>>;
+using hadd2__v0_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hadd2__v0_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hadd2__v1_PgEncoding = Encoding<BitRange<16, 3>>;
+using hadd2__v1_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hadd2__v1_RaEncoding = Encoding<BitRange<8, 8>>;
+using hadd2__v1_Ra_absoluteEncoding = Encoding<BitRange<44, 1>>;
+using hadd2__v1_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hadd2__v1_Ra_negateEncoding = Encoding<BitRange<43, 1>>;
+using hadd2__v1_RdEncoding = Encoding<BitRange<0, 8>>;
+using hadd2__v1_SbEncoding = Encoding<BitRange<30, 9>, BitRange<56, 1>>;
+using hadd2__v1_Sb2Encoding = Encoding<BitRange<20, 10>>;
+using hadd2__v1_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hadd2__v1_ftzEncoding = Encoding<BitRange<39, 1>>;
+using hadd2__v1_ofmtEncoding = Encoding<BitRange<49, 2>>;
+using hadd2__v1_opcodeEncoding = Encoding<BitRange<55, 1>, BitRange<57, 7>>;
+using hadd2__v1_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hadd2__v1_satEncoding = Encoding<BitRange<52, 1>>;
+using hadd2__v1_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hadd2__v1_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hadd2__v2_PgEncoding = Encoding<BitRange<16, 3>>;
+using hadd2__v2_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hadd2__v2_RaEncoding = Encoding<BitRange<8, 8>>;
+using hadd2__v2_Ra_absoluteEncoding = Encoding<BitRange<44, 1>>;
+using hadd2__v2_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hadd2__v2_Ra_negateEncoding = Encoding<BitRange<43, 1>>;
+using hadd2__v2_RdEncoding = Encoding<BitRange<0, 8>>;
+using hadd2__v2_SbEncoding = Encoding<BitRange<20, 8>>;
+using hadd2__v2_Sb_absoluteEncoding = Encoding<BitRange<30, 1>>;
+using hadd2__v2_Sb_iswz_Rb_modEncoding = Encoding<BitRange<28, 2>>;
+using hadd2__v2_Sb_negateEncoding = Encoding<BitRange<31, 1>>;
+using hadd2__v2_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hadd2__v2_ftzEncoding = Encoding<BitRange<39, 1>>;
+using hadd2__v2_ofmtEncoding = Encoding<BitRange<49, 2>>;
+using hadd2__v2_opcodeEncoding = Encoding<BitRange<51, 13>>;
+using hadd2__v2_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hadd2__v2_satEncoding = Encoding<BitRange<32, 1>>;
+using hadd2__v2_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hadd2__v2_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hfma2__v0_PgEncoding = Encoding<BitRange<16, 3>>;
+using hfma2__v0_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hfma2__v0_RaEncoding = Encoding<BitRange<8, 8>>;
+using hfma2__v0_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hfma2__v0_RcEncoding = Encoding<BitRange<39, 8>>;
+using hfma2__v0_Rc_iswz_Rc_modEncoding = Encoding<BitRange<53, 2>>;
+using hfma2__v0_Rc_negateEncoding = Encoding<BitRange<51, 1>>;
+using hfma2__v0_RdEncoding = Encoding<BitRange<0, 8>>;
+using hfma2__v0_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hfma2__v0_fmzEncoding = Encoding<BitRange<57, 2>>;
+using hfma2__v0_nABEncoding = Encoding<BitRange<56, 1>>;
+using hfma2__v0_ofmtEncoding = Encoding<BitRange<49, 2>>;
+using hfma2__v0_opcodeEncoding = Encoding<BitRange<55, 1>, BitRange<59, 5>>;
+using hfma2__v0_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hfma2__v0_satEncoding = Encoding<BitRange<52, 1>>;
+using hfma2__v0_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hfma2__v0_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hfma2__v1_PgEncoding = Encoding<BitRange<16, 3>>;
+using hfma2__v1_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hfma2__v1_RaEncoding = Encoding<BitRange<8, 8>>;
+using hfma2__v1_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hfma2__v1_RcEncoding = Encoding<BitRange<39, 8>>;
+using hfma2__v1_Rc_iswz_Rc_modEncoding = Encoding<BitRange<53, 2>>;
+using hfma2__v1_Rc_negateEncoding = Encoding<BitRange<51, 1>>;
+using hfma2__v1_RdEncoding = Encoding<BitRange<0, 8>>;
+using hfma2__v1_SbEncoding = Encoding<BitRange<30, 9>, BitRange<56, 1>>;
+using hfma2__v1_Sb2Encoding = Encoding<BitRange<20, 10>>;
+using hfma2__v1_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hfma2__v1_fmzEncoding = Encoding<BitRange<57, 2>>;
+using hfma2__v1_ofmtEncoding = Encoding<BitRange<49, 2>>;
+using hfma2__v1_opcodeEncoding = Encoding<BitRange<55, 1>, BitRange<59, 5>>;
+using hfma2__v1_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hfma2__v1_satEncoding = Encoding<BitRange<52, 1>>;
+using hfma2__v1_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hfma2__v1_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hfma2__v2_PgEncoding = Encoding<BitRange<16, 3>>;
+using hfma2__v2_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hfma2__v2_RaEncoding = Encoding<BitRange<8, 8>>;
+using hfma2__v2_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hfma2__v2_RcEncoding = Encoding<BitRange<39, 8>>;
+using hfma2__v2_Rc_iswz_Rc_reg_modEncoding = Encoding<BitRange<35, 2>>;
+using hfma2__v2_Rc_negateEncoding = Encoding<BitRange<30, 1>>;
+using hfma2__v2_RdEncoding = Encoding<BitRange<0, 8>>;
+using hfma2__v2_SbEncoding = Encoding<BitRange<20, 8>>;
+using hfma2__v2_Sb_iswz_Rb_modEncoding = Encoding<BitRange<28, 2>>;
+using hfma2__v2_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hfma2__v2_fmzEncoding = Encoding<BitRange<37, 2>>;
+using hfma2__v2_nABEncoding = Encoding<BitRange<31, 1>>;
+using hfma2__v2_ofmtEncoding = Encoding<BitRange<49, 2>>;
+using hfma2__v2_opcodeEncoding = Encoding<BitRange<51, 13>>;
+using hfma2__v2_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hfma2__v2_satEncoding = Encoding<BitRange<32, 1>>;
+using hfma2__v2_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hfma2__v2_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hmul2_32i__PgEncoding = Encoding<BitRange<16, 3>>;
+using hmul2_32i__PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hmul2_32i__RaEncoding = Encoding<BitRange<8, 8>>;
+using hmul2_32i__Ra_iswz_Ra_32i_modEncoding = Encoding<BitRange<53, 2>>;
+using hmul2_32i__RdEncoding = Encoding<BitRange<0, 8>>;
+using hmul2_32i__dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hmul2_32i__fmzEncoding = Encoding<BitRange<55, 2>>;
+using hmul2_32i__immEncoding = Encoding<BitRange<36, 16>>;
+using hmul2_32i__imm2Encoding = Encoding<BitRange<20, 16>>;
+using hmul2_32i__opcodeEncoding = Encoding<BitRange<57, 7>>;
+using hmul2_32i__req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hmul2_32i__satEncoding = Encoding<BitRange<52, 1>>;
+using hmul2_32i__src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hmul2_32i__usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hmul2__v0_PgEncoding = Encoding<BitRange<16, 3>>;
+using hmul2__v0_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hmul2__v0_RaEncoding = Encoding<BitRange<8, 8>>;
+using hmul2__v0_Ra_absoluteEncoding = Encoding<BitRange<44, 1>>;
+using hmul2__v0_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hmul2__v0_RdEncoding = Encoding<BitRange<0, 8>>;
+using hmul2__v0_Sb_absoluteEncoding = Encoding<BitRange<54, 1>>;
+using hmul2__v0_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hmul2__v0_fmzEncoding = Encoding<BitRange<39, 2>>;
+using hmul2__v0_nABEncoding = Encoding<BitRange<43, 1>>;
+using hmul2__v0_ofmtEncoding = Encoding<BitRange<49, 2>>;
+using hmul2__v0_opcodeEncoding = Encoding<BitRange<55, 1>, BitRange<57, 7>>;
+using hmul2__v0_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hmul2__v0_satEncoding = Encoding<BitRange<52, 1>>;
+using hmul2__v0_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hmul2__v0_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hmul2__v1_PgEncoding = Encoding<BitRange<16, 3>>;
+using hmul2__v1_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hmul2__v1_RaEncoding = Encoding<BitRange<8, 8>>;
+using hmul2__v1_Ra_absoluteEncoding = Encoding<BitRange<44, 1>>;
+using hmul2__v1_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hmul2__v1_Ra_negateEncoding = Encoding<BitRange<43, 1>>;
+using hmul2__v1_RdEncoding = Encoding<BitRange<0, 8>>;
+using hmul2__v1_SbEncoding = Encoding<BitRange<30, 9>, BitRange<56, 1>>;
+using hmul2__v1_Sb2Encoding = Encoding<BitRange<20, 10>>;
+using hmul2__v1_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hmul2__v1_fmzEncoding = Encoding<BitRange<39, 2>>;
+using hmul2__v1_ofmtEncoding = Encoding<BitRange<49, 2>>;
+using hmul2__v1_opcodeEncoding = Encoding<BitRange<55, 1>, BitRange<57, 7>>;
+using hmul2__v1_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hmul2__v1_satEncoding = Encoding<BitRange<52, 1>>;
+using hmul2__v1_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hmul2__v1_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hmul2__v2_PgEncoding = Encoding<BitRange<16, 3>>;
+using hmul2__v2_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hmul2__v2_RaEncoding = Encoding<BitRange<8, 8>>;
+using hmul2__v2_Ra_absoluteEncoding = Encoding<BitRange<44, 1>>;
+using hmul2__v2_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hmul2__v2_RdEncoding = Encoding<BitRange<0, 8>>;
+using hmul2__v2_SbEncoding = Encoding<BitRange<20, 8>>;
+using hmul2__v2_Sb_absoluteEncoding = Encoding<BitRange<30, 1>>;
+using hmul2__v2_Sb_iswz_Rb_modEncoding = Encoding<BitRange<28, 2>>;
+using hmul2__v2_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hmul2__v2_fmzEncoding = Encoding<BitRange<39, 2>>;
+using hmul2__v2_nABEncoding = Encoding<BitRange<31, 1>>;
+using hmul2__v2_ofmtEncoding = Encoding<BitRange<49, 2>>;
+using hmul2__v2_opcodeEncoding = Encoding<BitRange<51, 13>>;
+using hmul2__v2_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hmul2__v2_satEncoding = Encoding<BitRange<32, 1>>;
+using hmul2__v2_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hmul2__v2_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hset2__v0_PgEncoding = Encoding<BitRange<16, 3>>;
+using hset2__v0_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hset2__v0_PsEncoding = Encoding<BitRange<39, 3>>;
+using hset2__v0_PsNotEncoding = Encoding<BitRange<42, 1>>;
+using hset2__v0_RaEncoding = Encoding<BitRange<8, 8>>;
+using hset2__v0_Ra_absoluteEncoding = Encoding<BitRange<44, 1>>;
+using hset2__v0_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hset2__v0_Ra_negateEncoding = Encoding<BitRange<43, 1>>;
+using hset2__v0_RdEncoding = Encoding<BitRange<0, 8>>;
+using hset2__v0_Sb_negateEncoding = Encoding<BitRange<56, 1>>;
+using hset2__v0_bopEncoding = Encoding<BitRange<45, 2>>;
+using hset2__v0_bvalEncoding = Encoding<BitRange<53, 1>>;
+using hset2__v0_cmpEncoding = Encoding<BitRange<49, 4>>;
+using hset2__v0_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hset2__v0_ftzEncoding = Encoding<BitRange<54, 1>>;
+using hset2__v0_opcodeEncoding = Encoding<BitRange<55, 1>, BitRange<57, 7>>;
+using hset2__v0_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hset2__v0_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hset2__v0_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hset2__v1_PgEncoding = Encoding<BitRange<16, 3>>;
+using hset2__v1_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hset2__v1_PsEncoding = Encoding<BitRange<39, 3>>;
+using hset2__v1_PsNotEncoding = Encoding<BitRange<42, 1>>;
+using hset2__v1_RaEncoding = Encoding<BitRange<8, 8>>;
+using hset2__v1_Ra_absoluteEncoding = Encoding<BitRange<44, 1>>;
+using hset2__v1_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hset2__v1_Ra_negateEncoding = Encoding<BitRange<43, 1>>;
+using hset2__v1_RdEncoding = Encoding<BitRange<0, 8>>;
+using hset2__v1_SbEncoding = Encoding<BitRange<30, 9>, BitRange<56, 1>>;
+using hset2__v1_Sb2Encoding = Encoding<BitRange<20, 10>>;
+using hset2__v1_bopEncoding = Encoding<BitRange<45, 2>>;
+using hset2__v1_bvalEncoding = Encoding<BitRange<53, 1>>;
+using hset2__v1_cmpEncoding = Encoding<BitRange<49, 4>>;
+using hset2__v1_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hset2__v1_ftzEncoding = Encoding<BitRange<54, 1>>;
+using hset2__v1_opcodeEncoding = Encoding<BitRange<55, 1>, BitRange<57, 7>>;
+using hset2__v1_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hset2__v1_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hset2__v1_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hset2__v2_PgEncoding = Encoding<BitRange<16, 3>>;
+using hset2__v2_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hset2__v2_PsEncoding = Encoding<BitRange<39, 3>>;
+using hset2__v2_PsNotEncoding = Encoding<BitRange<42, 1>>;
+using hset2__v2_RaEncoding = Encoding<BitRange<8, 8>>;
+using hset2__v2_Ra_absoluteEncoding = Encoding<BitRange<44, 1>>;
+using hset2__v2_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hset2__v2_Ra_negateEncoding = Encoding<BitRange<43, 1>>;
+using hset2__v2_RdEncoding = Encoding<BitRange<0, 8>>;
+using hset2__v2_SbEncoding = Encoding<BitRange<20, 8>>;
+using hset2__v2_Sb_absoluteEncoding = Encoding<BitRange<30, 1>>;
+using hset2__v2_Sb_iswz_Rb_modEncoding = Encoding<BitRange<28, 2>>;
+using hset2__v2_Sb_negateEncoding = Encoding<BitRange<31, 1>>;
+using hset2__v2_bopEncoding = Encoding<BitRange<45, 2>>;
+using hset2__v2_bvalEncoding = Encoding<BitRange<49, 1>>;
+using hset2__v2_cmpEncoding = Encoding<BitRange<35, 4>>;
+using hset2__v2_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hset2__v2_ftzEncoding = Encoding<BitRange<50, 1>>;
+using hset2__v2_opcodeEncoding = Encoding<BitRange<51, 13>>;
+using hset2__v2_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hset2__v2_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hset2__v2_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hset2_bop__v0_PgEncoding = Encoding<BitRange<16, 3>>;
+using hset2_bop__v0_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hset2_bop__v0_PsEncoding = Encoding<BitRange<39, 3>>;
+using hset2_bop__v0_PsNotEncoding = Encoding<BitRange<42, 1>>;
+using hset2_bop__v0_RaEncoding = Encoding<BitRange<8, 8>>;
+using hset2_bop__v0_Ra_absoluteEncoding = Encoding<BitRange<44, 1>>;
+using hset2_bop__v0_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hset2_bop__v0_Ra_negateEncoding = Encoding<BitRange<43, 1>>;
+using hset2_bop__v0_RdEncoding = Encoding<BitRange<0, 8>>;
+using hset2_bop__v0_Sb_negateEncoding = Encoding<BitRange<56, 1>>;
+using hset2_bop__v0_bopEncoding = Encoding<BitRange<45, 2>>;
+using hset2_bop__v0_bvalEncoding = Encoding<BitRange<53, 1>>;
+using hset2_bop__v0_cmpEncoding = Encoding<BitRange<49, 4>>;
+using hset2_bop__v0_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hset2_bop__v0_ftzEncoding = Encoding<BitRange<54, 1>>;
+using hset2_bop__v0_opcodeEncoding = Encoding<BitRange<55, 1>, BitRange<57, 7>>;
+using hset2_bop__v0_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hset2_bop__v0_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hset2_bop__v0_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hset2_bop__v1_PgEncoding = Encoding<BitRange<16, 3>>;
+using hset2_bop__v1_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hset2_bop__v1_PsEncoding = Encoding<BitRange<39, 3>>;
+using hset2_bop__v1_PsNotEncoding = Encoding<BitRange<42, 1>>;
+using hset2_bop__v1_RaEncoding = Encoding<BitRange<8, 8>>;
+using hset2_bop__v1_Ra_absoluteEncoding = Encoding<BitRange<44, 1>>;
+using hset2_bop__v1_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hset2_bop__v1_Ra_negateEncoding = Encoding<BitRange<43, 1>>;
+using hset2_bop__v1_RdEncoding = Encoding<BitRange<0, 8>>;
+using hset2_bop__v1_SbEncoding = Encoding<BitRange<30, 9>, BitRange<56, 1>>;
+using hset2_bop__v1_Sb2Encoding = Encoding<BitRange<20, 10>>;
+using hset2_bop__v1_bopEncoding = Encoding<BitRange<45, 2>>;
+using hset2_bop__v1_bvalEncoding = Encoding<BitRange<53, 1>>;
+using hset2_bop__v1_cmpEncoding = Encoding<BitRange<49, 4>>;
+using hset2_bop__v1_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hset2_bop__v1_ftzEncoding = Encoding<BitRange<54, 1>>;
+using hset2_bop__v1_opcodeEncoding = Encoding<BitRange<55, 1>, BitRange<57, 7>>;
+using hset2_bop__v1_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hset2_bop__v1_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hset2_bop__v1_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using hset2_bop__v2_PgEncoding = Encoding<BitRange<16, 3>>;
+using hset2_bop__v2_PgNotEncoding = Encoding<BitRange<19, 1>>;
+using hset2_bop__v2_PsEncoding = Encoding<BitRange<39, 3>>;
+using hset2_bop__v2_PsNotEncoding = Encoding<BitRange<42, 1>>;
+using hset2_bop__v2_RaEncoding = Encoding<BitRange<8, 8>>;
+using hset2_bop__v2_Ra_absoluteEncoding = Encoding<BitRange<44, 1>>;
+using hset2_bop__v2_Ra_iswz_Ra_modEncoding = Encoding<BitRange<47, 2>>;
+using hset2_bop__v2_Ra_negateEncoding = Encoding<BitRange<43, 1>>;
+using hset2_bop__v2_RdEncoding = Encoding<BitRange<0, 8>>;
+using hset2_bop__v2_SbEncoding = Encoding<BitRange<20, 8>>;
+using hset2_bop__v2_Sb_absoluteEncoding = Encoding<BitRange<30, 1>>;
+using hset2_bop__v2_Sb_iswz_Rb_modEncoding = Encoding<BitRange<28, 2>>;
+using hset2_bop__v2_Sb_negateEncoding = Encoding<BitRange<31, 1>>;
+using hset2_bop__v2_bopEncoding = Encoding<BitRange<45, 2>>;
+using hset2_bop__v2_bvalEncoding = Encoding<BitRange<49, 1>>;
+using hset2_bop__v2_cmpEncoding = Encoding<BitRange<35, 4>>;
+using hset2_bop__v2_dst_wr_sbEncoding = Encoding<BitRange<5, 3>>;
+using hset2_bop__v2_ftzEncoding = Encoding<BitRange<50, 1>>;
+using hset2_bop__v2_opcodeEncoding = Encoding<BitRange<51, 13>>;
+using hset2_bop__v2_req_sb_bitsetEncoding = Encoding<BitRange<11, 6>>;
+using hset2_bop__v2_src_rel_sbEncoding = Encoding<BitRange<8, 3>>;
+using hset2_bop__v2_usched_infoEncoding = Encoding<BitRange<0, 5>>;
+using nA1Encoding = Encoding<BitRange<48, 1>>;
+using nA2Encoding = Encoding<BitRange<43, 1>>;
+using nA3Encoding = Encoding<BitRange<43, 1>>;
+using nA4Encoding = Encoding<BitRange<45, 1>>;
+using nA5Encoding = Encoding<BitRange<37, 1>>;
+using nA6Encoding = Encoding<BitRange<56, 1>>;
+using nA7Encoding = Encoding<BitRange<51, 1>>;
+using nABEncoding = Encoding<BitRange<48, 1>>;
+using nAB2Encoding = Encoding<BitRange<56, 1>>;
+using nAB_HEncoding = Encoding<BitRange<56, 1>>;
+using nA_LEncoding = Encoding<BitRange<39, 1>>;
+using nA_L2Encoding = Encoding<BitRange<55, 1>>;
+using nBEncoding = Encoding<BitRange<45, 1>>;
+using nB2Encoding = Encoding<BitRange<45, 1>>;
+using nB3Encoding = Encoding<BitRange<53, 1>>;
+using nB4Encoding = Encoding<BitRange<6, 1>>;
+using nB7Encoding = Encoding<BitRange<50, 1>>;
+using nBHEncoding = Encoding<BitRange<31, 1>>;
+using nBH2Encoding = Encoding<BitRange<56, 1>>;
+using nB_LEncoding = Encoding<BitRange<40, 1>>;
+using nB_L2Encoding = Encoding<BitRange<56, 1>>;
+using nCEncoding = Encoding<BitRange<49, 1>>;
+using nC2Encoding = Encoding<BitRange<57, 1>>;
+using nC7Encoding = Encoding<BitRange<49, 1>>;
+using nC_HEncoding = Encoding<BitRange<52, 1>>;
+using nC_H2Encoding = Encoding<BitRange<51, 1>>;
+using safmtEncoding = Encoding<BitRange<48, 1>>;
+using sat_HEncoding = Encoding<BitRange<52, 1>>;
+using satmBAEncoding = Encoding<BitRange<28, 1>>;
+using satmOpEncoding = Encoding<BitRange<29, 4>>;
+using satmSize1Encoding = Encoding<BitRange<51, 3>>;
+using satmSize2Encoding = Encoding<BitRange<36, 3>>;
+using sbfmtEncoding = Encoding<BitRange<49, 1>>;
+using shfl_imm5Encoding = Encoding<BitRange<20, 5>>;
+using tex2d_4Encoding = Encoding<BitRange<53, 4>>;
+using vAmuxEncoding = Encoding<BitRange<47, 2>>;
+using vAmux_HEncoding = Encoding<BitRange<53, 2>>;
+using vAmux_H2Encoding = Encoding<BitRange<47, 2>>;
+using vBmuxEncoding = Encoding<BitRange<28, 2>>;
+using vBmux_HEncoding = Encoding<BitRange<53, 2>>;
+
+enum class A : std::uint32_t {
+  A  = 0x0     , // A
+  a  = 0x0     , // a
+};
 enum class AIO : std::uint32_t {
   I  = 0x0     , // I
   O  = 0x1     , // O
@@ -665,6 +1332,9 @@ enum class AInteger : std::uint32_t {
   _64  = 0x1     , // 64
   _96  = 0x2     , // 96
   _128 = 0x3     , // 128
+};
+enum class ALLOnly : std::uint32_t {
+  ALL  = 0x0     , // ALL
 };
 enum class ASel4 : std::uint32_t {
   _0000          = 0x0     , // 0000
@@ -796,6 +1466,9 @@ enum class BASE : std::uint32_t {
   PRIM   = 0x2     , // PRIM
   ATTR   = 0x3     , // ATTR
 };
+enum class BOnly : std::uint32_t {
+  B  = 0x0     , // B
+};
 enum class BPTMode : std::uint32_t {
   DRAIN_ILLEGAL  = 0x0     , // DRAIN_ILLEGAL
   CAL            = 0x1     , // CAL
@@ -887,6 +1560,12 @@ enum class CASInteger : std::uint32_t {
   S64  = 0x1     , // S64
   U64  = 0x1     , // U64
 };
+enum class CAST : std::uint32_t {
+  CAST  = 0x0     , // CAST
+};
+enum class CC : std::uint32_t {
+  CC  = 0x1     , // CC
+};
 enum class CCPR : std::uint32_t {
   PR  = 0x0     , // PR
   CC  = 0x1     , // CC
@@ -932,6 +1611,9 @@ enum class CInteger : std::uint32_t {
   _64           = 0x5     , // 64
   _128          = 0x6     , // 128
   INVALIDSIZE7  = 0x7     , // INVALIDSIZE7
+};
+enum class CInteger_64 : std::uint32_t {
+  _64 = 0x5     , // 64
 };
 enum class CInteger_n64_n128 : std::uint32_t {
   _8            = 0x0     , // 8
@@ -1069,6 +1751,9 @@ enum class DIR : std::uint32_t {
   RS  = 0x1     , // RS
   LS  = 0x2     , // LS
 };
+enum class DOnly : std::uint32_t {
+  D  = 0x0     , // D
+};
 enum class Dim1 : std::uint32_t {
   _1D                 = 0x0     , // 1D
   _1D_BUFFER          = 0x1     , // 1D_BUFFER
@@ -1179,6 +1864,9 @@ enum class HILO : std::uint32_t {
   LO  = 0x0     , // LO
   HI  = 0x1     , // HI
 };
+enum class HIOnly : std::uint32_t {
+  HI  = 0x0     , // HI
+};
 enum class H_AND : std::uint32_t {
   noH_AND  = 0x0     , // noH_AND
   H_AND    = 0x1     , // H_AND
@@ -1204,6 +1892,15 @@ enum class ICmpU : std::uint32_t {
   LS  = 0x3     , // LS
   HI  = 0x4     , // HI
   HS  = 0x6     , // HS
+};
+enum class IDEActionDIOnly : std::uint32_t {
+  DI  = 0x1     , // DI
+};
+enum class IDEActionENOnly : std::uint32_t {
+  EN  = 0x0     , // EN
+};
+enum class IDXOnly : std::uint32_t {
+  IDX  = 0x0     , // IDX
 };
 enum class INC : std::uint32_t {
   NOINC  = 0x0     , // NOINC
@@ -1267,6 +1964,14 @@ enum class IntegerSPC : std::uint32_t {
   U16H0  = 0x4     , // U16H0
   S16H0  = 0x5     , // S16H0
 };
+enum class Invalid64 : std::uint32_t {
+  INVALID6  = 0x6     , // INVALID6
+  INVALID7  = 0x7     , // INVALID7
+};
+enum class Invalid8 : std::uint32_t {
+  INVALID0  = 0x0     , // INVALID0
+  INVALID1  = 0x1     , // INVALID1
+};
 enum class KeepRefCount : std::uint32_t {
   noKEEPREFCOUNT  = 0x0     , // noKEEPREFCOUNT
   KEEPREFCOUNT    = 0x1     , // KEEPREFCOUNT
@@ -1326,6 +2031,9 @@ enum class LDSInteger : std::uint32_t {
   INVALIDSIZE7    = 0xe     , // INVALIDSIZE7
   U_INVALIDSIZE7  = 0xf     , // U.INVALIDSIZE7
 };
+enum class LEOnly : std::uint32_t {
+  LE  = 0x0     , // LE
+};
 enum class LLoadCacheOp : std::uint32_t {
   CA  = 0x0     , // CA
   CS  = 0x0     , // CS
@@ -1356,11 +2064,17 @@ enum class LOD2 : std::uint32_t {
   LZ     = 0x1     , // LZ
   LL     = 0x2     , // LL
 };
+enum class LODOnly : std::uint32_t {
+  LOD  = 0x0     , // LOD
+};
 enum class LOP : std::uint32_t {
   AND     = 0x0     , // AND
   OR      = 0x1     , // OR
   XOR     = 0x2     , // XOR
   PASS_B  = 0x3     , // PASS_B
+};
+enum class LUTOnly : std::uint32_t {
+  LUT  = 0x0     , // LUT
 };
 enum class LaneMask4 : std::uint32_t {
   Z     = 0x1     , // Z
@@ -2006,6 +2720,9 @@ enum class POP : std::uint32_t {
   Z   = 0x2     , // Z
   NZ  = 0x3     , // NZ
 };
+enum class POnly : std::uint32_t {
+  P  = 0x0     , // P
+};
 enum class PSL : std::uint32_t {
   noPSL  = 0x0     , // noPSL
   PSL    = 0x1     , // PSL
@@ -2027,6 +2744,9 @@ enum class Partsel : std::uint32_t {
   _32 = 0x0     , // 32
   H0  = 0x1     , // H0
   H1  = 0x2     , // H1
+};
+enum class Phys : std::uint32_t {
+  PHYS  = 0x0     , // PHYS
 };
 enum class PixMode : std::uint32_t {
   MSCOUNT          = 0x0     , // MSCOUNT
@@ -2050,6 +2770,12 @@ enum class Predicate : std::uint32_t {
   P6  = 0x6     , // P6
   P7  = 0x7     , // P7
   PT  = 0x7     , // PT
+};
+enum class RD : std::uint32_t {
+  rd  = 0x0     , // rd
+};
+enum class REQ : std::uint32_t {
+  req  = 0x0     , // req
 };
 enum class REUSE : std::uint32_t {
   noreuse  = 0x0     , // noreuse
@@ -2141,6 +2867,9 @@ enum class Round3 : std::uint32_t {
   CEIL   = 0x2     , // CEIL
   TRUNC  = 0x3     , // TRUNC
 };
+enum class S16 : std::uint32_t {
+  S16  = 0x3     , // S16
+};
 enum class SAT : std::uint32_t {
   noSAT  = 0x0     , // noSAT
   SAT    = 0x1     , // SAT
@@ -2154,6 +2883,22 @@ enum class SHFXMode : std::uint32_t {
   HI    = 0x1     , // HI
   X     = 0x2     , // X
   XHI   = 0x3     , // XHI
+};
+enum class SHF_L : std::uint32_t {
+  L  = 0x0     , // L
+};
+enum class SHF_R : std::uint32_t {
+  R  = 0x0     , // R
+};
+using SInteger16 = S16;
+enum class SInteger32 : std::uint32_t {
+  S32  = 0x5     , // S32
+};
+enum class SInteger64 : std::uint32_t {
+  S64  = 0x7     , // S64
+};
+enum class SInteger8 : std::uint32_t {
+  S8  = 0x1     , // S8
 };
 enum class SKEW : std::uint32_t {
   noSKEW  = 0x0     , // noSKEW
@@ -2684,6 +3429,9 @@ enum class TexComp : std::uint32_t {
   B  = 0x2     , // B
   A  = 0x3     , // A
 };
+enum class Trig : std::uint32_t {
+  TRIG  = 0x1     , // TRIG
+};
 enum class U : std::uint32_t {
   noU  = 0x0     , // noU
   U    = 0x1     , // U
@@ -2700,6 +3448,14 @@ enum class U32 : std::uint32_t {
 enum class U8 : std::uint32_t {
   U8  = 0x0     , // U8
 };
+using UInteger16 = U16;
+enum class UInteger32 : std::uint32_t {
+  U32  = 0x4     , // U32
+};
+enum class UInteger64 : std::uint32_t {
+  U64  = 0x6     , // U64
+};
+using UInteger8 = U8;
 enum class USCHED_INFO : std::uint32_t {
   DRAIN                  = 0x0     , // DRAIN
   OFF_DECK_DRAIN         = 0x0     , // OFF_DECK_DRAIN
@@ -2852,6 +3608,9 @@ enum class VRed2 : std::uint32_t {
   INVALIDRED2  = 0x2     , // INVALIDRED2
   INVALIDRED3  = 0x3     , // INVALIDRED3
 };
+enum class VTG : std::uint32_t {
+  VTG  = 0x0     , // VTG
+};
 enum class VTGMode : std::uint32_t {
   R                = 0x0     , // R
   A                = 0x1     , // A
@@ -2863,6 +3622,9 @@ enum class VoteOp : std::uint32_t {
   ANY            = 0x1     , // ANY
   EQ             = 0x2     , // EQ
   INVALIDVMODE3  = 0x3     , // INVALIDVMODE3
+};
+enum class WR : std::uint32_t {
+  wr  = 0x0     , // wr
 };
 enum class X : std::uint32_t {
   noX  = 0x0     , // noX
@@ -3314,11 +4076,130 @@ enum class optCC : std::uint32_t {
   noCC  = 0x0     , // noCC
   CC    = 0x1     , // CC
 };
-using Integer = std::variant<std::uint64_t, Integer8, Integer16, Integer32, Integer64>;
+struct Integer {
+  std::uint32_t raw;
+  constexpr Integer(std::uint32_t _raw) noexcept : raw(_raw) {}
+  constexpr operator std::uint32_t() const { return raw; }
+  constexpr explicit Integer(Integer8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer8() const { return static_cast<Integer8>(raw); }
+  constexpr explicit Integer(Integer16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer16() const { return static_cast<Integer16>(raw); }
+  constexpr explicit Integer(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer32() const { return static_cast<Integer32>(raw); }
+  constexpr explicit Integer(Integer64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer64() const { return static_cast<Integer64>(raw); }
+};
+struct IntegerInv8No64 {
+  std::uint32_t raw;
+  constexpr IntegerInv8No64(std::uint32_t _raw) noexcept : raw(_raw) {}
+  constexpr operator std::uint32_t() const { return raw; }
+  constexpr explicit IntegerInv8No64(Invalid8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Invalid8() const { return static_cast<Invalid8>(raw); }
+  constexpr explicit IntegerInv8No64(Integer16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer16() const { return static_cast<Integer16>(raw); }
+  constexpr explicit IntegerInv8No64(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer32() const { return static_cast<Integer32>(raw); }
+};
+struct IntegerNo16Inv64 {
+  std::uint32_t raw;
+  constexpr IntegerNo16Inv64(std::uint32_t _raw) noexcept : raw(_raw) {}
+  constexpr operator std::uint32_t() const { return raw; }
+  constexpr explicit IntegerNo16Inv64(Integer8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer8() const { return static_cast<Integer8>(raw); }
+  constexpr explicit IntegerNo16Inv64(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer32() const { return static_cast<Integer32>(raw); }
+  constexpr explicit IntegerNo16Inv64(Invalid64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Invalid64() const { return static_cast<Invalid64>(raw); }
+};
+struct IntegerNo16No64 {
+  std::uint32_t raw;
+  constexpr IntegerNo16No64(std::uint32_t _raw) noexcept : raw(_raw) {}
+  constexpr operator std::uint32_t() const { return raw; }
+  constexpr explicit IntegerNo16No64(Integer8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer8() const { return static_cast<Integer8>(raw); }
+  constexpr explicit IntegerNo16No64(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer32() const { return static_cast<Integer32>(raw); }
+};
+struct IntegerNo64 {
+  std::uint32_t raw;
+  constexpr IntegerNo64(std::uint32_t _raw) noexcept : raw(_raw) {}
+  constexpr operator std::uint32_t() const { return raw; }
+  constexpr explicit IntegerNo64(Integer8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer8() const { return static_cast<Integer8>(raw); }
+  constexpr explicit IntegerNo64(Integer16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer16() const { return static_cast<Integer16>(raw); }
+  constexpr explicit IntegerNo64(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer32() const { return static_cast<Integer32>(raw); }
+};
+struct IntegerNo8 {
+  std::uint32_t raw;
+  constexpr IntegerNo8(std::uint32_t _raw) noexcept : raw(_raw) {}
+  constexpr operator std::uint32_t() const { return raw; }
+  constexpr explicit IntegerNo8(Invalid8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Invalid8() const { return static_cast<Invalid8>(raw); }
+  constexpr explicit IntegerNo8(Integer16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer16() const { return static_cast<Integer16>(raw); }
+  constexpr explicit IntegerNo8(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer32() const { return static_cast<Integer32>(raw); }
+  constexpr explicit IntegerNo8(Integer64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator Integer64() const { return static_cast<Integer64>(raw); }
+};
 using NonZeroRegisterFAU = NonZeroRegister;
-using Register = std::variant<std::uint64_t, NonZeroRegister, ZeroRegister>;
-using RegisterFAU = std::variant<std::uint64_t, NonZeroRegister, ZeroRegister>;
-using UInteger_old = std::variant<std::uint64_t, U8, U16, U32>;
+struct Register {
+  std::uint32_t raw;
+  constexpr Register(std::uint32_t _raw) noexcept : raw(_raw) {}
+  constexpr operator std::uint32_t() const { return raw; }
+  constexpr explicit Register(NonZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator NonZeroRegister() const { return static_cast<NonZeroRegister>(raw); }
+  constexpr explicit Register(ZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator ZeroRegister() const { return static_cast<ZeroRegister>(raw); }
+};
+struct RegisterFAU {
+  std::uint32_t raw;
+  constexpr RegisterFAU(std::uint32_t _raw) noexcept : raw(_raw) {}
+  constexpr operator std::uint32_t() const { return raw; }
+  constexpr explicit RegisterFAU(NonZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator NonZeroRegister() const { return static_cast<NonZeroRegister>(raw); }
+  constexpr explicit RegisterFAU(ZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator ZeroRegister() const { return static_cast<ZeroRegister>(raw); }
+};
+struct SInteger {
+  std::uint32_t raw;
+  constexpr SInteger(std::uint32_t _raw) noexcept : raw(_raw) {}
+  constexpr operator std::uint32_t() const { return raw; }
+  constexpr explicit SInteger(SInteger8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator SInteger8() const { return static_cast<SInteger8>(raw); }
+  constexpr explicit SInteger(SInteger16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator SInteger16() const { return static_cast<SInteger16>(raw); }
+  constexpr explicit SInteger(SInteger32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator SInteger32() const { return static_cast<SInteger32>(raw); }
+  constexpr explicit SInteger(SInteger64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator SInteger64() const { return static_cast<SInteger64>(raw); }
+};
+struct UInteger {
+  std::uint32_t raw;
+  constexpr UInteger(std::uint32_t _raw) noexcept : raw(_raw) {}
+  constexpr operator std::uint32_t() const { return raw; }
+  constexpr explicit UInteger(UInteger8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator UInteger8() const { return static_cast<UInteger8>(raw); }
+  constexpr explicit UInteger(UInteger16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator UInteger16() const { return static_cast<UInteger16>(raw); }
+  constexpr explicit UInteger(UInteger32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator UInteger32() const { return static_cast<UInteger32>(raw); }
+  constexpr explicit UInteger(UInteger64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator UInteger64() const { return static_cast<UInteger64>(raw); }
+};
+struct UInteger_old {
+  std::uint32_t raw;
+  constexpr UInteger_old(std::uint32_t _raw) noexcept : raw(_raw) {}
+  constexpr operator std::uint32_t() const { return raw; }
+  constexpr explicit UInteger_old(U8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator U8() const { return static_cast<U8>(raw); }
+  constexpr explicit UInteger_old(U16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator U16() const { return static_cast<U16>(raw); }
+  constexpr explicit UInteger_old(U32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr explicit operator U32() const { return static_cast<U32>(raw); }
+};
 std::optional<std::tuple<RegisterFAU, RegisterFAU, CASInteger>> ConsecutiveReg8(std::uint64_t value);
 template<std::size_t BitSize>
 std::optional<std::tuple<std::uint64_t, std::int64_t>> ConstBankAddress0(std::uint64_t value) {
