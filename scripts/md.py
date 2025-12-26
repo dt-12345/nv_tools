@@ -1422,6 +1422,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
 
   constexpr AccessorBase(std::uint64_t _inst, std::uint64_t _sched, std::uint64_t _pc) noexcept : inst(_inst), sched(_sched), pc(_pc) {}
 
+protected:
   using ProcessingFunc = std::uint64_t (*)(std::uint64_t, std::uint64_t);
 
   static constexpr std::uint64_t _Bool(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
