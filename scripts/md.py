@@ -196,7 +196,7 @@ class PredicateOperand:
 
 @dataclasses.dataclass(slots=True)
 class OpcodeOperand:
-    pass # nothing to do here
+    name: str = "Opcode"
 
 @dataclasses.dataclass(slots=True)
 class MemoryOperand:
@@ -608,7 +608,7 @@ class Architecture:
                             except:
                                 assert opclass is not None, f"Line {scanner.line}: Cannot have references to operands without an opclass ({group})"
                                 enc.arguments.append(Argument(opclass.encodable_fields[group[i]]))
-                                opclass.encoded_fields[group[i]] = enc
+                                opclass.encoded_fields[enc.arguments[-1].value.name] = enc
                             i += 1
                         elif group[i] == "`":
                             assert group[i + 2] == "@", f"Line {scanner.line}: Expected @ for register value"
@@ -635,13 +635,13 @@ class Architecture:
                                     OperandField.ABSOLUTE : "absolute",
                                     OperandField.SIGN : "sign",
                                 }[f]
-                                opclass.encoded_fields[f"{group[i]}@{fieldname}"] = enc
+                                opclass.encoded_fields[f"{operand.name}@{fieldname}"] = enc
                             i += 3
                         else:
                             # reference to existing field
                             assert opclass is not None, f"Line {scanner.line}: Cannot have references to operands without an opclass ({group})"
                             enc.arguments.append(Argument(opclass.encodable_fields[group[i]]))
-                            opclass.encoded_fields[group[i]] = enc
+                            opclass.encoded_fields[enc.arguments[-1].value.name] = enc
                             i += 1
                     encoding.append(enc)
                 else:
@@ -676,7 +676,7 @@ class Architecture:
                                 OperandField.ABSOLUTE : "absolute",
                                 OperandField.SIGN : "sign",
                             }[f]
-                            opclass.encoded_fields[f"{group[base]}@{fieldname}"] = encoding[-1]
+                            opclass.encoded_fields[f"{operand.name}@{fieldname}"] = encoding[-1]
                         encoding_ops = group[base + 3:-1]
                         # add operand-dependent encoding ops
                         if isinstance(encoding[-1].field, ImmediateOperand):
@@ -692,7 +692,7 @@ class Architecture:
                         except:
                             assert opclass is not None, f"Line {scanner.line}: Cannot have references to operands without an opclass ({group})"
                             encoding.append(EncodingField(group[0], opclass.encodable_fields[value]))
-                            opclass.encoded_fields[value] = encoding[-1]
+                            opclass.encoded_fields[encoding[-1].value.name] = encoding[-1]
                             # add operand-dependent encoding ops
                             if isinstance(encoding[-1].field, ImmediateOperand):
                                 if encoding[-1].field.signed_storage:
@@ -941,7 +941,7 @@ class Architecture:
     
     def get_encodable_fields(self, op: Operand, exclude_unencoded: bool = True) -> list[EncodableOperand]:
         if isinstance(op, EncodableOperand):
-            if isinstance(op, OpcodeOperand) or (exclude_unencoded and op.encoded):
+            if isinstance(op, OpcodeOperand) or op.encoded or not exclude_unencoded:
                 return [op]
             return []
         elif isinstance(op, UnitOperand) or isinstance(op, GroupOperand):
@@ -1100,7 +1100,6 @@ class Architecture:
     # - constant encoding register values
     # - constant encoding values derived from tables
     # each opclass has multiple opcodes but they all have the same value usually so the last one ends up overwriting the others
-    # TODO: value restrictions for immediates + registers
     def get_opclass_decoding_info(self, opclass: OperationClass) -> list[DecodingInfo]:
         info: dict[str, DecodingMask] = {}
         for opcode, value in opclass.opcodes.items():
@@ -1256,7 +1255,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
                     header.write(f"  constexpr {fix_name(register)}(std::uint32_t _raw) noexcept : raw(_raw) {{}}\n")
                     header.write("  constexpr operator std::uint32_t() const { return raw; }\n")
                     for r in types:
-                        header.write(f"  constexpr explicit {fix_name(register)}({fix_name(r)} _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {{}}\n")
+                        header.write(f"  constexpr {fix_name(register)}({fix_name(r)} _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {{}}\n")
                         header.write(f"  constexpr explicit operator {fix_name(r)}() const {{ return static_cast<{fix_name(r)}>(raw); }}\n")
                     header.write("};\n")
             else:
@@ -1282,7 +1281,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
             elif tbl.lookup_type == 0: # IDENTICAL
                 header.write("template<typename T>\n")
                 header.write(f"std::optional<std::tuple<T, T>> {fix_name(tbl.name)}(std::uint64_t value) {{\n")
-                header.write("  static_assert(std::is_integral_v<T>(), \"T must be an integral type!\");\n")
+                header.write("  static_assert(std::is_integral_v<T> || std::is_nothrow_convertible_v<std::uint64_t, T>, \"T must be an integral type!\");\n")
                 header.write("  return std::make_optional<std::tuple<T, T>>(static_cast<T>(value), static_cast<T>(value));\n")
                 header.write("}\n")
             elif tbl.lookup_type == 11: # ConstBankAddress0
@@ -1423,7 +1422,6 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
 
   constexpr AccessorBase(std::uint64_t _inst, std::uint64_t _sched, std::uint64_t _pc) noexcept : inst(_inst), sched(_sched), pc(_pc) {}
 
-protected:
   using ProcessingFunc = std::uint64_t (AccessorBase::*)(std::uint64_t) const;
 
   constexpr std::uint64_t _Bool(std::uint64_t value) const {
@@ -1486,12 +1484,16 @@ protected:
     return value << shift;
   }
 
-  using IsSignedCallback = bool (AccessorBase::*)() const;
-  template <IsSignedCallback IS_SIGNED>
+  template <typename T>
+  using IsSignedCallback = bool (T::*)() const;
+  template <typename T, IsSignedCallback<T> IS_SIGNED>
   constexpr std::uint64_t _Sign(std::uint64_t value) const {
+    static_assert(std::is_same_v<AccessorBase, T> || std::is_base_of_v<AccessorBase, T>, "Callback must be from a derived class");
+    static_assert(sizeof(AccessorBase) == sizeof(T) && alignof(AccessorBase) == alignof(T), "Callback must be for a class of the same size and alignment!");
     if (static_cast<std::int64_t>(value) == std::numeric_limits<std::int64_t>::min())
       return 0ull;
-    const bool is_signed = (this->*IS_SIGNED)();
+    // not safe to do but whatever
+    const bool is_signed = (reinterpret_cast<const T*>(this)->*IS_SIGNED)();
     if (value == 0ull) {
       return static_cast<std::uint64_t>(is_signed) + 1;
     }
@@ -1585,7 +1587,7 @@ template <OpClass CLASS> struct Accessor;
 
 #define TABLE_FIELD(source, name, encoding, type, table, index, ...) \\
   type name() const { \\
-    const std::uint64_t raw = AccessorBase::GetImpl<encoding, __VA_ARGS__>(source); \\
+    const std::uint64_t raw = AccessorBase::GetImpl<encoding __VA_OPT__(,) __VA_ARGS__>(source); \\
     return static_cast<type>(static_cast<std::uint64_t>(std::get<index>(table(raw).value()))); \\
   }
 #define INST_TABLE_FIELD(name, encoding, type, table, index, ...) TABLE_FIELD(inst, name, encoding, type, table, index, __VA_ARGS__)
@@ -1593,21 +1595,15 @@ template <OpClass CLASS> struct Accessor;
 
 #define FIELD(source, name, encoding, type, ...) \\
   type name() const { \\
-    return static_cast<type>(AccessorBase::GetImpl<encoding, __VA_ARGS__>(source)); \\
+    return static_cast<type>(AccessorBase::GetImpl<encoding __VA_OPT__(,) __VA_ARGS__>(source)); \\
   }
 #define INST_FIELD(name, encoding, type, ...) FIELD(inst, name, encoding, type, __VA_ARGS__)
 #define SCHED_FIELD(name, encoding, type, ...) FIELD(sched, name, encoding, type, __VA_ARGS__)
 
 #define FLOAT_FIELD(source, name, encoding, type, ...) \\
   type name() const { \\
-    if constexpr (sizeof(type) == 8) \\
-      return std::bit_cast<type, std::uint64_t>(AccessorBase::GetImpl<encoding, __VA_ARGS__>(source)); \\
-    else if constexpr (sizeof(type) == 4) \\
-      return std::bit_cast<type, std::uint32_t>(static_cast<std::uint32_t>(AccessorBase::GetImpl<encoding, __VA_ARGS__>(source))); \\
-    else if constexpr (sizeof(type) == 2) \\
-      return std::bit_cast<type, std::uint16_t>(static_cast<std::uint16_t>(AccessorBase::GetImpl<encoding, __VA_ARGS__>(source))); \\
-    else \\
-      static_assert(false, "Unsupported floating point size"); \\
+    static_assert(sizeof(type) == 8, \"Floating point type must be eight bytes\"); \\
+    return std::bit_cast<type, std::uint64_t>(AccessorBase::GetImpl<encoding __VA_OPT__(,) __VA_ARGS__>(source)); \\
   }
 #define FLOAT_INST_FIELD(name, encoding, type, ...) FLOAT_FIELD(inst, name, encoding, type, __VA_ARGS__)
 #define FLOAT_SCHED_FIELD(name, encoding, type, ...) FLOAT_FIELD(sched, name, encoding, type, __VA_ARGS__)
@@ -1648,10 +1644,10 @@ template <OpClass CLASS> struct Accessor;
             if (op := find_op(encoding.encoding_ops, ReferenceType.MULTIPLY)) is not None:
                 fixups.append(f"_Multiply<{op.value}ull>")
             if fixups:
-                return f", {", ".join(f"&Accessor::{fixup}" for fixup in fixups)}"
+                return f", {", ".join(f"Accessor::{fixup}" for fixup in fixups)}"
             else:
                 return ""
-        def handle_register_modifier(modifier: OperandField, field: RegisterOperand, opclass: OperationClass) -> None:
+        def handle_register_modifier(modifier: OperandField, field: RegisterOperand | ImmediateOperand, opclass: OperationClass) -> None:
             modifier_name: str = {
                 OperandField.NOT : "not",
                 OperandField.INVERT : "invert",
@@ -1659,11 +1655,13 @@ template <OpClass CLASS> struct Accessor;
                 OperandField.ABSOLUTE : "absolute",
                 OperandField.SIGN : "sign",
             }[modifier]
-            name: str = f"{field.name}@{modifier_name}"
+            name: str = f"{fix_name(field.name)}@{modifier_name}"
+            if name not in opclass.encoded_fields:
+                return
             encoding: EncodingField | MultiEncodingField = opclass.encoded_fields[name]
             if isinstance(encoding, EncodingField):
                 macro: str = "INST_FIELD" if all(r.start < 64 for r in arch.funit.encodings[encoding.encoding]) else "SCHED_FIELD"
-                header.write(f"  {macro}({fix_name(name).replace("@", "_")}, {fix_name(encoding.encoding)}Encoding, bool{get_post_ops(encoding)}, &Accessor::_Bool)\n")
+                header.write(f"  {macro}({fix_name(name).replace("@", "_")}, {fix_name(encoding.encoding)}Encoding, bool{get_post_ops(encoding)}, Accessor::_Bool)\n")
             else:
                 if arch.tables[encoding.table].lookup_type == 1:
                     macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
@@ -1674,7 +1672,7 @@ template <OpClass CLASS> struct Accessor;
                             break
                     if index == -1:
                         raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
-                    header.write(f"  {macro}({fix_name(name).replace("@", "_")}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, bool, {encoding.table}, {index}, &Accessor::_Bool)\n")
+                    header.write(f"  {macro}({fix_name(name).replace("@", "_")}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, bool, {encoding.table}, {index}, Accessor::_Bool)\n")
         def handle_register_operand(field: RegisterOperand, opclass: OperationClass) -> None:
             if field.name in opclass.encoded_fields or field.register.name in opclass.encoded_fields:
                 encoding: EncodingField | MultiEncodingField
@@ -1682,9 +1680,9 @@ template <OpClass CLASS> struct Accessor;
                     encoding = opclass.encoded_fields[field.name]
                 else:
                     encoding = opclass.encoded_fields[field.register.name]
-                post_ops: str = "&Accessor::_Reg"
+                post_ops: str = "Accessor::_Reg"
                 if field.fields is not None and OperandField.SIGN in field.fields:
-                    post_ops = f"&Accessor::_Reg, &Accessor::_Sign<{fix_name(field.name)}_sign"
+                    post_ops = f"Accessor::_Reg, Accessor::_Sign<Accessor, {fix_name(field.name)}_sign>"
                 if isinstance(encoding, EncodingField):
                     macro: str = "INST_FIELD" if all(r.start < 64 for r in arch.funit.encodings[encoding.encoding]) else "SCHED_FIELD"
                     header.write(f"  {macro}({fix_name(field.name)}, {fix_name(encoding.encoding)}Encoding, {fix_name(field.register.name)}{get_post_ops(encoding)}, {post_ops})\n")
@@ -1699,16 +1697,113 @@ template <OpClass CLASS> struct Accessor;
                         if index == -1:
                             raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
                         header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {fix_name(field.register.name)}, {encoding.table}, {index}, {post_ops})\n")
-                    # TODO IDENTICAL and const banks
                     elif arch.tables[encoding.table].lookup_type == 0:
-                        pass
-                    elif arch.tables[encoding.table].lookup_type == 11:
-                        pass
-                    elif arch.tables[encoding.table].lookup_type == 12:
-                        pass
+                        macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
+                        index: int = -1
+                        for i, arg in enumerate(encoding.arguments):
+                            if arg.value == field:
+                                index = i
+                                break
+                        if index == -1:
+                            raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
+                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {fix_name(field.register.name)}, {encoding.table}<{fix_name(field.register.name)}>, {index}, {post_ops})\n")
+                    elif arch.tables[encoding.table].lookup_type in [11, 12]:
+                        macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
+                        index: int = -1
+                        for i, arg in enumerate(encoding.arguments):
+                            if arg.value == field:
+                                index = i
+                                break
+                        if index == -1:
+                            raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
+                        # workaround for commas in typename passed to macro
+                        header.write(f"  using {fix_name(field.name)}Encoding = MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>;\n")
+                        assert isinstance(encoding.arguments[1].value, ImmediateOperand), f"Offset for const banks must be an immediate!"
+                        bitwidth: int = encoding.arguments[1].value.bitwidth
+                        header.write(f"  {macro}({fix_name(field.name)}, {fix_name(field.name)}Encoding, {fix_name(field.register.name)}, {encoding.table}<{bitwidth}>, {index}, {post_ops})\n")
+                    else:
+                        raise ValueError(f"Unsupported table type: {encoding.table} ({arch.tables[encoding.table].lookup_type})")
             else:
                 if field.default is not None:
-                    header.write(f"  CONSTANT_FIELD({fix_name(field.name)}, {fix_name(field.register.name)}, {fix_name(field.register.name)}::{fix_name(field.default.name)})\n")
+                    header.write(f"  CONSTANT_FIELD({fix_name(field.name)}, {fix_name(field.register.name)}, {fix_name(field.default.group.name)}::{fix_name(field.default.name)})\n")
+                # otherwise the field only exists to have modifiers
+            if field.fields is not None:
+                for modifier in field.fields:
+                    handle_register_modifier(modifier, field, opclass)
+        def get_immediate_typename(field: ImmediateOperand) -> str:
+            match (field.imm_type):
+                case ImmediateType.Integer:
+                    if field.bitwidth > 32:
+                        return "std::int64_t" if field.signed else "std::uint64_t"
+                    elif field.bitwidth > 16:
+                        return "std::int32_t" if field.signed else "std::uint32_t"
+                    elif field.bitwidth > 8:
+                        return "std::int16_t" if field.signed else "std::uint16_t"
+                    else:
+                        return "std::int8_t" if field.signed else "std::uint8_t"
+                case ImmediateType.Bitset:
+                    if field.bitwidth > 32:
+                        return "std::uint64_t"
+                    elif field.bitwidth > 16:
+                        return "std::uint32_t"
+                    elif field.bitwidth > 8:
+                        return "std::uint16_t"
+                    else:
+                        return "std::uint8_t"
+                case _:
+                    return "double"
+        def handle_immediate_operand(field: ImmediateOperand, opclass: OperationClass) -> None:
+            if field.name in opclass.encoded_fields:
+                encoding: EncodingField | MultiEncodingField = opclass.encoded_fields[field.name]
+                post_ops: str = ""
+                if field.fields is not None and OperandField.SIGN in field.fields and f"{fix_name(field.name)}@sign" in opclass.encoded_fields:
+                    post_ops = f", Accessor::_Sign<Accessor, {fix_name(field.name)}_sign>"
+                typename: str = get_immediate_typename(field)
+                if isinstance(encoding, EncodingField):
+                    macro: str = "INST_FIELD" if all(r.start < 64 for r in arch.funit.encodings[encoding.encoding]) else "SCHED_FIELD"
+                    if typename == "double":
+                        macro = f"FLOAT_{macro}"
+                    header.write(f"  {macro}({fix_name(field.name)}, {fix_name(encoding.encoding)}Encoding, {typename}{get_post_ops(encoding)}{post_ops})\n")
+                else:
+                    if arch.tables[encoding.table].lookup_type == 1:
+                        macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
+                        index: int = -1
+                        for i, arg in enumerate(encoding.arguments):
+                            if arg.value == field:
+                                index = i
+                                break
+                        if index == -1:
+                            raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
+                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {typename}, {encoding.table}, {index}{post_ops})\n")
+                    elif arch.tables[encoding.table].lookup_type == 0:
+                        macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
+                        index: int = -1
+                        for i, arg in enumerate(encoding.arguments):
+                            if arg.value == field:
+                                index = i
+                                break
+                        if index == -1:
+                            raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
+                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {typename}, {encoding.table}<{typename}>, {index}{post_ops})\n")
+                    elif arch.tables[encoding.table].lookup_type in [11, 12]:
+                        macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
+                        index: int = -1
+                        for i, arg in enumerate(encoding.arguments):
+                            if arg.value == field:
+                                index = i
+                                break
+                        if index == -1:
+                            raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
+                        # workaround for commas in typename passed to macro
+                        header.write(f"  using {fix_name(field.name)}Encoding = MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>;\n")
+                        assert isinstance(encoding.arguments[1].value, ImmediateOperand), f"Offset for const banks must be an immediate!"
+                        bitwidth: int = encoding.arguments[1].value.bitwidth
+                        header.write(f"  {macro}({fix_name(field.name)}, {fix_name(field.name)}Encoding, {typename}, {encoding.table}<{bitwidth}>, {index}{post_ops})\n")
+                    else:
+                        raise ValueError(f"Unsupported table type: {encoding.table} ({arch.tables[encoding.table].lookup_type})")
+            else:
+                if field.default is not None:
+                    header.write(f"  CONSTANT_FIELD({fix_name(field.name)}, {typename}, {field.default})\n")
                 # otherwise the field only exists to have modifiers
             if field.fields is not None:
                 for modifier in field.fields:
@@ -1724,7 +1819,7 @@ template <OpClass CLASS> struct Accessor;
                     elif isinstance(field, RegisterOperand):
                         handle_register_operand(field, opclass)
                     else:
-                        pass
+                        handle_immediate_operand(field, opclass)
             header.write("};\n\n")
         header.write(f"}} // namespace {arch.name}")
 

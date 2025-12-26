@@ -4080,68 +4080,68 @@ struct Integer {
   std::uint32_t raw;
   constexpr Integer(std::uint32_t _raw) noexcept : raw(_raw) {}
   constexpr operator std::uint32_t() const { return raw; }
-  constexpr explicit Integer(Integer8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr Integer(Integer8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer8() const { return static_cast<Integer8>(raw); }
-  constexpr explicit Integer(Integer16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr Integer(Integer16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer16() const { return static_cast<Integer16>(raw); }
-  constexpr explicit Integer(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr Integer(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer32() const { return static_cast<Integer32>(raw); }
-  constexpr explicit Integer(Integer64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr Integer(Integer64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer64() const { return static_cast<Integer64>(raw); }
 };
 struct IntegerInv8No64 {
   std::uint32_t raw;
   constexpr IntegerInv8No64(std::uint32_t _raw) noexcept : raw(_raw) {}
   constexpr operator std::uint32_t() const { return raw; }
-  constexpr explicit IntegerInv8No64(Invalid8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerInv8No64(Invalid8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Invalid8() const { return static_cast<Invalid8>(raw); }
-  constexpr explicit IntegerInv8No64(Integer16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerInv8No64(Integer16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer16() const { return static_cast<Integer16>(raw); }
-  constexpr explicit IntegerInv8No64(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerInv8No64(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer32() const { return static_cast<Integer32>(raw); }
 };
 struct IntegerNo16Inv64 {
   std::uint32_t raw;
   constexpr IntegerNo16Inv64(std::uint32_t _raw) noexcept : raw(_raw) {}
   constexpr operator std::uint32_t() const { return raw; }
-  constexpr explicit IntegerNo16Inv64(Integer8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerNo16Inv64(Integer8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer8() const { return static_cast<Integer8>(raw); }
-  constexpr explicit IntegerNo16Inv64(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerNo16Inv64(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer32() const { return static_cast<Integer32>(raw); }
-  constexpr explicit IntegerNo16Inv64(Invalid64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerNo16Inv64(Invalid64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Invalid64() const { return static_cast<Invalid64>(raw); }
 };
 struct IntegerNo16No64 {
   std::uint32_t raw;
   constexpr IntegerNo16No64(std::uint32_t _raw) noexcept : raw(_raw) {}
   constexpr operator std::uint32_t() const { return raw; }
-  constexpr explicit IntegerNo16No64(Integer8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerNo16No64(Integer8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer8() const { return static_cast<Integer8>(raw); }
-  constexpr explicit IntegerNo16No64(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerNo16No64(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer32() const { return static_cast<Integer32>(raw); }
 };
 struct IntegerNo64 {
   std::uint32_t raw;
   constexpr IntegerNo64(std::uint32_t _raw) noexcept : raw(_raw) {}
   constexpr operator std::uint32_t() const { return raw; }
-  constexpr explicit IntegerNo64(Integer8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerNo64(Integer8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer8() const { return static_cast<Integer8>(raw); }
-  constexpr explicit IntegerNo64(Integer16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerNo64(Integer16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer16() const { return static_cast<Integer16>(raw); }
-  constexpr explicit IntegerNo64(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerNo64(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer32() const { return static_cast<Integer32>(raw); }
 };
 struct IntegerNo8 {
   std::uint32_t raw;
   constexpr IntegerNo8(std::uint32_t _raw) noexcept : raw(_raw) {}
   constexpr operator std::uint32_t() const { return raw; }
-  constexpr explicit IntegerNo8(Invalid8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerNo8(Invalid8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Invalid8() const { return static_cast<Invalid8>(raw); }
-  constexpr explicit IntegerNo8(Integer16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerNo8(Integer16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer16() const { return static_cast<Integer16>(raw); }
-  constexpr explicit IntegerNo8(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerNo8(Integer32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer32() const { return static_cast<Integer32>(raw); }
-  constexpr explicit IntegerNo8(Integer64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr IntegerNo8(Integer64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator Integer64() const { return static_cast<Integer64>(raw); }
 };
 using NonZeroRegisterFAU = NonZeroRegister;
@@ -4149,55 +4149,55 @@ struct Register {
   std::uint32_t raw;
   constexpr Register(std::uint32_t _raw) noexcept : raw(_raw) {}
   constexpr operator std::uint32_t() const { return raw; }
-  constexpr explicit Register(NonZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr Register(NonZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator NonZeroRegister() const { return static_cast<NonZeroRegister>(raw); }
-  constexpr explicit Register(ZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr Register(ZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator ZeroRegister() const { return static_cast<ZeroRegister>(raw); }
 };
 struct RegisterFAU {
   std::uint32_t raw;
   constexpr RegisterFAU(std::uint32_t _raw) noexcept : raw(_raw) {}
   constexpr operator std::uint32_t() const { return raw; }
-  constexpr explicit RegisterFAU(NonZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr RegisterFAU(NonZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator NonZeroRegister() const { return static_cast<NonZeroRegister>(raw); }
-  constexpr explicit RegisterFAU(ZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr RegisterFAU(ZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator ZeroRegister() const { return static_cast<ZeroRegister>(raw); }
 };
 struct SInteger {
   std::uint32_t raw;
   constexpr SInteger(std::uint32_t _raw) noexcept : raw(_raw) {}
   constexpr operator std::uint32_t() const { return raw; }
-  constexpr explicit SInteger(SInteger8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr SInteger(SInteger8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator SInteger8() const { return static_cast<SInteger8>(raw); }
-  constexpr explicit SInteger(SInteger16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr SInteger(SInteger16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator SInteger16() const { return static_cast<SInteger16>(raw); }
-  constexpr explicit SInteger(SInteger32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr SInteger(SInteger32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator SInteger32() const { return static_cast<SInteger32>(raw); }
-  constexpr explicit SInteger(SInteger64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr SInteger(SInteger64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator SInteger64() const { return static_cast<SInteger64>(raw); }
 };
 struct UInteger {
   std::uint32_t raw;
   constexpr UInteger(std::uint32_t _raw) noexcept : raw(_raw) {}
   constexpr operator std::uint32_t() const { return raw; }
-  constexpr explicit UInteger(UInteger8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr UInteger(UInteger8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator UInteger8() const { return static_cast<UInteger8>(raw); }
-  constexpr explicit UInteger(UInteger16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr UInteger(UInteger16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator UInteger16() const { return static_cast<UInteger16>(raw); }
-  constexpr explicit UInteger(UInteger32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr UInteger(UInteger32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator UInteger32() const { return static_cast<UInteger32>(raw); }
-  constexpr explicit UInteger(UInteger64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr UInteger(UInteger64 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator UInteger64() const { return static_cast<UInteger64>(raw); }
 };
 struct UInteger_old {
   std::uint32_t raw;
   constexpr UInteger_old(std::uint32_t _raw) noexcept : raw(_raw) {}
   constexpr operator std::uint32_t() const { return raw; }
-  constexpr explicit UInteger_old(U8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr UInteger_old(U8 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator U8() const { return static_cast<U8>(raw); }
-  constexpr explicit UInteger_old(U16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr UInteger_old(U16 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator U16() const { return static_cast<U16>(raw); }
-  constexpr explicit UInteger_old(U32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
+  constexpr UInteger_old(U32 _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator U32() const { return static_cast<U32>(raw); }
 };
 std::optional<std::tuple<RegisterFAU, RegisterFAU, CASInteger>> ConsecutiveReg8(std::uint64_t value);
@@ -4223,7 +4223,7 @@ std::optional<std::tuple<Predicate>> DestPred(std::uint64_t value);
 std::optional<std::tuple<IntegerSPC, IntegerSPA, IntegerSPB>> GetSPExtract(std::uint64_t value);
 template<typename T>
 std::optional<std::tuple<T, T>> IDENTICAL(std::uint64_t value) {
-  static_assert(std::is_integral_v<T>(), "T must be an integral type!");
+  static_assert(std::is_integral_v<T> || std::is_nothrow_convertible_v<std::uint64_t, T>, "T must be an integral type!");
   return std::make_optional<std::tuple<T, T>>(static_cast<T>(value), static_cast<T>(value));
 }
 std::optional<std::tuple<Integer>> IntSize(std::uint64_t value);
