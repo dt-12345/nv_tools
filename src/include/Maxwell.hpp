@@ -2067,6 +2067,9 @@ enum class LOD2 : std::uint32_t {
 enum class LODOnly : std::uint32_t {
   LOD  = 0x0     , // LOD
 };
+enum class LOOnly : std::uint32_t {
+  LO  = 0x0     , // LO
+};
 enum class LOP : std::uint32_t {
   AND     = 0x0     , // AND
   OR      = 0x1     , // OR
@@ -4154,15 +4157,7 @@ struct Register {
   constexpr Register(ZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
   constexpr explicit operator ZeroRegister() const { return static_cast<ZeroRegister>(raw); }
 };
-struct RegisterFAU {
-  std::uint32_t raw;
-  constexpr RegisterFAU(std::uint32_t _raw) noexcept : raw(_raw) {}
-  constexpr operator std::uint32_t() const { return raw; }
-  constexpr RegisterFAU(NonZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
-  constexpr explicit operator NonZeroRegister() const { return static_cast<NonZeroRegister>(raw); }
-  constexpr RegisterFAU(ZeroRegister _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {}
-  constexpr explicit operator ZeroRegister() const { return static_cast<ZeroRegister>(raw); }
-};
+using RegisterFAU = Register;
 struct SInteger {
   std::uint32_t raw;
   constexpr SInteger(std::uint32_t _raw) noexcept : raw(_raw) {}

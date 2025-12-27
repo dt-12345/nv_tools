@@ -945,11 +945,11 @@ class Architecture:
                 return [op]
             return []
         elif isinstance(op, UnitOperand) or isinstance(op, GroupOperand):
-            return [inner_op for outer_op in op.fields for inner_op in self.get_encodable_fields(outer_op)]
+            return [inner_op for outer_op in op.fields for inner_op in self.get_encodable_fields(outer_op, exclude_unencoded)]
         elif isinstance(op, PredicateOperand):
-            return self.get_encodable_fields(op.register)
+            return self.get_encodable_fields(op.register, exclude_unencoded)
         elif isinstance(op, MemoryOperand):
-            return [inner_op for outer_op in op.values.fields for inner_op in self.get_encodable_fields(outer_op)]
+            return [inner_op for outer_op in op.values.fields for inner_op in self.get_encodable_fields(outer_op, exclude_unencoded)]
         else:
             return []
 
@@ -1135,7 +1135,7 @@ class Architecture:
                             if arg_type.is_composite:
                                 registers.update(arg_type.contained)
             for op in opclass.format:
-                for field in self.get_encodable_fields(op, True):
+                for field in self.get_encodable_fields(op, False):
                     if isinstance(field, RegisterOperand):
                         registers.add(field.register.name)
                         if field.register.is_composite:
@@ -1207,6 +1207,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
     assert len(arch.funit.nop_encoding) == 1 and isinstance(arch.funit.nop_encoding[0], EncodingField) and isinstance(arch.funit.nop_encoding[0].value, int)
     nop: DecodingMask = arch.get_encoding_mask(arch.funit.encodings[arch.funit.nop_encoding[0].encoding], arch.funit.nop_encoding[0].value)
 
+    seen_registers: dict[tuple[RegisterComparator, ...], str] = {}
     with open(os.path.join(include_path, f"{arch.name}.hpp"), "w", encoding="utf-8") as header:
         header.write("#pragma once\n\n")
         header.write("#include \"utility.hpp\"\n\n")
@@ -1239,25 +1240,30 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
             else:
                 raise Exception(enc, encoding) # I'm too lazy to handle this case
         header.write("\n")
-        seen_registers: dict[tuple[RegisterComparator, ...], str] = {}
         for register in arch.get_used_registers():
             reg: RegisterGroup = arch.register_groups[register]
             if reg.is_composite:
-                registers: set[str] = set(v.group.name for v in reg.values.values())
-                if len(registers) == 1:
-                    header.write(f"using {fix_name(register)} = {fix_name(list(registers)[0])};\n")
+                reg_key: tuple[RegisterComparator, ...] = tuple(RegisterComparator(name, value.value) for name, value in sorted(reg.values.items(), key=lambda i: (i[1].value, i[0])))
+                if reg_key in seen_registers:
+                    header.write(f"using {fix_name(register)} = {fix_name(seen_registers[reg_key])};\n")
                 else:
-                    types: list[str] = sorted(
-                        set(v.group.name for v in reg.values.values()), key=lambda name: min(r.value for r in arch.register_groups[name].values.values())
-                    )
-                    header.write(f"struct {fix_name(register)} {{\n")
-                    header.write("  std::uint32_t raw;\n")
-                    header.write(f"  constexpr {fix_name(register)}(std::uint32_t _raw) noexcept : raw(_raw) {{}}\n")
-                    header.write("  constexpr operator std::uint32_t() const { return raw; }\n")
-                    for r in types:
-                        header.write(f"  constexpr {fix_name(register)}({fix_name(r)} _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {{}}\n")
-                        header.write(f"  constexpr explicit operator {fix_name(r)}() const {{ return static_cast<{fix_name(r)}>(raw); }}\n")
-                    header.write("};\n")
+                    seen_registers[reg_key] = reg.name
+                    registers: set[str] = set(v.group.name for v in reg.values.values())
+                    if len(registers) == 1:
+                        header.write(f"using {fix_name(register)} = {fix_name(list(registers)[0])};\n")
+                    else:
+                        types: list[str] = sorted(
+                            set(v.group.name for v in reg.values.values()), key=lambda name: min(r.value for r in arch.register_groups[name].values.values())
+                        )
+                        # TODO: maybe just create a single template for this instead
+                        header.write(f"struct {fix_name(register)} {{\n")
+                        header.write("  std::uint32_t raw;\n")
+                        header.write(f"  constexpr {fix_name(register)}(std::uint32_t _raw) noexcept : raw(_raw) {{}}\n")
+                        header.write("  constexpr operator std::uint32_t() const { return raw; }\n")
+                        for r in types:
+                            header.write(f"  constexpr {fix_name(register)}({fix_name(r)} _raw) noexcept : raw(static_cast<std::uint32_t>(_raw)) {{}}\n")
+                            header.write(f"  constexpr explicit operator {fix_name(r)}() const {{ return static_cast<{fix_name(r)}>(raw); }}\n")
+                        header.write("};\n")
             else:
                 reg_key: tuple[RegisterComparator, ...] = tuple(RegisterComparator(name, value.value) for name, value in sorted(reg.values.items(), key=lambda i: (i[1].value, i[0])))
                 if reg_key in seen_registers:
@@ -1502,25 +1508,24 @@ protected:
       while ((newMantissa & 0x400000ull) == 0ull) {
         newMantissa *= 2; --newExp;
       }
-      v = newMantissa & 0x7fffffull | newExp << 0x17 | sign << 0x1f;
+      v = (newMantissa & 0x7fffffull) | newExp << 0x17 | sign << 0x1f;
     } else {
-      v = mantissa << 0xd | exp + 0x70ull << 0x17 | sign << 0x1f;
+      v = mantissa << 0xd | (exp + 0x70ull) << 0x17 | sign << 0x1f;
     }
-    return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
+    return FloatToDouble(v);
   }
 
   template <std::size_t SIZE>
   static constexpr std::uint64_t _F32(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     if constexpr (SIZE < 0x20)
       value <<= 0x20 - SIZE;
-    const std::uint32_t v = static_cast<std::uint32_t>(value);
-    return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
+    return FloatToDouble(static_cast<std::uint32_t>(value));
   }
 
   template <std::size_t SIZE>
   static constexpr std::uint64_t _F64(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     if ((value & 0x7ff0000000000000ull) == 0x7ff0000000000000ull && (value & 0xfffffffffffffull) != 0ull)
-      value != 0x8000000000000ull;
+      value |= 0x8000000000000ull;
     if constexpr (SIZE < 0x40)
       value <<= 0x40 - SIZE;
     return value;
@@ -1548,13 +1553,11 @@ protected:
   }
 
   static constexpr std::uint64_t _BF16(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
-    const std::uint32_t v = static_cast<std::uint32_t>(value << 0x10);
-    return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
+    return FloatToDouble(static_cast<std::uint32_t>(value << 0x10));
   }
 
   static constexpr std::uint64_t _TF32(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
-    const std::uint32_t v = static_cast<std::uint32_t>(value);
-    return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
+    return FloatToDouble(static_cast<std::uint32_t>(value));
   }
 
   template <typename Encoding, ProcessingFunc... FUNCS>
@@ -1564,6 +1567,30 @@ protected:
       value = func(value, pc); 
     }(FUNCS), ...);
     return value;
+  }
+
+private:
+  // afaict this gives pretty much the same results as static_cast<double>(floatValue) so idk why they do this, maybe for consistency across different platforms?
+  static constexpr std::uint64_t FloatToDouble(std::uint32_t value) {
+    const std::uint32_t noSignBit = value & 0x7fffffffu;
+    if (noSignBit < 0x7f800000u) {
+      if (noSignBit < 0x800000u) {
+        const double newValue = std::bit_cast<double, std::uint64_t>(0x3810000000000000ull | static_cast<std::uint64_t>(noSignBit) << 0x1d);
+        const std::uint32_t signBit = value >> 0x1f & 1u;
+        return static_cast<std::uint64_t>(signBit) << 0x3f | std::bit_cast<std::uint64_t, double>(newValue + static_cast<double>(std::numeric_limits<float>::min()));
+      } else {
+        const std::uint32_t signBit = value >> 0x1f & 1u;
+        const std::uint32_t exp = value >> 0x17 & 0xffu;
+        const std::uint32_t mantissa = value & 0x7fffffu;
+        return static_cast<std::uint64_t>(mantissa) << 0x1d | (static_cast<std::uint64_t>(exp) + 0x380ull) << 0x34 | static_cast<std::uint64_t>(signBit) << 0x3f;
+      }
+    } else if (noSignBit > 0x7f800000u) {
+      const std::uint32_t signBit = value >> 0x1f & 1u;
+      const std::uint32_t mantissa = value & 0x3fffffu;
+      return static_cast<std::uint64_t>(mantissa) << 0x1d | 0x7ff8000000000000ull | static_cast<std::uint64_t>(signBit) << 0x3f;
+    } else {
+      return 0x70000000000000ull | static_cast<std::uint64_t>(value) << 0x20;
+    }
   }
 
 };
@@ -1724,7 +1751,13 @@ template <OpClass CLASS> struct Accessor;
             else:
                 if field.default is not None:
                     header.write(f"  CONSTANT_FIELD({fix_name(field.name)}, {fix_name(field.register.name)}, {fix_name(field.default.group.name)}::{fix_name(field.default.name)})\n")
-                # otherwise the field only exists to have modifiers
+                elif field.register.default is not None:
+                    default: Register = field.register.values[field.register.default]
+                    header.write(f"  CONSTANT_FIELD({fix_name(field.name)}, {fix_name(field.register.name)}, {fix_name(default.group.name)}::{fix_name(default.name)})\n")
+                else:
+                    # otherwise the field only exists to have modifiers (do we just fallback to the first register in this case?)
+                    default: Register = list(field.register.values.values())[0]
+                    header.write(f"  CONSTANT_FIELD({fix_name(field.name)}, {fix_name(field.register.name)}, {fix_name(default.group.name)}::{fix_name(default.name)})\n")
             if field.fields is not None:
                 for modifier in field.fields:
                     handle_register_modifier(modifier, field, opclass)
@@ -1750,17 +1783,33 @@ template <OpClass CLASS> struct Accessor;
                         return "std::uint8_t"
                 case _:
                     return "double"
+        def get_immediate_postops(field: ImmediateOperand, encoding: EncodingField) -> str:
+            match (field.imm_type):
+                case ImmediateType.Integer | ImmediateType.Bitset:
+                    return ""
+                case ImmediateType.F16:
+                    return f", _F16<{sum(r.nbits for r in arch.funit.encodings[encoding.encoding])}>"
+                case ImmediateType.F32:
+                    return f", _F32<{sum(r.nbits for r in arch.funit.encodings[encoding.encoding])}>"
+                case ImmediateType.F64:
+                    return f", _F64<{sum(r.nbits for r in arch.funit.encodings[encoding.encoding])}>"
+                case ImmediateType.E6M9:
+                    return ", _E6M9"
+                case ImmediateType.BF16:
+                    return ", _BF16"
+                case ImmediateType.TF32:
+                    return ", _TF32"
         def handle_immediate_operand(field: ImmediateOperand, opclass: OperationClass) -> None:
+            typename: str = get_immediate_typename(field)
             if field.name in opclass.encoded_fields:
                 encoding: EncodingField | MultiEncodingField = opclass.encoded_fields[field.name]
-                typename: str = get_immediate_typename(field)
                 if isinstance(encoding, EncodingField):
                     macro: str = "INST_FIELD" if all(r.start < 64 for r in arch.funit.encodings[encoding.encoding]) else "SCHED_FIELD"
                     if typename == "double":
                         macro = f"FLOAT_{macro}"
                     elif field.fields is not None and OperandField.SIGN in field.fields and f"{fix_name(field.name)}@sign" in opclass.encoded_fields:
                         macro = f"SIGNED_{macro}"
-                    header.write(f"  {macro}({fix_name(field.name)}, {fix_name(encoding.encoding)}Encoding, {typename}{get_post_ops(encoding)})\n")
+                    header.write(f"  {macro}({fix_name(field.name)}, {fix_name(encoding.encoding)}Encoding, {typename}{get_post_ops(encoding)}{get_immediate_postops(field, encoding)})\n")
                 else:
                     if arch.tables[encoding.table].lookup_type == 1:
                         macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
@@ -1801,7 +1850,9 @@ template <OpClass CLASS> struct Accessor;
             else:
                 if field.default is not None:
                     header.write(f"  CONSTANT_FIELD({fix_name(field.name)}, {typename}, {field.default})\n")
-                # otherwise the field only exists to have modifiers
+                else:
+                    # idk what to do in this case
+                    header.write(f"  CONSTANT_FIELD({fix_name(field.name)}, {typename}, 0)\n")
             if field.fields is not None:
                 for modifier in field.fields:
                     handle_register_modifier(modifier, field, opclass)
@@ -1819,6 +1870,146 @@ template <OpClass CLASS> struct Accessor;
                         handle_immediate_operand(field, opclass)
             header.write("};\n\n")
         header.write(f"}} // namespace {arch.name}")
+    
+    with open(os.path.join(include_path, f"{arch.name}Print.hpp"), "w", encoding="utf-8") as header:
+        header.write("#pragma once\n\n")
+        header.write("#include \"MaxwellAccessor.hpp\"\n\n")
+        header.write("#include <optional>\n")
+        header.write("#include <string>\n")
+        header.write("#include <string_view>\n\n")
+        header.write(f"namespace {arch.name} {{\n\n")
+        header.write("std::string Print(OpClass opclass, const char* opcode, std::uint64_t inst, std::uint64_t sched, std::uint64_t pc);\n")
+        for register in sorted(seen_registers.values()):
+            reg: RegisterGroup = arch.register_groups[register]
+            if not reg.is_composite or len(reg.contained) > 1:
+                header.write(f"std::optional<const std::string_view> ToString({fix_name(register)} value);\n")
+        header.write("\n")
+        header.write(f"}} // {arch.name}")
+    
+    with open(os.path.join(source_path, f"{arch.name}Print.cpp"), "w", encoding="utf-8") as source:
+        source.write(f"#include \"{arch.name}Print.hpp\"\n\n")
+        source.write("#include <format>\n\n")
+        source.write(f"namespace {arch.name} {{\n\n")
+        source.write("std::string PrintInstruction([[maybe_unused]] const char* opcode, [[maybe_unused]] const Accessor<OpClass::NOP_DEFAULT>& accessor) {\n")
+        source.write(f"  return \"{arch.empty_instr}\";\n")
+        source.write("}\n\n")
+        def write_format_func(opclass: OperationClass, op: Operand, indent: str = "  ") -> None:
+            # TODO: proper formatting, omit operands that don't need to be printed like nvdisasm
+            if isinstance(op, LiteralOperand):
+                if op.value == ",":
+                    source.write(f"{indent}out += \"{op.value}\";\n")
+                else:
+                    source.write(f"{indent}out += \" {op.value}\";\n")
+            elif isinstance(op, RegisterOperand):
+                if op.add_dot:
+                    source.write(f"{indent}out += \".\";\n")
+                else:
+                    source.write(f"{indent}out += \" \";\n")
+                    if op.fields is not None:
+                        for field in op.fields:
+                            if field == OperandField.NOT:
+                                source.write(f"{indent}if (accessor.{op.name}_not()) out += \"!\";\n")
+                            elif field == OperandField.INVERT:
+                                source.write(f"{indent}if (accessor.{op.name}_invert()) out += \"~\";\n")
+                            elif field == OperandField.NEGATE:
+                                source.write(f"{indent}if (accessor.{op.name}_negate()) out += \"-\";\n")
+                            elif field == OperandField.ABSOLUTE:
+                                source.write(f"{indent}if (accessor.{op.name}_absolute()) out += \"|\";\n")
+                source.write(f"{indent}out += ToString(accessor.{op.name}()).value_or(\"{fix_name(op.register.name)}::???\");\n")
+                if not op.add_dot and op.fields is not None and OperandField.ABSOLUTE in op.fields:
+                    source.write(f"{indent}if (accessor.{op.name}_absolute()) out += \"|\";\n")
+            elif isinstance(op, ImmediateOperand):
+                if op.fields is not None:
+                    
+                    for field in op.fields:
+                        if field == OperandField.NOT:
+                            source.write(f"{indent}if (accessor.{op.name}_not()) out += \"!\";\n")
+                        elif field == OperandField.INVERT:
+                            source.write(f"{indent}if (accessor.{op.name}_invert()) out += \"~\";\n")
+                        elif field == OperandField.NEGATE:
+                            source.write(f"{indent}if (accessor.{op.name}_negate()) out += \"-\";\n")
+                        elif field == OperandField.ABSOLUTE:
+                            source.write(f"{indent}if (accessor.{op.name}_absolute()) out += \"|\";\n")
+                if op.imm_type == ImmediateType.Integer:
+                    source.write(f"{indent}out += std::format(\"{{:#x}}\", accessor.{op.name}());\n")
+                elif op.imm_type == ImmediateType.Bitset:
+                    source.write(f"{indent}out += std::format(\"{{:#x}}\", accessor.{op.name}());\n")
+                else:
+                    source.write(f"{indent}out += std::format(\"{{:g}}\", accessor.{op.name}());\n")
+                if op.fields is not None and OperandField.ABSOLUTE in op.fields:
+                    source.write(f"{indent}if (accessor.{op.name}_absolute()) out += \"|\";\n")
+            elif isinstance(op, UnitOperand):
+                for field in op.fields:
+                    write_format_func(opclass, field, indent)
+            elif isinstance(op, GroupOperand):
+                for field in op.fields:
+                    write_format_func(opclass, field, indent)
+            elif isinstance(op, PredicateOperand):
+                if op.format == PredicateFormatType.ATSIGN:
+                    source.write(f"{indent}out += \"@\";\n")
+                elif op.format == PredicateFormatType.PARENTHESES:
+                    source.write(f"{indent}out += \"(\";\n")
+                elif op.format == PredicateFormatType.BRACKETS:
+                    source.write(f"{indent}out += \"[\";\n")
+                write_format_func(opclass, op.register, indent)
+                if op.format == PredicateFormatType.PARENTHESES:
+                    source.write(f"{indent}out += \")\";\n")
+                elif op.format == PredicateFormatType.BRACKETS:
+                    source.write(f"{indent}out += \"]\";\n")
+            elif isinstance(op, OpcodeOperand):
+                source.write(f"{indent}out += \" \";\n")
+                source.write(f"{indent}out += opcode;\n")
+            else:
+                source.write(f"{indent}out += \"[\";\n")
+                for i, field in enumerate(op.values.fields):
+                    write_format_func(opclass, field, indent)
+                    if i < len(op.values.fields) - 1:
+                        source.write(f"{indent}out += \"+\";\n")
+                source.write(f"{indent}out += \"]\";\n")
+        for name, opclass in arch.funit.op_classes.items():
+            source.write(f"std::string PrintInstruction(const char* opcode, const Accessor<OpClass::{fix_name(name)}>& accessor) {{\n")
+            source.write("  std::string out;\n")
+            source.write("  out.reserve(0x40);\n")
+            for op in opclass.format:
+                write_format_func(opclass, op)
+            source.write("  out += \" ;\";\n")
+            source.write("  return out;\n")
+            source.write("}\n\n")
+        source.write("std::string Print(OpClass opclass, const char* opcode, std::uint64_t inst, std::uint64_t sched, std::uint64_t pc) {\n")
+        source.write("  switch (opclass) {\n")
+        for opclass in arch.funit.op_classes:
+            source.write(f"    case OpClass::{fix_name(opclass)}:\n")
+            source.write(f"      return PrintInstruction(opcode, Accessor<OpClass::{fix_name(opclass)}>(inst, sched, pc));\n")
+        source.write("    case OpClass::NOP_DEFAULT:\n")
+        source.write("      return PrintInstruction(opcode, Accessor<OpClass::NOP_DEFAULT>(inst, sched, pc));\n")
+        source.write("    default:\n")
+        source.write("      UNREACHABLE_DEFAULT_CASE;\n")
+        source.write("  }\n")
+        source.write("}\n\n")
+        for register in sorted(seen_registers.values()):
+            source.write(f"std::optional<const std::string_view> ToString({fix_name(register)} value) {{\n")
+            source.write("  switch (value) {\n")
+            reg: RegisterGroup = arch.register_groups[register]
+            if reg.is_composite:
+                seen: set[int] = set()
+                for r in reg.contained:
+                    for value in arch.register_groups[r].values:
+                        v: Register = arch.register_groups[r].values[value]
+                        if v.value in seen:
+                            continue
+                        seen.add(v.value)
+                        source.write(f"    case static_cast<{fix_name(register)}>({fix_name(v.group.name)}::{fix_name(v.name)}): return std::make_optional<const std::string_view>(\"{v.name}\");\n")
+            else:
+                seen: set[int] = set()
+                for value in reg.values:
+                    if reg.values[value].value in seen:
+                        continue
+                    seen.add(reg.values[value].value)
+                    source.write(f"    case {fix_name(register)}::{fix_name(value)}: return std::make_optional<const std::string_view>(\"{value}\");\n")
+            source.write("    default: return std::nullopt;\n")
+            source.write("  }\n")
+            source.write("}\n\n")
+        source.write(f"}} // {arch.name}")
 
 if __name__ == "__main__":
     import argparse

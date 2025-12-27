@@ -27,7 +27,10 @@ add_executable(
     src/include/utility.hpp
 
     src/include/Maxwell.hpp
+    src/include/MaxwellAccessor.hpp
+    src/include/MaxwellPrint.hpp
     src/Maxwell.cpp
+    src/MaxwellPrint.cpp
 
     src/main.cpp
 )

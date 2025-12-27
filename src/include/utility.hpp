@@ -104,3 +104,11 @@ private:
     std::uint64_t raw;
 };
 static_assert(MultiEncoding<Encoding<BitRange<2, 5>, BitRange<8, 1>>, Encoding<BitRange<13, 1>>>(0x12345ull) == 0x71ull);
+
+#ifdef _MSC_VER
+    #define UNREACHABLE_DEFAULT_CASE __assume(0);
+#elif defined(__GNUC__)
+    #define UNREACHABLE_DEFAULT_CASE __builtin_unreachable();
+#else
+    #error "Unsupported compiler"
+#endif

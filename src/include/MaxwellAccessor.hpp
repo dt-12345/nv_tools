@@ -94,25 +94,24 @@ protected:
       while ((newMantissa & 0x400000ull) == 0ull) {
         newMantissa *= 2; --newExp;
       }
-      v = newMantissa & 0x7fffffull | newExp << 0x17 | sign << 0x1f;
+      v = (newMantissa & 0x7fffffull) | newExp << 0x17 | sign << 0x1f;
     } else {
-      v = mantissa << 0xd | exp + 0x70ull << 0x17 | sign << 0x1f;
+      v = mantissa << 0xd | (exp + 0x70ull) << 0x17 | sign << 0x1f;
     }
-    return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
+    return FloatToDouble(v);
   }
 
   template <std::size_t SIZE>
   static constexpr std::uint64_t _F32(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     if constexpr (SIZE < 0x20)
       value <<= 0x20 - SIZE;
-    const std::uint32_t v = static_cast<std::uint32_t>(value);
-    return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
+    return FloatToDouble(static_cast<std::uint32_t>(value));
   }
 
   template <std::size_t SIZE>
   static constexpr std::uint64_t _F64(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
     if ((value & 0x7ff0000000000000ull) == 0x7ff0000000000000ull && (value & 0xfffffffffffffull) != 0ull)
-      value != 0x8000000000000ull;
+      value |= 0x8000000000000ull;
     if constexpr (SIZE < 0x40)
       value <<= 0x40 - SIZE;
     return value;
@@ -140,13 +139,11 @@ protected:
   }
 
   static constexpr std::uint64_t _BF16(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
-    const std::uint32_t v = static_cast<std::uint32_t>(value << 0x10);
-    return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
+    return FloatToDouble(static_cast<std::uint32_t>(value << 0x10));
   }
 
   static constexpr std::uint64_t _TF32(std::uint64_t value, [[maybe_unused]] std::uint64_t programCounter) {
-    const std::uint32_t v = static_cast<std::uint32_t>(value);
-    return std::bit_cast<std::uint64_t, double>(static_cast<double>(std::bit_cast<float, std::uint32_t>(v)));
+    return FloatToDouble(static_cast<std::uint32_t>(value));
   }
 
   template <typename Encoding, ProcessingFunc... FUNCS>
@@ -156,6 +153,30 @@ protected:
       value = func(value, pc); 
     }(FUNCS), ...);
     return value;
+  }
+
+private:
+  // afaict this gives pretty much the same results as static_cast<double>(floatValue) so idk why they do this, maybe for consistency across different platforms?
+  static constexpr std::uint64_t FloatToDouble(std::uint32_t value) {
+    const std::uint32_t noSignBit = value & 0x7fffffffu;
+    if (noSignBit < 0x7f800000u) {
+      if (noSignBit < 0x800000u) {
+        const double newValue = std::bit_cast<double, std::uint64_t>(0x3810000000000000ull | static_cast<std::uint64_t>(noSignBit) << 0x1d);
+        const std::uint32_t signBit = value >> 0x1f & 1u;
+        return static_cast<std::uint64_t>(signBit) << 0x3f | std::bit_cast<std::uint64_t, double>(newValue + static_cast<double>(std::numeric_limits<float>::min()));
+      } else {
+        const std::uint32_t signBit = value >> 0x1f & 1u;
+        const std::uint32_t exp = value >> 0x17 & 0xffu;
+        const std::uint32_t mantissa = value & 0x7fffffu;
+        return static_cast<std::uint64_t>(mantissa) << 0x1d | (static_cast<std::uint64_t>(exp) + 0x380ull) << 0x34 | static_cast<std::uint64_t>(signBit) << 0x3f;
+      }
+    } else if (noSignBit > 0x7f800000u) {
+      const std::uint32_t signBit = value >> 0x1f & 1u;
+      const std::uint32_t mantissa = value & 0x3fffffu;
+      return static_cast<std::uint64_t>(mantissa) << 0x1d | 0x7ff8000000000000ull | static_cast<std::uint64_t>(signBit) << 0x3f;
+    } else {
+      return 0x70000000000000ull | static_cast<std::uint64_t>(value) << 0x20;
+    }
   }
 
 };
@@ -245,7 +266,7 @@ template <> struct Accessor<OpClass::Imm_FFMA> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 0, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_TABLE_FIELD(jneg, MultiEncoding<nABEncoding>, UnaryNeg, PSignFFMA, 1, Accessor::_Reg)
   INST_FIELD(Rc, RegCEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(Rc_negate, nCEncoding, bool, Accessor::_Bool)
@@ -268,6 +289,7 @@ template <> struct Accessor<OpClass::Const_FFMA> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 0, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_TABLE_FIELD(srcConst_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 1, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -297,6 +319,7 @@ template <> struct Accessor<OpClass::Const1_FFMA> : public AccessorBase {
   INST_FIELD(Rb, RegCEncoding, RegisterFAU, Accessor::_Reg)
   INST_TABLE_FIELD(Rb_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 1, Accessor::_Bool)
   SCHED_FIELD(reuse_src_b, OEReuseBEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nCEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -319,7 +342,7 @@ template <> struct Accessor<OpClass::FFMA32I> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(Ra_negate, nAB2Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(fImm, Imm32Encoding, double)
+  FLOAT_INST_FIELD(fImm, Imm32Encoding, double, _F32<32>)
   INST_TABLE_FIELD(Rc, MultiEncoding<DestEncoding>, RegisterFAU, IDENTICAL<RegisterFAU>, 1, Accessor::_Reg)
   INST_FIELD(Rc_negate, nC2Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_c, OEReuseCEncoding, REUSE, Accessor::_Reg)
@@ -340,7 +363,7 @@ template <> struct Accessor<OpClass::FFMA32I_2> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(Ra_negate, nAB2Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(fImm, Imm32Encoding, double)
+  FLOAT_INST_FIELD(fImm, Imm32Encoding, double, _F32<32>)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_sb_bitset, OEWaitOnSbEncoding, std::uint8_t)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
@@ -383,7 +406,7 @@ template <> struct Accessor<OpClass::Imm_FADD> : public AccessorBase {
   INST_FIELD(Ra_negate, nABEncoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA2Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(jneg, nB2Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -405,6 +428,7 @@ template <> struct Accessor<OpClass::Const_FADD> : public AccessorBase {
   INST_FIELD(Ra_negate, nABEncoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA2Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB2Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -428,7 +452,7 @@ template <> struct Accessor<OpClass::FADD32I> : public AccessorBase {
   INST_FIELD(Ra_negate, nAB2Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA3Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(fImm, Imm32Encoding, double)
+  FLOAT_INST_FIELD(fImm, Imm32Encoding, double, _F32<32>)
   INST_FIELD(jneg, nB3Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, nC2Encoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -465,7 +489,7 @@ template <> struct Accessor<OpClass::Imm_FCMP> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(Rc, RegCEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_c, OEReuseCEncoding, REUSE, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -483,6 +507,7 @@ template <> struct Accessor<OpClass::Const_FCMP> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -506,6 +531,7 @@ template <> struct Accessor<OpClass::Const1_FCMP> : public AccessorBase {
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
   INST_FIELD(Rb, RegCEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_b, OEReuseBEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -571,7 +597,7 @@ template <> struct Accessor<OpClass::Imm_FMUL> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 0, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_TABLE_FIELD(jneg, MultiEncoding<nABEncoding>, UnaryNeg, PSignFFMA, 1, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_sb_bitset, OEWaitOnSbEncoding, std::uint8_t)
@@ -592,6 +618,7 @@ template <> struct Accessor<OpClass::Const_FMUL> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 0, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_TABLE_FIELD(srcConst_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 1, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -613,7 +640,7 @@ template <> struct Accessor<OpClass::FMUL32I> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCIEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(fImm, Imm32Encoding, double)
+  FLOAT_INST_FIELD(fImm, Imm32Encoding, double, _F32<32>)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_sb_bitset, OEWaitOnSbEncoding, std::uint8_t)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
@@ -654,7 +681,7 @@ template <> struct Accessor<OpClass::Imm_FMNMX> : public AccessorBase {
   INST_FIELD(Ra_negate, nABEncoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA2Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(jneg, nB2Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   INST_FIELD(Pa, SrcPredEncoding, Predicate, Accessor::_Reg)
@@ -676,6 +703,7 @@ template <> struct Accessor<OpClass::Const_FMNMX> : public AccessorBase {
   INST_FIELD(Ra_negate, nABEncoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA2Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB2Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -753,7 +781,7 @@ template <> struct Accessor<OpClass::Imm_FSET> : public AccessorBase {
   INST_FIELD(Ra_negate, nA3Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA3Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(jneg, nB3Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aB2Encoding, UnaryAbs, Accessor::_Reg)
   INST_FIELD(Pa, SrcPredEncoding, Predicate, Accessor::_Reg)
@@ -777,7 +805,7 @@ template <> struct Accessor<OpClass::NoBop_Imm_FSET> : public AccessorBase {
   INST_FIELD(Ra_negate, nA3Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA3Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(jneg, nB3Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aB2Encoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -800,6 +828,7 @@ template <> struct Accessor<OpClass::Const_FSET> : public AccessorBase {
   INST_FIELD(Ra_negate, nA3Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA3Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB3Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aB2Encoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -827,6 +856,7 @@ template <> struct Accessor<OpClass::NoBop_Const_FSET> : public AccessorBase {
   INST_FIELD(Ra_negate, nA3Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA3Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB3Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aB2Encoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -898,7 +928,7 @@ template <> struct Accessor<OpClass::Imm_FSETP> : public AccessorBase {
   INST_FIELD(Ra_negate, nA2Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA4Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(jneg, nB4Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aB2Encoding, UnaryAbs, Accessor::_Reg)
   INST_FIELD(Pa, SrcPredEncoding, Predicate, Accessor::_Reg)
@@ -920,7 +950,7 @@ template <> struct Accessor<OpClass::NoBop_Imm_FSETP> : public AccessorBase {
   INST_FIELD(Ra_negate, nA2Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA4Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(jneg, nB4Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aB2Encoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -942,6 +972,7 @@ template <> struct Accessor<OpClass::Const_FSETP> : public AccessorBase {
   INST_FIELD(Ra_negate, nA2Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA4Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB4Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aB2Encoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -967,6 +998,7 @@ template <> struct Accessor<OpClass::NoBop_Const_FSETP> : public AccessorBase {
   INST_FIELD(Ra_negate, nA2Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA4Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB4Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aB2Encoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -983,10 +1015,12 @@ template <> struct Accessor<OpClass::IPA_1> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11100000);
+  CONSTANT_FIELD(idx, IDXOnly, IDXOnly::IDX)
   INST_FIELD(ipaop, IPAOpEncoding, IPAOp, Accessor::_Reg)
   INST_FIELD(msi, MSIEncoding, MSI, Accessor::_Reg)
   INST_FIELD(sat, SatLowEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(srcAttr, A, A::A)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
@@ -1010,6 +1044,7 @@ template <> struct Accessor<OpClass::I_IPA_1> : public AccessorBase {
   INST_FIELD(msi, MSIEncoding, MSI, Accessor::_Reg)
   INST_FIELD(sat, SatLowEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(srcAttr, A, A::A)
   INST_FIELD(uImm, IPAImm10Encoding, std::uint16_t)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
@@ -1029,10 +1064,12 @@ template <> struct Accessor<OpClass::IPA_2> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11100000);
+  CONSTANT_FIELD(idx, IDXOnly, IDXOnly::IDX)
   INST_FIELD(ipaop, IPAOpEncoding, IPAOp, Accessor::_Reg)
   INST_FIELD(msi, MSIEncoding, MSI, Accessor::_Reg)
   INST_FIELD(sat, SatLowEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(srcAttr, A, A::A)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ps, PredSrcEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Ps_not, PredSrcNotEncoding, bool, Accessor::_Bool)
@@ -1054,6 +1091,7 @@ template <> struct Accessor<OpClass::I_IPA_2> : public AccessorBase {
   INST_FIELD(msi, MSIEncoding, MSI, Accessor::_Reg)
   INST_FIELD(sat, SatLowEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(srcAttr, A, A::A)
   INST_FIELD(uImm, IPAImm10Encoding, std::uint16_t)
   INST_FIELD(Ps, PredSrcEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Ps_not, PredSrcNotEncoding, bool, Accessor::_Bool)
@@ -1089,7 +1127,7 @@ template <> struct Accessor<OpClass::Imm_RRO> : public AccessorBase {
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110010010);
   INST_FIELD(rroop, RROOpEncoding, RROOp, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(jneg, nBEncoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -1104,6 +1142,7 @@ template <> struct Accessor<OpClass::Const_RRO> : public AccessorBase {
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010010);
   INST_FIELD(rroop, RROOpEncoding, RROOp, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -1166,7 +1205,7 @@ template <> struct Accessor<OpClass::Imm_FCHK> : public AccessorBase {
   INST_FIELD(Ra_negate, nABEncoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA2Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(jneg, nB2Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -1185,6 +1224,7 @@ template <> struct Accessor<OpClass::Const_FCHK> : public AccessorBase {
   INST_FIELD(Ra_negate, nABEncoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA2Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB2Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -1233,7 +1273,7 @@ template <> struct Accessor<OpClass::Imm_DFMA> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 0, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F64<20>)
   INST_TABLE_FIELD(jneg, MultiEncoding<nABEncoding>, UnaryNeg, PSignFFMA, 1, Accessor::_Reg)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rc_negate, nCEncoding, bool, Accessor::_Bool)
@@ -1258,6 +1298,7 @@ template <> struct Accessor<OpClass::Const_DFMA> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 0, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_TABLE_FIELD(srcConst_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 1, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -1289,6 +1330,7 @@ template <> struct Accessor<OpClass::Const1_DFMA> : public AccessorBase {
   INST_FIELD(Rb, RegCEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Rb_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 1, Accessor::_Bool)
   SCHED_FIELD(reuse_src_b, OEReuseBEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nCEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -1340,7 +1382,7 @@ template <> struct Accessor<OpClass::Imm_DADD> : public AccessorBase {
   INST_FIELD(Ra_negate, nABEncoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA2Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F64<20>)
   INST_FIELD(jneg, nB2Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -1364,6 +1406,7 @@ template <> struct Accessor<OpClass::Const_DADD> : public AccessorBase {
   INST_FIELD(Ra_negate, nABEncoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA2Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB2Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -1413,7 +1456,7 @@ template <> struct Accessor<OpClass::Imm_DMUL> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 0, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F64<20>)
   INST_TABLE_FIELD(jneg, MultiEncoding<nABEncoding>, UnaryNeg, PSignFFMA, 1, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_sb_bitset, OEWaitOnSbEncoding, std::uint8_t)
@@ -1435,6 +1478,7 @@ template <> struct Accessor<OpClass::Const_DMUL> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 0, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_TABLE_FIELD(srcConst_negate, MultiEncoding<nABEncoding>, bool, PSignFFMA, 1, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -1483,7 +1527,7 @@ template <> struct Accessor<OpClass::Imm_DMNMX> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra_negate, nABEncoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA2Encoding, bool, Accessor::_Bool)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F64<20>)
   INST_FIELD(jneg, nB2Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   INST_FIELD(Pa, SrcPredEncoding, Predicate, Accessor::_Reg)
@@ -1507,6 +1551,7 @@ template <> struct Accessor<OpClass::Const_DMNMX> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra_negate, nABEncoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA2Encoding, bool, Accessor::_Bool)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB2Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -1588,7 +1633,7 @@ template <> struct Accessor<OpClass::Imm_DSET> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra_negate, nA3Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA3Encoding, bool, Accessor::_Bool)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F64<20>)
   INST_FIELD(jneg, nB3Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aB2Encoding, UnaryAbs, Accessor::_Reg)
   INST_FIELD(Pa, SrcPredEncoding, Predicate, Accessor::_Reg)
@@ -1614,7 +1659,7 @@ template <> struct Accessor<OpClass::NoBop_Imm_DSET> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra_negate, nA3Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA3Encoding, bool, Accessor::_Bool)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F64<20>)
   INST_FIELD(jneg, nB3Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aB2Encoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -1639,6 +1684,7 @@ template <> struct Accessor<OpClass::Const_DSET> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra_negate, nA3Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA3Encoding, bool, Accessor::_Bool)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB3Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aB2Encoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -1668,6 +1714,7 @@ template <> struct Accessor<OpClass::NoBop_Const_DSET> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra_negate, nA3Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA3Encoding, bool, Accessor::_Bool)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB3Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aB2Encoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -1743,7 +1790,7 @@ template <> struct Accessor<OpClass::Imm_DSETP> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra_negate, nA2Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA4Encoding, bool, Accessor::_Bool)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F64<20>)
   INST_FIELD(jneg, nB4Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aB2Encoding, UnaryAbs, Accessor::_Reg)
   INST_FIELD(Pa, SrcPredEncoding, Predicate, Accessor::_Reg)
@@ -1767,7 +1814,7 @@ template <> struct Accessor<OpClass::NoBop_Imm_DSETP> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra_negate, nA2Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA4Encoding, bool, Accessor::_Bool)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F64<20>)
   INST_FIELD(jneg, nB4Encoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aB2Encoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -1791,6 +1838,7 @@ template <> struct Accessor<OpClass::Const_DSETP> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra_negate, nA2Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA4Encoding, bool, Accessor::_Bool)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB4Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aB2Encoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -1818,6 +1866,7 @@ template <> struct Accessor<OpClass::NoBop_Const_DSETP> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra_negate, nA2Encoding, bool, Accessor::_Bool)
   INST_FIELD(Ra_absolute, aA4Encoding, bool, Accessor::_Bool)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB4Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aB2Encoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -1904,6 +1953,7 @@ template <> struct Accessor<OpClass::Const_IMAD> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<PSign3Encoding>, bool, PSignMAD, 1, Accessor::_Bool)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_TABLE_FIELD(srcConst_negate, MultiEncoding<PSign3Encoding>, bool, PSignMAD, 2, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -1937,6 +1987,7 @@ template <> struct Accessor<OpClass::Const1_IMAD> : public AccessorBase {
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<PSign3Encoding>, bool, PSignMAD, 1, Accessor::_Bool)
   INST_FIELD(Rb, RegCEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Rb_negate, MultiEncoding<PSign3Encoding>, bool, PSignMAD, 2, Accessor::_Bool)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_TABLE_FIELD(srcConst_negate, MultiEncoding<PSign3Encoding>, bool, PSignMAD, 3, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -2031,6 +2082,7 @@ template <> struct Accessor<OpClass::Const_IMADSP> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -2057,6 +2109,7 @@ template <> struct Accessor<OpClass::Const1_IMADSP> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rb, RegCEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -2123,6 +2176,7 @@ template <> struct Accessor<OpClass::Const_IMUL> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -2211,6 +2265,7 @@ template <> struct Accessor<OpClass::Const_IADD> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<PSignEncoding>, bool, PSign, 1, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_TABLE_FIELD(srcConst_negate, MultiEncoding<PSignEncoding>, bool, PSign, 2, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -2279,6 +2334,7 @@ template <> struct Accessor<OpClass::BConst_IADD3> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(Ra_negate, nA7Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nB7Encoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -2361,6 +2417,7 @@ template <> struct Accessor<OpClass::Const_ISCADD> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<PSignEncoding>, bool, PSign, 1, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_TABLE_FIELD(srcConst_negate, MultiEncoding<PSignEncoding>, bool, PSign, 2, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -2438,6 +2495,7 @@ template <> struct Accessor<OpClass::Const_IMNMX> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -2495,6 +2553,7 @@ template <> struct Accessor<OpClass::Const_BFE> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -2548,6 +2607,7 @@ template <> struct Accessor<OpClass::Const_BFI> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -2570,6 +2630,7 @@ template <> struct Accessor<OpClass::Const1_BFI> : public AccessorBase {
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
   INST_FIELD(Rb, RegCEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_b, OEReuseBEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -2631,6 +2692,7 @@ template <> struct Accessor<OpClass::Const_SHR> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -2686,6 +2748,7 @@ template <> struct Accessor<OpClass::Const_SHL> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -2700,6 +2763,7 @@ template <> struct Accessor<OpClass::SHF_L_imm> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111111);
+  CONSTANT_FIELD(shfl, SHF_L, SHF_L::L)
   INST_FIELD(wmode, M_HEncoding, CWMode, Accessor::_Reg)
   INST_FIELD(maxshift, MaxShiftEncoding, maxShift, Accessor::_Reg)
   INST_FIELD(xmode, XmdSHFEncoding, SHFXMode, Accessor::_Reg)
@@ -2720,6 +2784,7 @@ template <> struct Accessor<OpClass::SHF_R_imm> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110011111);
+  CONSTANT_FIELD(shfr, SHF_R, SHF_R::R)
   INST_FIELD(wmode, M_HEncoding, CWMode, Accessor::_Reg)
   INST_FIELD(maxshift, MaxShiftEncoding, maxShift, Accessor::_Reg)
   INST_FIELD(xmode, XmdSHFEncoding, SHFXMode, Accessor::_Reg)
@@ -2740,6 +2805,7 @@ template <> struct Accessor<OpClass::SHF_L_reg> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101101111111);
+  CONSTANT_FIELD(shfl, SHF_L, SHF_L::L)
   INST_FIELD(wmode, M_HEncoding, CWMode, Accessor::_Reg)
   INST_FIELD(maxshift, MaxShiftEncoding, maxShift, Accessor::_Reg)
   INST_FIELD(xmode, XmdSHFEncoding, SHFXMode, Accessor::_Reg)
@@ -2761,6 +2827,7 @@ template <> struct Accessor<OpClass::SHF_R_reg> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101110011111);
+  CONSTANT_FIELD(shfr, SHF_R, SHF_R::R)
   INST_FIELD(wmode, M_HEncoding, CWMode, Accessor::_Reg)
   INST_FIELD(maxshift, MaxShiftEncoding, maxShift, Accessor::_Reg)
   INST_FIELD(xmode, XmdSHFEncoding, SHFXMode, Accessor::_Reg)
@@ -2834,6 +2901,7 @@ template <> struct Accessor<OpClass::Const_LOP> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(Ra_invert, nA_LEncoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_invert, nB_LEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -2868,6 +2936,7 @@ template <> struct Accessor<OpClass::LOP3_LUT> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101101111100);
+  CONSTANT_FIELD(lut, LUTOnly, LUTOnly::LUT)
   INST_FIELD(xmode, Xm5Encoding, X, Accessor::_Reg)
   INST_FIELD(pop, POP2Encoding, POP, Accessor::_Reg)
   INST_FIELD(Pd, PredDstLopEncoding, Predicate, Accessor::_Reg)
@@ -2890,6 +2959,7 @@ template <> struct Accessor<OpClass::LOP3_LUT_BImm> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111);
+  CONSTANT_FIELD(lut, LUTOnly, LUTOnly::LUT)
   INST_FIELD(xmode, Xm6Encoding, X, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
@@ -2909,11 +2979,13 @@ template <> struct Accessor<OpClass::LOP3_LUT_BConst> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1);
+  CONSTANT_FIELD(lut, LUTOnly, LUTOnly::LUT)
   INST_FIELD(xmode, Xm10Encoding, X, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -2985,6 +3057,7 @@ template <> struct Accessor<OpClass::LOP3_Bconst> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_invert, MultiEncoding<LOPImm2Encoding>, bool, LutImm8, 1, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_TABLE_FIELD(srcConst_invert, MultiEncoding<LOPImm2Encoding>, bool, LutImm8, 2, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -3047,6 +3120,7 @@ template <> struct Accessor<OpClass::Const_FLO> : public AccessorBase {
   INST_FIELD(sh, SHEncoding, SH, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_invert, nB_LEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -3159,6 +3233,7 @@ template <> struct Accessor<OpClass::Const_ISET> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -3183,6 +3258,7 @@ template <> struct Accessor<OpClass::NoBop_Const_ISET> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -3290,6 +3366,7 @@ template <> struct Accessor<OpClass::Const_ISET_U> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -3314,6 +3391,7 @@ template <> struct Accessor<OpClass::NoBop_Const_ISET_U> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -3414,6 +3492,7 @@ template <> struct Accessor<OpClass::Const_ISETP> : public AccessorBase {
   INST_FIELD(nPd, PNDestEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -3436,6 +3515,7 @@ template <> struct Accessor<OpClass::NoBop_Const_ISETP> : public AccessorBase {
   INST_FIELD(Pd, PDestEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -3536,6 +3616,7 @@ template <> struct Accessor<OpClass::Const_ISETP_U> : public AccessorBase {
   INST_FIELD(nPd, PNDestEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -3558,6 +3639,7 @@ template <> struct Accessor<OpClass::NoBop_Const_ISETP_U> : public AccessorBase 
   INST_FIELD(Pd, PDestEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -3614,6 +3696,7 @@ template <> struct Accessor<OpClass::Const_ICMP> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -3637,6 +3720,7 @@ template <> struct Accessor<OpClass::Const1_ICMP> : public AccessorBase {
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
   INST_FIELD(Rb, RegCEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_b, OEReuseBEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -3693,6 +3777,7 @@ template <> struct Accessor<OpClass::Const_ICMP_U> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -3716,6 +3801,7 @@ template <> struct Accessor<OpClass::Const1_ICMP_U> : public AccessorBase {
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
   INST_FIELD(Rb, RegCEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_b, OEReuseBEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -3765,6 +3851,7 @@ template <> struct Accessor<OpClass::Const_POPC> : public AccessorBase {
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110000001);
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_invert, nB_LEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -3835,6 +3922,7 @@ template <> struct Accessor<OpClass::SImmB_XMAD> : public AccessorBase {
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101100);
   INST_TABLE_FIELD(us16, MultiEncoding<ASigned5Encoding>, Integer16, IsSigned16, 0, Accessor::_Reg)
+  CONSTANT_FIELD(us16b, S16, S16::S16)
   INST_FIELD(psl, PSLEncoding, PSL, Accessor::_Reg)
   INST_FIELD(cop, XMADCopEncoding, XMADcop, Accessor::_Reg)
   INST_FIELD(mrg, MRGEncoding, MRG, Accessor::_Reg)
@@ -3868,6 +3956,7 @@ template <> struct Accessor<OpClass::ConstB_XMAD> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(asel, HILO2Encoding, H1H0, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -3897,6 +3986,7 @@ template <> struct Accessor<OpClass::ConstC_XMAD> : public AccessorBase {
   INST_FIELD(Rb, RegCEncoding, Register, Accessor::_Reg)
   INST_FIELD(bsel, HILO5Encoding, H1H0, Accessor::_Reg)
   SCHED_FIELD(reuse_src_b, OEReuseBEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -7411,7 +7501,7 @@ template <> struct Accessor<OpClass::Imm_F2F_1> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(jneg, nBEncoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -7434,7 +7524,7 @@ template <> struct Accessor<OpClass::Imm_F2F_2> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(jneg, nBEncoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -7457,7 +7547,7 @@ template <> struct Accessor<OpClass::Imm_F2F_2_64_32> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(jneg, nBEncoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -7480,7 +7570,7 @@ template <> struct Accessor<OpClass::Imm_F2F_1_16> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F16<20>)
   INST_FIELD(jneg, nBEncoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   INST_FIELD(halfsel, SHEncoding, H1H0, Accessor::_Reg)
@@ -7504,7 +7594,7 @@ template <> struct Accessor<OpClass::Imm_F2F_2_16> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F16<20>)
   INST_FIELD(jneg, nBEncoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   INST_FIELD(halfsel, SHEncoding, H1H0, Accessor::_Reg)
@@ -7528,7 +7618,7 @@ template <> struct Accessor<OpClass::Imm_F2F_2_64_16> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F16<20>)
   INST_FIELD(jneg, nBEncoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   INST_FIELD(halfsel, SHEncoding, H1H0, Accessor::_Reg)
@@ -7552,7 +7642,7 @@ template <> struct Accessor<OpClass::Imm_F2F_1_64> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F64<20>)
   INST_FIELD(jneg, nBEncoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -7575,7 +7665,7 @@ template <> struct Accessor<OpClass::Imm_F2F_2_64> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F64<20>)
   INST_FIELD(jneg, nBEncoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -7598,6 +7688,7 @@ template <> struct Accessor<OpClass::Const_F2F_1> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -7624,6 +7715,7 @@ template <> struct Accessor<OpClass::Const_F2F_2> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -7650,6 +7742,7 @@ template <> struct Accessor<OpClass::Const_F2F_2_64_32> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -7676,6 +7769,7 @@ template <> struct Accessor<OpClass::Const_F2F_1_16> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -7703,6 +7797,7 @@ template <> struct Accessor<OpClass::Const_F2F_2_16> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -7730,6 +7825,7 @@ template <> struct Accessor<OpClass::Const_F2F_2_64_16> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -7757,6 +7853,7 @@ template <> struct Accessor<OpClass::Const_F2F_1_64> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -7783,6 +7880,7 @@ template <> struct Accessor<OpClass::Const_F2F_2_64> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -7905,7 +8003,7 @@ template <> struct Accessor<OpClass::Imm_F2I> : public AccessorBase {
   INST_FIELD(rnd, Rnd_1Encoding, Round3, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(jneg, nBEncoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   INST_FIELD(halfsel, SHEncoding, H1H0, Accessor::_Reg)
@@ -7929,7 +8027,7 @@ template <> struct Accessor<OpClass::Imm_F2I_I64> : public AccessorBase {
   INST_FIELD(rnd, Rnd_1Encoding, Round3, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F32<20>)
   INST_FIELD(jneg, nBEncoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   INST_FIELD(halfsel, SHEncoding, H1H0, Accessor::_Reg)
@@ -7953,7 +8051,7 @@ template <> struct Accessor<OpClass::Imm_F2I_16> : public AccessorBase {
   INST_FIELD(rnd, Rnd_1Encoding, Round3, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F16<20>)
   INST_FIELD(jneg, nBEncoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   INST_FIELD(halfsel, SHEncoding, H1H0, Accessor::_Reg)
@@ -7977,7 +8075,7 @@ template <> struct Accessor<OpClass::Imm_F2I_64> : public AccessorBase {
   INST_FIELD(rnd, Rnd_1Encoding, Round3, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BconstEncoding, double)
+  FLOAT_INST_FIELD(uImm, BconstEncoding, double, _F64<20>)
   INST_FIELD(jneg, nBEncoding, UnaryNeg, Accessor::_Reg)
   INST_FIELD(jabs, aBEncoding, UnaryAbs, Accessor::_Reg)
   INST_FIELD(halfsel, SHEncoding, H1H0, Accessor::_Reg)
@@ -8001,6 +8099,7 @@ template <> struct Accessor<OpClass::Const_F2I> : public AccessorBase {
   INST_FIELD(rnd, Rnd_1Encoding, Round3, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8028,6 +8127,7 @@ template <> struct Accessor<OpClass::Const_F2I_I64> : public AccessorBase {
   INST_FIELD(rnd, Rnd_1Encoding, Round3, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8055,6 +8155,7 @@ template <> struct Accessor<OpClass::Const_F2I_16> : public AccessorBase {
   INST_FIELD(rnd, Rnd_1Encoding, Round3, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8082,6 +8183,7 @@ template <> struct Accessor<OpClass::Const_F2I_64> : public AccessorBase {
   INST_FIELD(rnd, Rnd_1Encoding, Round3, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8292,6 +8394,7 @@ template <> struct Accessor<OpClass::Const_I2F> : public AccessorBase {
   INST_FIELD(rnd, RndLowEncoding, Round1, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8318,6 +8421,7 @@ template <> struct Accessor<OpClass::Const_I2F_F64> : public AccessorBase {
   INST_FIELD(rnd, RndLowEncoding, Round1, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8344,6 +8448,7 @@ template <> struct Accessor<OpClass::Const_I2F64> : public AccessorBase {
   INST_FIELD(rnd, RndLowEncoding, Round1, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8370,6 +8475,7 @@ template <> struct Accessor<OpClass::Const_I2F16> : public AccessorBase {
   INST_FIELD(rnd, RndLowEncoding, Round1, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8488,6 +8594,7 @@ template <> struct Accessor<OpClass::Const_I2I> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8514,6 +8621,7 @@ template <> struct Accessor<OpClass::Const_I2I16> : public AccessorBase {
   INST_FIELD(sat, SatEncoding, SAT, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBEncoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8563,6 +8671,7 @@ template <> struct Accessor<OpClass::Const_MOV> : public AccessorBase {
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100110010011);
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8627,6 +8736,7 @@ template <> struct Accessor<OpClass::Const_SEL> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8682,6 +8792,7 @@ template <> struct Accessor<OpClass::Const_PRMT> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8704,6 +8815,7 @@ template <> struct Accessor<OpClass::Const1_PRMT> : public AccessorBase {
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
   INST_FIELD(Rb, RegCEncoding, RegisterFAU, Accessor::_Reg)
   SCHED_FIELD(reuse_src_b, OEReuseBEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8836,6 +8948,7 @@ template <> struct Accessor<OpClass::Const_P2R> : public AccessorBase {
   INST_FIELD(Pr, CCPREncoding, CCPR, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8898,6 +9011,7 @@ template <> struct Accessor<OpClass::Const_R2P> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(extract, ByteEncoding, B3B0, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -8917,6 +9031,7 @@ template <> struct Accessor<OpClass::CSET> : public AccessorBase {
   INST_FIELD(bopopt, BopEncoding, Bop, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(dummyCC, CC, CC::CC)
   INST_FIELD(Pa, SrcPredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pa_not, SrcNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -8933,6 +9048,7 @@ template <> struct Accessor<OpClass::NoBop_CSET> : public AccessorBase {
   INST_FIELD(CCTest, CCC_2Encoding, Test, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
+  CONSTANT_FIELD(dummyCC, CC, CC::CC)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_sb_bitset, OEWaitOnSbEncoding, std::uint8_t)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
@@ -8947,6 +9063,7 @@ template <> struct Accessor<OpClass::CSETP> : public AccessorBase {
   INST_FIELD(bopopt, BopEncoding, Bop, Accessor::_Reg)
   INST_FIELD(Pd, PDestEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(nPd, PNDestEncoding, Predicate, Accessor::_Reg)
+  CONSTANT_FIELD(inputCC, CC, CC::CC)
   INST_FIELD(Pa, SrcPredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pa_not, SrcNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -8961,6 +9078,7 @@ template <> struct Accessor<OpClass::NoBop_CSETP> : public AccessorBase {
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000010100);
   INST_FIELD(CCTest, CCC_2Encoding, Test, Accessor::_Reg)
   INST_FIELD(Pd, PDestEncoding, Predicate, Accessor::_Reg)
+  CONSTANT_FIELD(inputCC, CC, CC::CC)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_sb_bitset, OEWaitOnSbEncoding, std::uint8_t)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
@@ -9114,6 +9232,7 @@ template <> struct Accessor<OpClass::TEX_B> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111010);
+  CONSTANT_FIELD(b, BOnly, BOnly::B)
   INST_FIELD(lod, LODBEncoding, LOD, Accessor::_Reg)
   INST_FIELD(lc, LCBEncoding, LC, Accessor::_Reg)
   INST_FIELD(toff, AOFFIBEncoding, TOFF1, Accessor::_Reg)
@@ -9125,6 +9244,7 @@ template <> struct Accessor<OpClass::TEX_B> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(tid, std::uint16_t, 0)
   INST_FIELD(paramA, ParamAEncoding, ParamA, Accessor::_Reg)
   INST_FIELD(wmsk, WmskEncoding, std::uint8_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9141,6 +9261,7 @@ template <> struct Accessor<OpClass::TEX_B_legacy_style> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111010);
+  CONSTANT_FIELD(b, BOnly, BOnly::B)
   INST_FIELD(lod, LODBEncoding, LOD, Accessor::_Reg)
   INST_FIELD(lc, LCBEncoding, LC, Accessor::_Reg)
   INST_FIELD(toff, AOFFIBEncoding, TOFF1, Accessor::_Reg)
@@ -9152,6 +9273,8 @@ template <> struct Accessor<OpClass::TEX_B_legacy_style> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(tid, std::uint8_t, 0)
+  CONSTANT_FIELD(smp, std::uint8_t, 0)
   INST_FIELD(paramA, ParamAEncoding, ParamA, Accessor::_Reg)
   INST_FIELD(wmsk, WmskEncoding, std::uint8_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9218,6 +9341,7 @@ template <> struct Accessor<OpClass::TEXS_F16_RZ> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101000);
+  CONSTANT_FIELD(f16, Float16, Float16::F16)
   INST_TABLE_FIELD(lod, MultiEncoding<tex2d_4Encoding>, LOD2, Tex2D4, 2, Accessor::_Reg)
   INST_TABLE_FIELD(dc, MultiEncoding<tex2d_4Encoding>, DC, Tex2D4, 1, Accessor::_Reg)
   INST_FIELD(ndp, NODEPEncoding, NODEP, Accessor::_Reg)
@@ -9243,6 +9367,7 @@ template <> struct Accessor<OpClass::TEXS_F16> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101000);
+  CONSTANT_FIELD(f16, Float16, Float16::F16)
   INST_TABLE_FIELD(lod, MultiEncoding<tex2d_4Encoding>, LOD2, Tex2D4, 2, Accessor::_Reg)
   INST_TABLE_FIELD(dc, MultiEncoding<tex2d_4Encoding>, DC, Tex2D4, 1, Accessor::_Reg)
   INST_FIELD(ndp, NODEPEncoding, NODEP, Accessor::_Reg)
@@ -9320,6 +9445,7 @@ template <> struct Accessor<OpClass::TLDS_F16_RZ> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101001);
+  CONSTANT_FIELD(f16, Float16, Float16::F16)
   INST_TABLE_FIELD(lod, MultiEncoding<tex2d_4Encoding>, LOD1, Tld2D4, 2, Accessor::_Reg)
   INST_TABLE_FIELD(toff, MultiEncoding<tex2d_4Encoding>, TOFF1, Tld2D4, 3, Accessor::_Reg)
   INST_TABLE_FIELD(ms, MultiEncoding<tex2d_4Encoding>, MS, Tld2D4, 1, Accessor::_Reg)
@@ -9346,6 +9472,7 @@ template <> struct Accessor<OpClass::TLDS_F16> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101001);
+  CONSTANT_FIELD(f16, Float16, Float16::F16)
   INST_TABLE_FIELD(lod, MultiEncoding<tex2d_4Encoding>, LOD1, Tld2D4, 2, Accessor::_Reg)
   INST_TABLE_FIELD(toff, MultiEncoding<tex2d_4Encoding>, TOFF1, Tld2D4, 3, Accessor::_Reg)
   INST_TABLE_FIELD(ms, MultiEncoding<tex2d_4Encoding>, MS, Tld2D4, 1, Accessor::_Reg)
@@ -9396,6 +9523,7 @@ template <> struct Accessor<OpClass::TLD4S_F16> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111110);
+  CONSTANT_FIELD(f16, Float16, Float16::F16)
   INST_FIELD(tcomp, TexComp2Encoding, TexComp, Accessor::_Reg)
   INST_FIELD(toff, AOFFI2Encoding, TOFF1, Accessor::_Reg)
   INST_FIELD(dc, DCEncoding, DC, Accessor::_Reg)
@@ -9447,6 +9575,7 @@ template <> struct Accessor<OpClass::TLD_B> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11011101);
+  CONSTANT_FIELD(b, BOnly, BOnly::B)
   INST_FIELD(lod, LOD1Encoding, LOD1, Accessor::_Reg)
   INST_FIELD(toff, TOFF1Encoding, TOFF1, Accessor::_Reg)
   INST_FIELD(ms, MSEncoding, MS, Accessor::_Reg)
@@ -9457,6 +9586,7 @@ template <> struct Accessor<OpClass::TLD_B> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(tid, std::uint16_t, 0)
   INST_FIELD(paramA, ParamAEncoding, ParamA, Accessor::_Reg)
   INST_FIELD(wmsk, WmskEncoding, std::uint8_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9501,6 +9631,7 @@ template <> struct Accessor<OpClass::TLD4_B> : public AccessorBase {
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111011);
   INST_FIELD(tcomp, TexCompBEncoding, TexComp, Accessor::_Reg)
+  CONSTANT_FIELD(b, BOnly, BOnly::B)
   INST_FIELD(toff, TOFF2BEncoding, TOFF2, Accessor::_Reg)
   INST_FIELD(dc, DCEncoding, DC, Accessor::_Reg)
   INST_FIELD(ndv, NDVEncoding, NDV, Accessor::_Reg)
@@ -9510,6 +9641,7 @@ template <> struct Accessor<OpClass::TLD4_B> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(tid, std::uint16_t, 0)
   INST_FIELD(paramA, ParamAEncoding, ParamA, Accessor::_Reg)
   INST_FIELD(wmsk, WmskEncoding, std::uint8_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9555,6 +9687,7 @@ template <> struct Accessor<OpClass::TLD4_B_Legacy_Style> : public AccessorBase 
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111011);
   INST_FIELD(tcomp, TexCompBEncoding, TexComp, Accessor::_Reg)
+  CONSTANT_FIELD(b, BOnly, BOnly::B)
   INST_FIELD(toff, TOFF2BEncoding, TOFF2, Accessor::_Reg)
   INST_FIELD(dc, DCEncoding, DC, Accessor::_Reg)
   INST_FIELD(ndv, NDVEncoding, NDV, Accessor::_Reg)
@@ -9564,6 +9697,8 @@ template <> struct Accessor<OpClass::TLD4_B_Legacy_Style> : public AccessorBase 
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(tid, std::uint8_t, 0)
+  CONSTANT_FIELD(smp, std::uint8_t, 0)
   INST_FIELD(paramA, ParamAEncoding, ParamA, Accessor::_Reg)
   INST_FIELD(wmsk, WmskEncoding, std::uint8_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9580,6 +9715,7 @@ template <> struct Accessor<OpClass::TMML> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101011);
+  CONSTANT_FIELD(lod, LODOnly, LODOnly::LOD)
   INST_FIELD(ndv, NDVEncoding, NDV, Accessor::_Reg)
   INST_FIELD(ndp, NODEPEncoding, NODEP, Accessor::_Reg)
   SCHED_FIELD(phase, OETexPhaseEncoding, TPhase, Accessor::_Reg)
@@ -9603,6 +9739,7 @@ template <> struct Accessor<OpClass::TMML_Legacy_Style> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101011);
+  CONSTANT_FIELD(lod, LODOnly, LODOnly::LOD)
   INST_FIELD(ndv, NDVEncoding, NDV, Accessor::_Reg)
   INST_FIELD(ndp, NODEPEncoding, NODEP, Accessor::_Reg)
   SCHED_FIELD(phase, OETexPhaseEncoding, TPhase, Accessor::_Reg)
@@ -9627,12 +9764,15 @@ template <> struct Accessor<OpClass::TMML_B> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101100);
+  CONSTANT_FIELD(b, BOnly, BOnly::B)
+  CONSTANT_FIELD(lod, LODOnly, LODOnly::LOD)
   INST_FIELD(ndv, NDVEncoding, NDV, Accessor::_Reg)
   INST_FIELD(ndp, NODEPEncoding, NODEP, Accessor::_Reg)
   SCHED_FIELD(phase, OETexPhaseEncoding, TPhase, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(tid, std::uint16_t, 0)
   INST_FIELD(paramA, ParamAEncoding, ParamA, Accessor::_Reg)
   INST_FIELD(wmsk, WmskEncoding, std::uint8_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9649,12 +9789,16 @@ template <> struct Accessor<OpClass::TMML_B_Legacy_Style> : public AccessorBase 
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101100);
+  CONSTANT_FIELD(b, BOnly, BOnly::B)
+  CONSTANT_FIELD(lod, LODOnly, LODOnly::LOD)
   INST_FIELD(ndv, NDVEncoding, NDV, Accessor::_Reg)
   INST_FIELD(ndp, NODEPEncoding, NODEP, Accessor::_Reg)
   SCHED_FIELD(phase, OETexPhaseEncoding, TPhase, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(tid, std::uint8_t, 0)
+  CONSTANT_FIELD(smp, std::uint8_t, 0)
   INST_FIELD(paramA, ParamAEncoding, ParamA, Accessor::_Reg)
   INST_FIELD(wmsk, WmskEncoding, std::uint8_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9722,6 +9866,7 @@ template <> struct Accessor<OpClass::TXD_B> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111001);
+  CONSTANT_FIELD(b, BOnly, BOnly::B)
   INST_FIELD(lc, LCDEncoding, LC, Accessor::_Reg)
   INST_FIELD(toff, TOFF1Encoding, TOFF1, Accessor::_Reg)
   INST_FIELD(ndp, NODEPEncoding, NODEP, Accessor::_Reg)
@@ -9730,6 +9875,7 @@ template <> struct Accessor<OpClass::TXD_B> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(tid, std::uint16_t, 0)
   INST_FIELD(paramA, ParamAEncoding, ParamA, Accessor::_Reg)
   INST_FIELD(wmsk, WmskEncoding, std::uint8_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9746,6 +9892,7 @@ template <> struct Accessor<OpClass::TXD_B_Legacy_Style> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111001);
+  CONSTANT_FIELD(b, BOnly, BOnly::B)
   INST_FIELD(lc, LCDEncoding, LC, Accessor::_Reg)
   INST_FIELD(toff, TOFF1Encoding, TOFF1, Accessor::_Reg)
   INST_FIELD(ndp, NODEPEncoding, NODEP, Accessor::_Reg)
@@ -9754,6 +9901,8 @@ template <> struct Accessor<OpClass::TXD_B_Legacy_Style> : public AccessorBase {
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(tid, std::uint8_t, 0)
+  CONSTANT_FIELD(smp, std::uint8_t, 0)
   INST_FIELD(paramA, ParamAEncoding, ParamA, Accessor::_Reg)
   INST_FIELD(wmsk, WmskEncoding, std::uint8_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -9856,11 +10005,13 @@ template <> struct Accessor<OpClass::TXQ_B> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101010);
+  CONSTANT_FIELD(b, BOnly, BOnly::B)
   INST_FIELD(ndp, NODEPEncoding, NODEP, Accessor::_Reg)
   SCHED_FIELD(phase, OETexPhaseEncoding, TPhase, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(query, MultiEncoding<TexQueryEncoding>, TXQMode, TXQModeDim, 0, Accessor::_Reg)
+  CONSTANT_FIELD(tid, std::uint16_t, 0)
   INST_FIELD(wmsk, WmskEncoding, std::uint8_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
@@ -9876,11 +10027,14 @@ template <> struct Accessor<OpClass::TXQ_B_Legacy_Style> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101010);
+  CONSTANT_FIELD(b, BOnly, BOnly::B)
   INST_FIELD(ndp, NODEPEncoding, NODEP, Accessor::_Reg)
   SCHED_FIELD(phase, OETexPhaseEncoding, TPhase, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(query, MultiEncoding<TexQueryEncoding>, TXQMode, TXQModeDim, 0, Accessor::_Reg)
+  CONSTANT_FIELD(tid, std::uint8_t, 0)
+  CONSTANT_FIELD(smp, std::uint8_t, 0)
   INST_FIELD(wmsk, WmskEncoding, std::uint8_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
@@ -9896,11 +10050,13 @@ template <> struct Accessor<OpClass::TXQ_B_Imm> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101010);
+  CONSTANT_FIELD(b, BOnly, BOnly::B)
   INST_FIELD(ndp, NODEPEncoding, NODEP, Accessor::_Reg)
   SCHED_FIELD(phase, OETexPhaseEncoding, TPhase, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(query, MultiEncoding<TexQueryEncoding>, std::uint8_t, TXQModeDim, 0)
+  CONSTANT_FIELD(tid, std::uint16_t, 0)
   INST_FIELD(wmsk, WmskEncoding, std::uint8_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
@@ -9916,11 +10072,14 @@ template <> struct Accessor<OpClass::TXQ_B_Imm_Legacy_Style> : public AccessorBa
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111101010);
+  CONSTANT_FIELD(b, BOnly, BOnly::B)
   INST_FIELD(ndp, NODEPEncoding, NODEP, Accessor::_Reg)
   SCHED_FIELD(phase, OETexPhaseEncoding, TPhase, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(query, MultiEncoding<TexQueryEncoding>, std::uint8_t, TXQModeDim, 0)
+  CONSTANT_FIELD(tid, std::uint8_t, 0)
+  CONSTANT_FIELD(smp, std::uint8_t, 0)
   INST_FIELD(wmsk, WmskEncoding, std::uint8_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
@@ -9979,6 +10138,7 @@ template <> struct Accessor<OpClass::DEPBAR_LE> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000011110);
+  CONSTANT_FIELD(le, LEOnly, LEOnly::LE)
   INST_FIELD(sbidx, SBIDEncoding, Scoreboard, Accessor::_Reg)
   INST_FIELD(cnt, PendCntEncoding, std::uint8_t)
   INST_FIELD(dep_scbd, Imm6Encoding, std::uint8_t)
@@ -10003,6 +10163,7 @@ template <> struct Accessor<OpClass::DEPBAR_ALL> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1111000011110);
+  CONSTANT_FIELD(all, ALLOnly, ALLOnly::ALL)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
@@ -10056,6 +10217,7 @@ template <> struct Accessor<OpClass::I_ALD> : public AccessorBase {
   INST_FIELD(io, AIOEncoding, AIO, Accessor::_Reg)
   INST_FIELD(size, ALSizeEncoding, AInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(srcAttr, A, A::A)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
   INST_FIELD(uImm, Imm10Encoding, std::uint16_t)
   INST_FIELD(Rb, RegBALDEncoding, Register, Accessor::_Reg)
@@ -10074,8 +10236,10 @@ template <> struct Accessor<OpClass::I_ALD_PATCH> : public AccessorBase {
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111011);
   INST_FIELD(io, AIOEncoding, AIO, Accessor::_Reg)
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(size, ALSizeEncoding, AInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(srcAttr, A, A::A)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
   INST_FIELD(uImm, Imm10Encoding, std::uint16_t)
   INST_FIELD(Rb, RegBALDEncoding, Register, Accessor::_Reg)
@@ -10094,8 +10258,10 @@ template <> struct Accessor<OpClass::ALD> : public AccessorBase {
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111011);
   INST_FIELD(io, AIOEncoding, AIO, Accessor::_Reg)
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(size, ALSizeEncoding, AInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(srcAttr, A, A::A)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
   INST_FIELD(sImm, Imm11Encoding, std::int16_t)
   INST_FIELD(Rb, RegBALDEncoding, Register, Accessor::_Reg)
@@ -10114,8 +10280,10 @@ template <> struct Accessor<OpClass::ALD_PHYS> : public AccessorBase {
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111011);
   INST_FIELD(io, AIOEncoding, AIO, Accessor::_Reg)
+  CONSTANT_FIELD(phys, Phys, Phys::PHYS)
   INST_FIELD(size, ALSizeEncoding, AInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(srcAttr, A, A::A)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
   INST_FIELD(Rb, RegBALDEncoding, Register, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -10133,6 +10301,7 @@ template <> struct Accessor<OpClass::I_AST> : public AccessorBase {
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111110);
   INST_FIELD(size, ALSizeEncoding, AInteger, Accessor::_Reg)
+  CONSTANT_FIELD(srcAttr, A, A::A)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
   INST_FIELD(uImm, Imm10Encoding, std::uint16_t)
   INST_FIELD(Rb, RegBASTEncoding, Register, Accessor::_Reg)
@@ -10151,7 +10320,9 @@ template <> struct Accessor<OpClass::I_AST_PATCH> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111110);
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(size, ALSizeEncoding, AInteger, Accessor::_Reg)
+  CONSTANT_FIELD(srcAttr, A, A::A)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
   INST_FIELD(uImm, Imm10Encoding, std::uint16_t)
   INST_FIELD(Rb, RegBASTEncoding, Register, Accessor::_Reg)
@@ -10170,7 +10341,9 @@ template <> struct Accessor<OpClass::AST> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111110);
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(size, ALSizeEncoding, AInteger, Accessor::_Reg)
+  CONSTANT_FIELD(srcAttr, A, A::A)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
   INST_FIELD(sImm, Imm11Encoding, std::int16_t)
   INST_FIELD(Rb, RegBASTEncoding, Register, Accessor::_Reg)
@@ -10189,7 +10362,9 @@ template <> struct Accessor<OpClass::AST_PHYS> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111111110);
+  CONSTANT_FIELD(phys, Phys, Phys::PHYS)
   INST_FIELD(size, ALSizeEncoding, AInteger, Accessor::_Reg)
+  CONSTANT_FIELD(srcAttr, A, A::A)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
   INST_FIELD(Rb, RegBASTEncoding, Register, Accessor::_Reg)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
@@ -10246,6 +10421,7 @@ template <> struct Accessor<OpClass::Const_OUT> : public AccessorBase {
   INST_FIELD(out, OutTypeEncoding, OutType, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -10322,6 +10498,7 @@ template <> struct Accessor<OpClass::LDC> : public AccessorBase {
   INST_FIELD(size, LSSize2Encoding, CInteger_n64_n128, Accessor::_Reg)
   INST_FIELD(ad, AdModeEncoding, AdMode, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegisterFAU, Accessor::_Reg)
@@ -10344,6 +10521,7 @@ template <> struct Accessor<OpClass::I_LDC> : public AccessorBase {
   INST_FIELD(size, LSSize2Encoding, CInteger_n64_n128, Accessor::_Reg)
   INST_FIELD(ad, AdModeEncoding, AdMode, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
@@ -10363,8 +10541,10 @@ template <> struct Accessor<OpClass::LDC_64> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111110010);
+  CONSTANT_FIELD(size, CInteger_64, CInteger_64::_64)
   INST_FIELD(ad, AdModeEncoding, AdMode, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegisterFAU, Accessor::_Reg)
@@ -10384,8 +10564,10 @@ template <> struct Accessor<OpClass::I_LDC_64> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111110010);
+  CONSTANT_FIELD(size, CInteger_64, CInteger_64::_64)
   INST_FIELD(ad, AdModeEncoding, AdMode, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, RegisterFAU, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
@@ -10603,6 +10785,7 @@ template <> struct Accessor<OpClass::LEA_LO_REG> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101101111010);
+  CONSTANT_FIELD(hilo, LOOnly, LOOnly::LO)
   INST_FIELD(xmode, Xm4Encoding, X, Accessor::_Reg)
   INST_FIELD(Pd, PredDestEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
@@ -10623,6 +10806,7 @@ template <> struct Accessor<OpClass::LEA_LO_IMM> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1101111010);
+  CONSTANT_FIELD(hilo, LOOnly, LOOnly::LO)
   INST_FIELD(xmode, Xm4Encoding, X, Accessor::_Reg)
   INST_FIELD(Pd, PredDestEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
@@ -10642,6 +10826,7 @@ template <> struct Accessor<OpClass::LEA_LO_CONST> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b100101111010);
+  CONSTANT_FIELD(hilo, LOOnly, LOOnly::LO)
   INST_FIELD(xmode, Xm4Encoding, X, Accessor::_Reg)
   INST_FIELD(Pd, PredDestEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
@@ -10649,6 +10834,7 @@ template <> struct Accessor<OpClass::LEA_LO_CONST> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra_negate, nA4Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -10664,6 +10850,7 @@ template <> struct Accessor<OpClass::LEA_HI_REG> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101101111011);
+  CONSTANT_FIELD(hi, HIOnly, HIOnly::HI)
   INST_FIELD(xmode, Xm5Encoding, X, Accessor::_Reg)
   INST_FIELD(Pd, PredDestEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
@@ -10686,6 +10873,7 @@ template <> struct Accessor<OpClass::LEA_HI_CONST> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b110);
+  CONSTANT_FIELD(hi, HIOnly, HIOnly::HI)
   INST_FIELD(xmode, Xm6Encoding, X, Accessor::_Reg)
   INST_FIELD(Pd, PredDestEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
@@ -10693,6 +10881,7 @@ template <> struct Accessor<OpClass::LEA_HI_CONST> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra_negate, nA6Encoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -10911,6 +11100,7 @@ template <> struct Accessor<OpClass::ATOM_CAS> : public AccessorBase {
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011101111);
   INST_FIELD(e, AtomEEncoding, E, Accessor::_Reg)
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_TABLE_FIELD(size, MultiEncoding<Size1RegBCEncoding>, CASInteger, ConsecutiveReg8, 2, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
@@ -10932,6 +11122,7 @@ template <> struct Accessor<OpClass::I_ATOM_CAS> : public AccessorBase {
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011101111);
   INST_FIELD(e, AtomEEncoding, E, Accessor::_Reg)
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_TABLE_FIELD(size, MultiEncoding<Size1RegBCEncoding>, CASInteger, ConsecutiveReg8, 2, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
@@ -10953,11 +11144,13 @@ template <> struct Accessor<OpClass::ATOM_CAS_Rb_and_RZ> : public AccessorBase {
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011101111);
   INST_FIELD(e, AtomEEncoding, E, Accessor::_Reg)
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_FIELD(size, AtomSize1Encoding, CASInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
   INST_FIELD(sImm, Imm20aEncoding, std::int32_t)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(Rc, ZeroRegister, ZeroRegister::RZ)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -10973,11 +11166,13 @@ template <> struct Accessor<OpClass::I_ATOM_CAS_Rb_and_RZ> : public AccessorBase
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011101111);
   INST_FIELD(e, AtomEEncoding, E, Accessor::_Reg)
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_FIELD(size, AtomSize1Encoding, CASInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
   INST_FIELD(uImm, Imm20aEncoding, std::uint32_t)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(Rc, ZeroRegister, ZeroRegister::RZ)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -10993,10 +11188,12 @@ template <> struct Accessor<OpClass::ATOM_CAS_RZ_and_Rc> : public AccessorBase {
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011101111);
   INST_FIELD(e, AtomEEncoding, E, Accessor::_Reg)
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_FIELD(size, AtomSize1Encoding, CASInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
   INST_FIELD(sImm, Imm20aEncoding, std::int32_t)
+  CONSTANT_FIELD(Rb, ZeroRegister, ZeroRegister::RZ)
   INST_FIELD(Rc, RegBEncoding, NonZeroRegister, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
@@ -11013,10 +11210,12 @@ template <> struct Accessor<OpClass::I_ATOM_CAS_RZ_and_Rc> : public AccessorBase
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011101111);
   INST_FIELD(e, AtomEEncoding, E, Accessor::_Reg)
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_FIELD(size, AtomSize1Encoding, CASInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
   INST_FIELD(uImm, Imm20aEncoding, std::uint32_t)
+  CONSTANT_FIELD(Rb, ZeroRegister, ZeroRegister::RZ)
   INST_FIELD(Rc, RegBEncoding, NonZeroRegister, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
@@ -11055,6 +11254,7 @@ template <> struct Accessor<OpClass::ATOM_CAS_SPARSE> : public AccessorBase {
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011100111);
   INST_FIELD(e, AtomEEncoding, E, Accessor::_Reg)
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_TABLE_FIELD(size, MultiEncoding<Size1RegBCEncoding>, CASInteger, ConsecutiveReg8, 2, Accessor::_Reg)
   INST_TABLE_FIELD(Pd, MultiEncoding<PredDest4Encoding>, Predicate, DestPred, 0, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
@@ -11076,10 +11276,12 @@ template <> struct Accessor<OpClass::ATOM_CAS_RZ_and_Rc_SPARSE> : public Accesso
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011100111);
   INST_FIELD(e, AtomEEncoding, E, Accessor::_Reg)
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_FIELD(size, AtomSize1Encoding, CASInteger, Accessor::_Reg)
   INST_TABLE_FIELD(Pd, MultiEncoding<PredDest4Encoding>, Predicate, DestPred, 0, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
+  CONSTANT_FIELD(Rb, ZeroRegister, ZeroRegister::RZ)
   INST_FIELD(Rc, RegBEncoding, NonZeroRegister, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
@@ -11096,11 +11298,13 @@ template <> struct Accessor<OpClass::ATOM_CAS_Rb_and_RZ_SPARSE> : public Accesso
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111011100111);
   INST_FIELD(e, AtomEEncoding, E, Accessor::_Reg)
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_FIELD(size, AtomSize1Encoding, CASInteger, Accessor::_Reg)
   INST_TABLE_FIELD(Pd, MultiEncoding<PredDest4Encoding>, Predicate, DestPred, 0, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(Rc, ZeroRegister, ZeroRegister::RZ)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -11157,6 +11361,7 @@ template <> struct Accessor<OpClass::ATOMS_CAS> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101110010);
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_TABLE_FIELD(size, MultiEncoding<asSize1RegBCEncoding>, CASInteger, ConsecutiveReg8, 2, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
@@ -11177,6 +11382,7 @@ template <> struct Accessor<OpClass::I_ATOMS_CAS> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101110010);
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_TABLE_FIELD(size, MultiEncoding<asSize1RegBCEncoding>, CASInteger, ConsecutiveReg8, 2, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
@@ -11197,11 +11403,13 @@ template <> struct Accessor<OpClass::ATOMS_CAS_Rb_and_RZ> : public AccessorBase 
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101110010);
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_FIELD(size, AtomsSize1Encoding, CASInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
   INST_FIELD(sImm, Imm22atomsEncoding, std::int32_t, Accessor::_Scale<4ull>)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(Rc, ZeroRegister, ZeroRegister::RZ)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -11216,11 +11424,13 @@ template <> struct Accessor<OpClass::I_ATOMS_CAS_Rb_and_RZ> : public AccessorBas
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101110010);
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_FIELD(size, AtomsSize1Encoding, CASInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
   INST_FIELD(uImm, Imm22atomsEncoding, std::uint32_t, Accessor::_Scale<4ull>)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(Rc, ZeroRegister, ZeroRegister::RZ)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -11235,10 +11445,12 @@ template <> struct Accessor<OpClass::ATOMS_CAS_RZ_and_Rc> : public AccessorBase 
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101110010);
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_FIELD(size, AtomsSize1Encoding, CASInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
   INST_FIELD(sImm, Imm22atomsEncoding, std::int32_t, Accessor::_Scale<4ull>)
+  CONSTANT_FIELD(Rb, ZeroRegister, ZeroRegister::RZ)
   INST_FIELD(Rc, RegBEncoding, NonZeroRegister, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
@@ -11254,10 +11466,12 @@ template <> struct Accessor<OpClass::I_ATOMS_CAS_RZ_and_Rc> : public AccessorBas
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b11101110010);
+  CONSTANT_FIELD(cas, CAS, CAS::CAS)
   INST_FIELD(size, AtomsSize1Encoding, CASInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
   INST_FIELD(uImm, Imm22atomsEncoding, std::uint32_t, Accessor::_Scale<4ull>)
+  CONSTANT_FIELD(Rb, ZeroRegister, ZeroRegister::RZ)
   INST_FIELD(Rc, RegBEncoding, NonZeroRegister, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
@@ -11273,6 +11487,7 @@ template <> struct Accessor<OpClass::ATOMS_CAST> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111000);
+  CONSTANT_FIELD(cast, CAST, CAST::CAST)
   INST_FIELD(spin, atomscSPINEncoding, AtomsSPIN, Accessor::_Reg)
   INST_TABLE_FIELD(size, MultiEncoding<asSize1RegBCEncoding>, CASInteger, ConsecutiveReg8, 2, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
@@ -11294,6 +11509,7 @@ template <> struct Accessor<OpClass::I_ATOMS_CAST> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111000);
+  CONSTANT_FIELD(cast, CAST, CAST::CAST)
   INST_FIELD(spin, atomscSPINEncoding, AtomsSPIN, Accessor::_Reg)
   INST_TABLE_FIELD(size, MultiEncoding<asSize1RegBCEncoding>, CASInteger, ConsecutiveReg8, 2, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
@@ -11315,12 +11531,14 @@ template <> struct Accessor<OpClass::ATOMS_CAST_Rb_and_RZ> : public AccessorBase
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111000);
+  CONSTANT_FIELD(cast, CAST, CAST::CAST)
   INST_FIELD(spin, atomscSPINEncoding, AtomsSPIN, Accessor::_Reg)
   INST_FIELD(size, AtomsSize1Encoding, CASInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
   INST_FIELD(sImm, Imm22atomsEncoding, std::int32_t, Accessor::_Scale<4ull>)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(Rc, ZeroRegister, ZeroRegister::RZ)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -11335,12 +11553,14 @@ template <> struct Accessor<OpClass::I_ATOMS_CAST_Rb_and_RZ> : public AccessorBa
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111000);
+  CONSTANT_FIELD(cast, CAST, CAST::CAST)
   INST_FIELD(spin, atomscSPINEncoding, AtomsSPIN, Accessor::_Reg)
   INST_FIELD(size, AtomsSize1Encoding, CASInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
   INST_FIELD(uImm, Imm22atomsEncoding, std::uint32_t, Accessor::_Scale<4ull>)
   INST_FIELD(Rb, RegBEncoding, Register, Accessor::_Reg)
+  CONSTANT_FIELD(Rc, ZeroRegister, ZeroRegister::RZ)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -11355,11 +11575,13 @@ template <> struct Accessor<OpClass::ATOMS_CAST_RZ_and_Rc> : public AccessorBase
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111000);
+  CONSTANT_FIELD(cast, CAST, CAST::CAST)
   INST_FIELD(spin, atomscSPINEncoding, AtomsSPIN, Accessor::_Reg)
   INST_FIELD(size, AtomsSize1Encoding, CASInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, NonZeroRegister, Accessor::_Reg)
   INST_FIELD(sImm, Imm22atomsEncoding, std::int32_t, Accessor::_Scale<4ull>)
+  CONSTANT_FIELD(Rb, ZeroRegister, ZeroRegister::RZ)
   INST_FIELD(Rc, RegBEncoding, NonZeroRegister, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
@@ -11375,11 +11597,13 @@ template <> struct Accessor<OpClass::I_ATOMS_CAST_RZ_and_Rc> : public AccessorBa
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110111000);
+  CONSTANT_FIELD(cast, CAST, CAST::CAST)
   INST_FIELD(spin, atomscSPINEncoding, AtomsSPIN, Accessor::_Reg)
   INST_FIELD(size, AtomsSize1Encoding, CASInteger, Accessor::_Reg)
   INST_FIELD(Rd, DestEncoding, Register, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, ZeroRegister, Accessor::_Reg)
   INST_FIELD(uImm, Imm22atomsEncoding, std::uint32_t, Accessor::_Scale<4ull>)
+  CONSTANT_FIELD(Rb, ZeroRegister, ZeroRegister::RZ)
   INST_FIELD(Rc, RegBEncoding, NonZeroRegister, Accessor::_Reg)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
@@ -11673,6 +11897,7 @@ template <> struct Accessor<OpClass::SULD_D_REG> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100010);
+  CONSTANT_FIELD(d, DOnly, DOnly::D)
   INST_FIELD(ba, BAEncoding, BA, Accessor::_Reg)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(cop, COP5Encoding, LoadCacheOp, Accessor::_Reg)
@@ -11696,6 +11921,7 @@ template <> struct Accessor<OpClass::SULD_D_IMM> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100011);
+  CONSTANT_FIELD(d, DOnly, DOnly::D)
   INST_FIELD(ba, BAEncoding, BA, Accessor::_Reg)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(cop, COP5Encoding, LoadCacheOp, Accessor::_Reg)
@@ -11719,6 +11945,7 @@ template <> struct Accessor<OpClass::SULD_P_REG> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100000);
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(cop, COP5Encoding, LoadCacheOp, Accessor::_Reg)
   INST_FIELD(rgba, SURGBAEncoding, RGBA, Accessor::_Reg)
@@ -11741,6 +11968,7 @@ template <> struct Accessor<OpClass::SULD_P_IMM> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100001);
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(cop, COP5Encoding, LoadCacheOp, Accessor::_Reg)
   INST_FIELD(rgba, SURGBAEncoding, RGBA, Accessor::_Reg)
@@ -11763,6 +11991,7 @@ template <> struct Accessor<OpClass::SUST_D_REG> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100110);
+  CONSTANT_FIELD(d, DOnly, DOnly::D)
   INST_FIELD(ba, BAEncoding, BA, Accessor::_Reg)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(cop, COP5Encoding, StoreCacheOp, Accessor::_Reg)
@@ -11785,6 +12014,7 @@ template <> struct Accessor<OpClass::SUST_D_IMM> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100111);
+  CONSTANT_FIELD(d, DOnly, DOnly::D)
   INST_FIELD(ba, BAEncoding, BA, Accessor::_Reg)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(cop, COP5Encoding, StoreCacheOp, Accessor::_Reg)
@@ -11807,6 +12037,7 @@ template <> struct Accessor<OpClass::SUST_P_REG> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100100);
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(cop, COP5Encoding, StoreCacheOp, Accessor::_Reg)
   INST_FIELD(rgba, SURGBAEncoding, RGBA, Accessor::_Reg)
@@ -11828,6 +12059,7 @@ template <> struct Accessor<OpClass::SUST_P_IMM> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101100101);
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(cop, COP5Encoding, StoreCacheOp, Accessor::_Reg)
   INST_FIELD(rgba, SURGBAEncoding, RGBA, Accessor::_Reg)
@@ -11849,6 +12081,7 @@ template <> struct Accessor<OpClass::SURED_D_REG> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101101010);
+  CONSTANT_FIELD(d, DOnly, DOnly::D)
   INST_FIELD(ba, BAEncoding, BA, Accessor::_Reg)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(redop, SURedOpEncoding, RedOp, Accessor::_Reg)
@@ -11871,6 +12104,7 @@ template <> struct Accessor<OpClass::SURED_D_IMM> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101101011);
+  CONSTANT_FIELD(d, DOnly, DOnly::D)
   INST_FIELD(ba, BAEncoding, BA, Accessor::_Reg)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(redop, SURedOpEncoding, RedOp, Accessor::_Reg)
@@ -11893,6 +12127,7 @@ template <> struct Accessor<OpClass::SURED_P_REG> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101101000);
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(redop, SURedOpEncoding, RedOp, Accessor::_Reg)
   INST_FIELD(clamp, Clamp4Encoding, Clamp1, Accessor::_Reg)
@@ -11913,6 +12148,7 @@ template <> struct Accessor<OpClass::SURED_P_IMM> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101101001);
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(redop, SURedOpEncoding, RedOp, Accessor::_Reg)
   INST_FIELD(clamp, Clamp4Encoding, Clamp1, Accessor::_Reg)
@@ -11933,6 +12169,7 @@ template <> struct Accessor<OpClass::SUATOM_D_REG> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101001110);
+  CONSTANT_FIELD(d, DOnly, DOnly::D)
   INST_FIELD(ba, satmBAEncoding, BA, Accessor::_Reg)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(suatomop, satmOpEncoding, AtomsOp, Accessor::_Reg)
@@ -11956,6 +12193,7 @@ template <> struct Accessor<OpClass::SUATOM_D_REG_SPARSE> : public AccessorBase 
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101110);
+  CONSTANT_FIELD(d, DOnly, DOnly::D)
   INST_FIELD(ba, satmBAEncoding, BA, Accessor::_Reg)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(suatomop, satmOpEncoding, AtomsOp, Accessor::_Reg)
@@ -11980,6 +12218,7 @@ template <> struct Accessor<OpClass::SUATOM_D_IMM> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101000);
+  CONSTANT_FIELD(d, DOnly, DOnly::D)
   INST_FIELD(ba, satmBAEncoding, BA, Accessor::_Reg)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(suatomop, satmOpEncoding, AtomsOp, Accessor::_Reg)
@@ -12003,6 +12242,7 @@ template <> struct Accessor<OpClass::SUATOM_P_REG> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101001100);
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(suatomop, satmOpEncoding, AtomsOp, Accessor::_Reg)
   INST_FIELD(clamp, Clamp4Encoding, Clamp1, Accessor::_Reg)
@@ -12024,6 +12264,7 @@ template <> struct Accessor<OpClass::SUATOM_P_IMM> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101001101);
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(suatomop, satmOpEncoding, AtomsOp, Accessor::_Reg)
   INST_FIELD(clamp, Clamp4Encoding, Clamp1, Accessor::_Reg)
@@ -12045,8 +12286,10 @@ template <> struct Accessor<OpClass::SUATOM_D_CAS_REG> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101011010);
+  CONSTANT_FIELD(d, DOnly, DOnly::D)
   INST_FIELD(ba, satmBAEncoding, BA, Accessor::_Reg)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
+  CONSTANT_FIELD(suatomop, CAS, CAS::CAS)
   INST_FIELD(size, satmSize2Encoding, AtomicInteger, Accessor::_Reg)
   INST_FIELD(clamp, Clamp4Encoding, Clamp1, Accessor::_Reg)
   INST_TABLE_FIELD(Pd, MultiEncoding<PredDest2Encoding>, Predicate, DestPred, 0, Accessor::_Reg)
@@ -12068,8 +12311,10 @@ template <> struct Accessor<OpClass::SUATOM_D_CAS_IMM> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101010);
+  CONSTANT_FIELD(d, DOnly, DOnly::D)
   INST_FIELD(ba, satmBAEncoding, BA, Accessor::_Reg)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
+  CONSTANT_FIELD(suatomop, CAS, CAS::CAS)
   INST_FIELD(size, satmSize1Encoding, AtomicInteger, Accessor::_Reg)
   INST_FIELD(clamp, Clamp4Encoding, Clamp1, Accessor::_Reg)
   INST_TABLE_FIELD(Pd, MultiEncoding<PredDest2Encoding>, Predicate, DestPred, 0, Accessor::_Reg)
@@ -12091,6 +12336,7 @@ template <> struct Accessor<OpClass::SUATOM_P_CAS_REG> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101011000);
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(suatomop, satmOpEncoding, CAS, Accessor::_Reg)
   INST_FIELD(clamp, Clamp4Encoding, Clamp1, Accessor::_Reg)
@@ -12112,6 +12358,7 @@ template <> struct Accessor<OpClass::SUATOM_P_CAS_IMM> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b1110101011001);
+  CONSTANT_FIELD(p, POnly, POnly::P)
   INST_FIELD(dim, SUDimEncoding, Dim1, Accessor::_Reg)
   INST_FIELD(suatomop, satmOpEncoding, CAS, Accessor::_Reg)
   INST_FIELD(clamp, Clamp4Encoding, Clamp1, Accessor::_Reg)
@@ -12152,6 +12399,7 @@ template <> struct Accessor<OpClass::BRA_c> : public AccessorBase {
   INST_FIELD(lmt, LMTEncoding, LMT, Accessor::_Reg)
   CONSTANT_FIELD(TestCC, CC, CC::CC)
   INST_FIELD(CCTest, CCC_1Encoding, Test, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
@@ -12184,6 +12432,7 @@ template <> struct Accessor<OpClass::BRX_c> : public AccessorBase {
   INST_FIELD(lmt, LMTEncoding, LMT, Accessor::_Reg)
   CONSTANT_FIELD(TestCC, CC, CC::CC)
   INST_FIELD(CCTest, CCC_1Encoding, Test, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
@@ -12218,6 +12467,7 @@ template <> struct Accessor<OpClass::JMP_c> : public AccessorBase {
   INST_FIELD(lmt, LMTEncoding, LMT, Accessor::_Reg)
   CONSTANT_FIELD(TestCC, CC, CC::CC)
   INST_FIELD(CCTest, CCC_1Encoding, Test, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
@@ -12250,6 +12500,7 @@ template <> struct Accessor<OpClass::JMX_c> : public AccessorBase {
   INST_FIELD(lmt, LMTEncoding, LMT, Accessor::_Reg)
   CONSTANT_FIELD(TestCC, CC, CC::CC)
   INST_FIELD(CCTest, CCC_1Encoding, Test, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
@@ -12274,6 +12525,7 @@ template <> struct Accessor<OpClass::CAL_c> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100110);
   INST_FIELD(inc, INCEncoding, INC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
@@ -12297,6 +12549,7 @@ template <> struct Accessor<OpClass::PRET_c> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100111);
   INST_FIELD(inc, INCEncoding, INC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
@@ -12320,6 +12573,7 @@ template <> struct Accessor<OpClass::JCAL_c> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100010);
   INST_FIELD(inc, INCEncoding, INC, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
@@ -12341,6 +12595,7 @@ template <> struct Accessor<OpClass::SSY> : public AccessorBase {
 template <> struct Accessor<OpClass::SSY_c> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101001);
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
@@ -12362,6 +12617,7 @@ template <> struct Accessor<OpClass::PLONGJMP> : public AccessorBase {
 template <> struct Accessor<OpClass::PLONGJMP_c> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101000);
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
@@ -12383,6 +12639,7 @@ template <> struct Accessor<OpClass::PBK> : public AccessorBase {
 template <> struct Accessor<OpClass::PBK_c> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101010);
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
@@ -12404,6 +12661,7 @@ template <> struct Accessor<OpClass::PCNT> : public AccessorBase {
 template <> struct Accessor<OpClass::PCNT_c> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101011);
+  CONSTANT_FIELD(srcConst, C, C::C)
   using constBankEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress0<17>, 0)
   using immConstOffsetEncoding = MultiEncoding<CBankEncoding,Imm16Encoding>;
@@ -12533,6 +12791,7 @@ template <> struct Accessor<OpClass::RTT> : public AccessorBase {
 template <> struct Accessor<OpClass::IDE_EN> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000111001);
+  CONSTANT_FIELD(en, IDEActionENOnly, IDEActionENOnly::EN)
   INST_FIELD(uImm, Imm16Encoding, std::uint16_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
@@ -12587,6 +12846,7 @@ template <> struct Accessor<OpClass::NOP_trig> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000010110);
+  CONSTANT_FIELD(trig, Trig, Trig::TRIG)
   CONSTANT_FIELD(TestCC, CC, CC::CC)
   INST_FIELD(fcomp, CCC_2Encoding, Test, Accessor::_Reg)
   INST_FIELD(uImm, Imm16Encoding, std::uint16_t)
@@ -13011,6 +13271,7 @@ template <> struct Accessor<OpClass::VOTE_VTG> : public AccessorBase {
   INST_FIELD(Pg, PredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pg_not, PredNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b101000011100);
+  CONSTANT_FIELD(vtg, VTG, VTG::VTG)
   INST_FIELD(vtgmode, VModeEncoding, VTGMode, Accessor::_Reg)
   INST_FIELD(uImm, Imm28Encoding, std::uint32_t)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -13147,8 +13408,8 @@ template <> struct Accessor<OpClass::hfma2__v1> : public AccessorBase {
   INST_FIELD(Ra, hfma2__v1_RaEncoding, hfma2__v1_Ra, Accessor::_Reg)
   INST_FIELD(iswz_Ra_mod, hfma2__v1_Ra_iswz_Ra_modEncoding, hfma2__v1_Ra_iswz_Ra_mod, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(Sb, hfma2__v1_SbEncoding, double)
-  FLOAT_INST_FIELD(Sb2, hfma2__v1_Sb2Encoding, double)
+  FLOAT_INST_FIELD(Sb, hfma2__v1_SbEncoding, double, _F16<10>)
+  FLOAT_INST_FIELD(Sb2, hfma2__v1_Sb2Encoding, double, _F16<10>)
   INST_FIELD(Rc, hfma2__v1_RcEncoding, hfma2__v1_Rc, Accessor::_Reg)
   INST_FIELD(Rc_negate, hfma2__v1_Rc_negateEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Rc_mod, hfma2__v1_Rc_iswz_Rc_modEncoding, hfma2__v1_Rc_iswz_Rc_mod, Accessor::_Reg)
@@ -13175,6 +13436,7 @@ template <> struct Accessor<OpClass::hfma2__v0> : public AccessorBase {
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<hfma2__v0_nABEncoding>, bool, hfma2__v0_nAB, 0, Accessor::_Bool)
   INST_FIELD(iswz_Ra_mod, hfma2__v0_Ra_iswz_Ra_modEncoding, hfma2__v0_Ra_iswz_Ra_mod, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(Sb, C, C::C)
   INST_TABLE_FIELD(Sb_negate, MultiEncoding<hfma2__v0_nABEncoding>, bool, hfma2__v0_nAB, 1, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -13239,8 +13501,8 @@ template <> struct Accessor<OpClass::hset2__v1> : public AccessorBase {
   INST_FIELD(Ra_absolute, hset2__v1_Ra_absoluteEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Ra_mod, hset2__v1_Ra_iswz_Ra_modEncoding, hset2__v1_Ra_iswz_Ra_mod, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(Sb, hset2__v1_SbEncoding, double)
-  FLOAT_INST_FIELD(Sb2, hset2__v1_Sb2Encoding, double)
+  FLOAT_INST_FIELD(Sb, hset2__v1_SbEncoding, double, _F16<10>)
+  FLOAT_INST_FIELD(Sb2, hset2__v1_Sb2Encoding, double, _F16<10>)
   INST_FIELD(Ps, hset2__v1_PsEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Ps_not, hset2__v1_PsNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -13267,6 +13529,7 @@ template <> struct Accessor<OpClass::hset2__v0> : public AccessorBase {
   INST_FIELD(Ra_absolute, hset2__v0_Ra_absoluteEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Ra_mod, hset2__v0_Ra_iswz_Ra_modEncoding, hset2__v0_Ra_iswz_Ra_mod, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(Sb, C, C::C)
   INST_FIELD(Sb_negate, hset2__v0_Sb_negateEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -13297,8 +13560,8 @@ template <> struct Accessor<OpClass::hset2_bop__v1> : public AccessorBase {
   INST_FIELD(Ra_absolute, hset2_bop__v1_Ra_absoluteEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Ra_mod, hset2_bop__v1_Ra_iswz_Ra_modEncoding, hset2_bop__v1_Ra_iswz_Ra_mod, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(Sb, hset2_bop__v1_SbEncoding, double)
-  FLOAT_INST_FIELD(Sb2, hset2_bop__v1_Sb2Encoding, double)
+  FLOAT_INST_FIELD(Sb, hset2_bop__v1_SbEncoding, double, _F16<10>)
+  FLOAT_INST_FIELD(Sb2, hset2_bop__v1_Sb2Encoding, double, _F16<10>)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_sb_bitset, hset2_bop__v1_req_sb_bitsetEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -13322,6 +13585,7 @@ template <> struct Accessor<OpClass::hset2_bop__v0> : public AccessorBase {
   INST_FIELD(Ra_absolute, hset2_bop__v0_Ra_absoluteEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Ra_mod, hset2_bop__v0_Ra_iswz_Ra_modEncoding, hset2_bop__v0_Ra_iswz_Ra_mod, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(Sb, C, C::C)
   INST_FIELD(Sb_negate, hset2_bop__v0_Sb_negateEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)
@@ -13347,8 +13611,8 @@ template <> struct Accessor<OpClass::hmul2_32i_> : public AccessorBase {
   INST_FIELD(Ra, hmul2_32i__RaEncoding, hmul2_32i__Ra, Accessor::_Reg)
   INST_FIELD(iswz_Ra_32i_mod, hmul2_32i__Ra_iswz_Ra_32i_modEncoding, hmul2_32i__Ra_iswz_Ra_32i_mod, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(imm, hmul2_32i__immEncoding, double)
-  FLOAT_INST_FIELD(imm2, hmul2_32i__imm2Encoding, double)
+  FLOAT_INST_FIELD(imm, hmul2_32i__immEncoding, double, _F16<16>)
+  FLOAT_INST_FIELD(imm2, hmul2_32i__imm2Encoding, double, _F16<16>)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_sb_bitset, hmul2_32i__req_sb_bitsetEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -13400,6 +13664,7 @@ template <> struct Accessor<OpClass::hadd2__v0> : public AccessorBase {
   INST_FIELD(Ra_absolute, hadd2__v0_Ra_absoluteEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Ra_mod, hadd2__v0_Ra_iswz_Ra_modEncoding, hadd2__v0_Ra_iswz_Ra_mod, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(Sb, C, C::C)
   INST_FIELD(Sb_negate, hadd2__v0_Sb_negateEncoding, bool, Accessor::_Bool)
   INST_FIELD(Sb_absolute, hadd2__v0_Sb_absoluteEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -13429,8 +13694,8 @@ template <> struct Accessor<OpClass::hadd2__v1> : public AccessorBase {
   INST_FIELD(Ra_absolute, hadd2__v1_Ra_absoluteEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Ra_mod, hadd2__v1_Ra_iswz_Ra_modEncoding, hadd2__v1_Ra_iswz_Ra_mod, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(Sb, hadd2__v1_SbEncoding, double)
-  FLOAT_INST_FIELD(Sb2, hadd2__v1_Sb2Encoding, double)
+  FLOAT_INST_FIELD(Sb, hadd2__v1_SbEncoding, double, _F16<10>)
+  FLOAT_INST_FIELD(Sb2, hadd2__v1_Sb2Encoding, double, _F16<10>)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_sb_bitset, hadd2__v1_req_sb_bitsetEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -13508,8 +13773,8 @@ template <> struct Accessor<OpClass::hadd2_32i_> : public AccessorBase {
   INST_FIELD(Ra_negate, hadd2_32i__Ra_negateEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Ra_32i_mod, hadd2_32i__Ra_iswz_Ra_32i_modEncoding, hadd2_32i__Ra_iswz_Ra_32i_mod, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(imm, hadd2_32i__immEncoding, double)
-  FLOAT_INST_FIELD(imm2, hadd2_32i__imm2Encoding, double)
+  FLOAT_INST_FIELD(imm, hadd2_32i__immEncoding, double, _F16<16>)
+  FLOAT_INST_FIELD(imm2, hadd2_32i__imm2Encoding, double, _F16<16>)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_sb_bitset, hadd2_32i__req_sb_bitsetEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -13533,8 +13798,8 @@ template <> struct Accessor<OpClass::hmul2__v1> : public AccessorBase {
   INST_FIELD(Ra_absolute, hmul2__v1_Ra_absoluteEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Ra_mod, hmul2__v1_Ra_iswz_Ra_modEncoding, hmul2__v1_Ra_iswz_Ra_mod, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(Sb, hmul2__v1_SbEncoding, double)
-  FLOAT_INST_FIELD(Sb2, hmul2__v1_Sb2Encoding, double)
+  FLOAT_INST_FIELD(Sb, hmul2__v1_SbEncoding, double, _F16<10>)
+  FLOAT_INST_FIELD(Sb2, hmul2__v1_Sb2Encoding, double, _F16<10>)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_sb_bitset, hmul2__v1_req_sb_bitsetEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -13558,6 +13823,7 @@ template <> struct Accessor<OpClass::hmul2__v0> : public AccessorBase {
   INST_FIELD(Ra_absolute, hmul2__v0_Ra_absoluteEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Ra_mod, hmul2__v0_Ra_iswz_Ra_modEncoding, hmul2__v0_Ra_iswz_Ra_mod, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(Sb, C, C::C)
   INST_TABLE_FIELD(Sb_negate, MultiEncoding<hmul2__v0_nABEncoding>, bool, hmul2__v0_nAB, 1, Accessor::_Bool)
   INST_FIELD(Sb_absolute, hmul2__v0_Sb_absoluteEncoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -13650,8 +13916,8 @@ template <> struct Accessor<OpClass::Imm_HSETP2> : public AccessorBase {
   INST_FIELD(Ra_absolute, aAHEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Ra, vAmuxEncoding, ISWZ, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BimmH1Encoding, double)
-  FLOAT_INST_FIELD(uImmH0, BimmH0Encoding, double)
+  FLOAT_INST_FIELD(uImm, BimmH1Encoding, double, _F16<10>)
+  FLOAT_INST_FIELD(uImmH0, BimmH0Encoding, double, _F16<10>)
   INST_FIELD(Pa, SrcPredEncoding, Predicate, Accessor::_Reg)
   INST_FIELD(Pa_not, SrcNotEncoding, bool, Accessor::_Bool)
   CONSTANT_FIELD(req, REQ, REQ::req)
@@ -13678,8 +13944,8 @@ template <> struct Accessor<OpClass::NoBop_Imm_HSETP2> : public AccessorBase {
   INST_FIELD(Ra_absolute, aAHEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Ra, vAmuxEncoding, ISWZ, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(uImm, BimmH1Encoding, double)
-  FLOAT_INST_FIELD(uImmH0, BimmH0Encoding, double)
+  FLOAT_INST_FIELD(uImm, BimmH1Encoding, double, _F16<10>)
+  FLOAT_INST_FIELD(uImmH0, BimmH0Encoding, double, _F16<10>)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_sb_bitset, OEWaitOnSbEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -13705,6 +13971,7 @@ template <> struct Accessor<OpClass::Const_HSETP2> : public AccessorBase {
   INST_FIELD(Ra_absolute, aAHEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Ra, vAmuxEncoding, ISWZ, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBH2Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBH2Encoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -13737,6 +14004,7 @@ template <> struct Accessor<OpClass::NoBop_Const_HSETP2> : public AccessorBase {
   INST_FIELD(Ra_absolute, aAHEncoding, bool, Accessor::_Bool)
   INST_FIELD(iswz_Ra, vAmuxEncoding, ISWZ, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nBH2Encoding, bool, Accessor::_Bool)
   INST_FIELD(srcConst_absolute, aBH2Encoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
@@ -13762,8 +14030,8 @@ template <> struct Accessor<OpClass::HFMA2_32I> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(iswz_Ra, vAmux_HEncoding, ISWZ, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(fImm, FimmH1Encoding, double)
-  FLOAT_INST_FIELD(fImm1, FimmH0Encoding, double)
+  FLOAT_INST_FIELD(fImm, FimmH1Encoding, double, _F16<16>)
+  FLOAT_INST_FIELD(fImm1, FimmH0Encoding, double, _F16<16>)
   INST_TABLE_FIELD(Rc, MultiEncoding<DestEncoding>, RegisterFAU, IDENTICAL<RegisterFAU>, 1, Accessor::_Reg)
   INST_FIELD(Rc_negate, nC_HEncoding, bool, Accessor::_Bool)
   SCHED_FIELD(reuse_src_c, OEReuseCEncoding, REUSE, Accessor::_Reg)
@@ -13786,8 +14054,8 @@ template <> struct Accessor<OpClass::HFMA2_32I_2> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, RegisterFAU, Accessor::_Reg)
   INST_FIELD(iswz_Ra, vAmux_HEncoding, ISWZ, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  FLOAT_INST_FIELD(fImm, FimmH1Encoding, double)
-  FLOAT_INST_FIELD(fImm1, FimmH0Encoding, double)
+  FLOAT_INST_FIELD(fImm, FimmH1Encoding, double, _F16<16>)
+  FLOAT_INST_FIELD(fImm1, FimmH0Encoding, double, _F16<16>)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_sb_bitset, OEWaitOnSbEncoding, std::uint8_t)
   CONSTANT_FIELD(rd, RD, RD::rd)
@@ -13814,6 +14082,7 @@ template <> struct Accessor<OpClass::HFMA2_CCST> : public AccessorBase {
   INST_TABLE_FIELD(Rb_negate, MultiEncoding<nAB_HEncoding>, bool, PSignFFMA, 1, Accessor::_Bool)
   INST_FIELD(iswz_Rb, vBmux_HEncoding, ISWZ, Accessor::_Reg)
   SCHED_FIELD(reuse_src_b, OEReuseBEncoding, REUSE, Accessor::_Reg)
+  CONSTANT_FIELD(srcConst, C, C::C)
   INST_FIELD(srcConst_negate, nC_H2Encoding, bool, Accessor::_Bool)
   using constBankEncoding = MultiEncoding<BcbankEncoding,BcaddrEncoding>;
   INST_TABLE_FIELD(constBank, constBankEncoding, std::uint8_t, ConstBankAddress2<17>, 0)

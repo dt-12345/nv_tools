@@ -1,5 +1,6 @@
 #include "Maxwell.hpp"
 #include "MaxwellAccessor.hpp"
+#include "MaxwellPrint.hpp"
 
 #include <fstream>
 #include <format>
@@ -29,7 +30,6 @@ int main() {
         start = 4;
     }
 
-    bool shouldBreak = false;
     for (size_t i = start; i < size / 4; ++i) {
         const std::uint64_t schedFlags = data[i * 4];
         for (size_t j = 0; j < 3; ++j) {
@@ -38,21 +38,13 @@ int main() {
             const auto decoded = Maxwell::Decode(inst, sched);
             const std::uint64_t pc = i * 0x20 + j * 8 + 8 - start * 0x20;
             if (decoded.has_value()) {
-                std::cout << std::format("{:#010x}: {}\n", pc, decoded->opcode);
+                std::cout << std::format("{:#010x}: {}\n", pc, Maxwell::Print(decoded->opclass, decoded->opcode, inst, sched, pc));
                 if (decoded->opclass == Maxwell::OpClass::EXIT) {
-                    shouldBreak = true;
-                    break;
-                } else if (decoded->opclass == Maxwell::OpClass::TXQ) {
-                    const auto accessor = Maxwell::Accessor<Maxwell::OpClass::TXQ>(inst, sched, pc);
-                    std::cout << "Opcode: " << accessor.Opcode() << ", TexPhase: " << static_cast<std::uint32_t>(accessor.phase()) << "\n";
-                    std::cout << "TextureID: " << accessor.tid() << ", Query: " << static_cast<int>(accessor.query()) << " WMsk: " << +accessor.wmsk() << "\n";
+                    return 0;
                 }
             } else {
                 std::cout << std::format("Failed to decode instruction at {:#010x} ({:#010x} {:#010x})\n", pc, inst, sched);
             }
-        }
-        if (shouldBreak) {
-            break;
         }
     }
 
