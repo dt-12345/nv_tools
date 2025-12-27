@@ -221,7 +221,7 @@ class ReferenceType(Enum):
 
 class EncodingOp(NamedTuple):
     op_type: ReferenceType
-    value: int
+    value: int = 0
 
 # represents EncodingField = SrcField; or EncodingField = Value;
 @dataclasses.dataclass
@@ -679,10 +679,10 @@ class Architecture:
                             opclass.encoded_fields[f"{operand.name}@{fieldname}"] = encoding[-1]
                         encoding_ops = group[base + 3:-1]
                         # add operand-dependent encoding ops
-                        if isinstance(encoding[-1].field, ImmediateOperand):
-                            if encoding[-1].field.signed_storage:
+                        if isinstance(encoding[-1].value, ImmediateOperand):
+                            if encoding[-1].value.signed_storage:
                                 encoding[-1].encoding_ops.append(EncodingOp(ReferenceType.SIGN_EXT))
-                            if encoding[-1].field.pcrel:
+                            if encoding[-1].value.pcrel:
                                 encoding[-1].encoding_ops.append(EncodingOp(ReferenceType.PCREL))
                     else:
                         # either a integer literal or a operand field
@@ -694,10 +694,10 @@ class Architecture:
                             encoding.append(EncodingField(group[0], opclass.encodable_fields[value]))
                             opclass.encoded_fields[encoding[-1].value.name] = encoding[-1]
                             # add operand-dependent encoding ops
-                            if isinstance(encoding[-1].field, ImmediateOperand):
-                                if encoding[-1].field.signed_storage:
+                            if isinstance(encoding[-1].value, ImmediateOperand):
+                                if encoding[-1].value.signed_storage:
                                     encoding[-1].encoding_ops.append(EncodingOp(ReferenceType.SIGN_EXT))
-                                if encoding[-1].field.pcrel:
+                                if encoding[-1].value.pcrel:
                                     encoding[-1].encoding_ops.append(EncodingOp(ReferenceType.PCREL))
                         encoding_ops = group[base + 1:-1]
                     i: int = 0
@@ -1452,7 +1452,7 @@ protected:
   }
 
   static constexpr std::uint64_t _Pcrel(std::uint64_t value, std::uint64_t programCounter) {
-    return value - programCounter - RELATIVE_ADDRESS_BASE;
+    return value + programCounter + RELATIVE_ADDRESS_BASE;
   }
 
   template <std::size_t SIZE>
@@ -1896,7 +1896,7 @@ template <OpClass CLASS> struct Accessor;
         def write_format_func(opclass: OperationClass, op: Operand, indent: str = "  ") -> None:
             # TODO: proper formatting, omit operands that don't need to be printed like nvdisasm
             if isinstance(op, LiteralOperand):
-                if op.value == ",":
+                if op.value == "," or op.value == "=":
                     source.write(f"{indent}out += \"{op.value}\";\n")
                 else:
                     source.write(f"{indent}out += \" {op.value}\";\n")
@@ -1920,7 +1920,6 @@ template <OpClass CLASS> struct Accessor;
                     source.write(f"{indent}if (accessor.{op.name}_absolute()) out += \"|\";\n")
             elif isinstance(op, ImmediateOperand):
                 if op.fields is not None:
-                    
                     for field in op.fields:
                         if field == OperandField.NOT:
                             source.write(f"{indent}if (accessor.{op.name}_not()) out += \"!\";\n")

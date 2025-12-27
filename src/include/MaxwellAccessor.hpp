@@ -38,7 +38,7 @@ protected:
   }
 
   static constexpr std::uint64_t _Pcrel(std::uint64_t value, std::uint64_t programCounter) {
-    return value - programCounter - RELATIVE_ADDRESS_BASE;
+    return value + programCounter + RELATIVE_ADDRESS_BASE;
   }
 
   template <std::size_t SIZE>
@@ -4288,7 +4288,7 @@ template <> struct Accessor<OpClass::SImm_VMAD> : public AccessorBase {
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 1, Accessor::_Bool)
   INST_TABLE_FIELD(asel, MultiEncoding<aSelectEncoding>, H1H0, VFormat16, 1, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  SIGNED_INST_FIELD(sImm, Imm16Encoding, std::int16_t)
+  SIGNED_INST_FIELD(sImm, Imm16Encoding, std::int16_t, Accessor::_Sext<16>)
   INST_TABLE_FIELD(sImm_sign, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 2, Accessor::_Bool)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Rc_negate, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 3, Accessor::_Bool)
@@ -4314,7 +4314,7 @@ template <> struct Accessor<OpClass::a8_Imm_VMAD> : public AccessorBase {
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 1, Accessor::_Bool)
   INST_TABLE_FIELD(asel, MultiEncoding<aSelectEncoding>, B1B0, VFormat8, 1, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  SIGNED_INST_FIELD(uImm, Imm16Encoding, std::int32_t)
+  SIGNED_INST_FIELD(uImm, Imm16Encoding, std::int32_t, Accessor::_Sext<16>)
   INST_TABLE_FIELD(uImm_sign, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 2, Accessor::_Bool)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Rc_negate, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 3, Accessor::_Bool)
@@ -4340,7 +4340,7 @@ template <> struct Accessor<OpClass::a8_SImm_VMAD> : public AccessorBase {
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 1, Accessor::_Bool)
   INST_TABLE_FIELD(asel, MultiEncoding<aSelectEncoding>, B1B0, VFormat8, 1, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  SIGNED_INST_FIELD(sImm, Imm16Encoding, std::int16_t)
+  SIGNED_INST_FIELD(sImm, Imm16Encoding, std::int16_t, Accessor::_Sext<16>)
   INST_TABLE_FIELD(sImm_sign, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 2, Accessor::_Bool)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Rc_negate, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 3, Accessor::_Bool)
@@ -4364,7 +4364,7 @@ template <> struct Accessor<OpClass::a32_Imm_VMAD> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 1, Accessor::_Bool)
-  SIGNED_INST_FIELD(uImm, Imm16Encoding, std::int32_t)
+  SIGNED_INST_FIELD(uImm, Imm16Encoding, std::int32_t, Accessor::_Sext<16>)
   INST_TABLE_FIELD(uImm_sign, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 2, Accessor::_Bool)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Rc_negate, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 3, Accessor::_Bool)
@@ -4391,7 +4391,7 @@ template <> struct Accessor<OpClass::a32_SImm_VMAD> : public AccessorBase {
   INST_FIELD(writeCC, WriteCCEncoding, optCC, Accessor::_Reg)
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 1, Accessor::_Bool)
-  SIGNED_INST_FIELD(sImm, Imm16Encoding, std::int16_t)
+  SIGNED_INST_FIELD(sImm, Imm16Encoding, std::int16_t, Accessor::_Sext<16>)
   INST_TABLE_FIELD(sImm_sign, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 2, Accessor::_Bool)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Rc_negate, MultiEncoding<AVGMode3Encoding>, bool, PSignMAD, 3, Accessor::_Bool)
@@ -4667,7 +4667,7 @@ template <> struct Accessor<OpClass::Imm_VADD> : public AccessorBase {
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<AVGMode2Encoding>, bool, PSign, 1, Accessor::_Bool)
   INST_TABLE_FIELD(asel, MultiEncoding<aSelectEncoding>, H1H0, VFormat16, 1, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  SIGNED_INST_FIELD(uImm, Imm16Encoding, std::int32_t)
+  SIGNED_INST_FIELD(uImm, Imm16Encoding, std::int32_t, Accessor::_Sext<16>)
   INST_TABLE_FIELD(uImm_sign, MultiEncoding<AVGMode2Encoding>, bool, PSign, 2, Accessor::_Bool)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_c, OEReuseCEncoding, REUSE, Accessor::_Reg)
@@ -4693,7 +4693,7 @@ template <> struct Accessor<OpClass::SImm_VADD> : public AccessorBase {
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<AVGMode2Encoding>, bool, PSign, 1, Accessor::_Bool)
   INST_TABLE_FIELD(asel, MultiEncoding<aSelectEncoding>, H1H0, VFormat16, 1, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  SIGNED_INST_FIELD(sImm, Imm16Encoding, std::int16_t)
+  SIGNED_INST_FIELD(sImm, Imm16Encoding, std::int16_t, Accessor::_Sext<16>)
   INST_TABLE_FIELD(sImm_sign, MultiEncoding<AVGMode2Encoding>, bool, PSign, 2, Accessor::_Bool)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_c, OEReuseCEncoding, REUSE, Accessor::_Reg)
@@ -4719,7 +4719,7 @@ template <> struct Accessor<OpClass::a8_Imm_VADD> : public AccessorBase {
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<AVGMode2Encoding>, bool, PSign, 1, Accessor::_Bool)
   INST_TABLE_FIELD(asel, MultiEncoding<aSelectEncoding>, B1B0, VFormat8, 1, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  SIGNED_INST_FIELD(uImm, Imm16Encoding, std::int32_t)
+  SIGNED_INST_FIELD(uImm, Imm16Encoding, std::int32_t, Accessor::_Sext<16>)
   INST_TABLE_FIELD(uImm_sign, MultiEncoding<AVGMode2Encoding>, bool, PSign, 2, Accessor::_Bool)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_c, OEReuseCEncoding, REUSE, Accessor::_Reg)
@@ -4745,7 +4745,7 @@ template <> struct Accessor<OpClass::a8_SImm_VADD> : public AccessorBase {
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<AVGMode2Encoding>, bool, PSign, 1, Accessor::_Bool)
   INST_TABLE_FIELD(asel, MultiEncoding<aSelectEncoding>, B1B0, VFormat8, 1, Accessor::_Reg)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  SIGNED_INST_FIELD(sImm, Imm16Encoding, std::int16_t)
+  SIGNED_INST_FIELD(sImm, Imm16Encoding, std::int16_t, Accessor::_Sext<16>)
   INST_TABLE_FIELD(sImm_sign, MultiEncoding<AVGMode2Encoding>, bool, PSign, 2, Accessor::_Bool)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_c, OEReuseCEncoding, REUSE, Accessor::_Reg)
@@ -4770,7 +4770,7 @@ template <> struct Accessor<OpClass::a32_Imm_VADD> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<AVGMode2Encoding>, bool, PSign, 1, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  SIGNED_INST_FIELD(uImm, Imm16Encoding, std::int32_t)
+  SIGNED_INST_FIELD(uImm, Imm16Encoding, std::int32_t, Accessor::_Sext<16>)
   INST_TABLE_FIELD(uImm_sign, MultiEncoding<AVGMode2Encoding>, bool, PSign, 2, Accessor::_Bool)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_c, OEReuseCEncoding, REUSE, Accessor::_Reg)
@@ -4795,7 +4795,7 @@ template <> struct Accessor<OpClass::a32_SImm_VADD> : public AccessorBase {
   INST_FIELD(Ra, RegAEncoding, Register, Accessor::_Reg)
   INST_TABLE_FIELD(Ra_negate, MultiEncoding<AVGMode2Encoding>, bool, PSign, 1, Accessor::_Bool)
   SCHED_FIELD(reuse_src_a, OEReuseAEncoding, REUSE, Accessor::_Reg)
-  SIGNED_INST_FIELD(sImm, Imm16Encoding, std::int16_t)
+  SIGNED_INST_FIELD(sImm, Imm16Encoding, std::int16_t, Accessor::_Sext<16>)
   INST_TABLE_FIELD(sImm_sign, MultiEncoding<AVGMode2Encoding>, bool, PSign, 2, Accessor::_Bool)
   INST_FIELD(Rc, RegCEncoding, Register, Accessor::_Reg)
   SCHED_FIELD(reuse_src_c, OEReuseCEncoding, REUSE, Accessor::_Reg)
@@ -12384,7 +12384,7 @@ template <> struct Accessor<OpClass::BRA> : public AccessorBase {
   INST_FIELD(lmt, LMTEncoding, LMT, Accessor::_Reg)
   CONSTANT_FIELD(TestCC, CC, CC::CC)
   INST_FIELD(CCTest, CCC_1Encoding, Test, Accessor::_Reg)
-  INST_FIELD(sImm, Imm24Encoding, std::int32_t)
+  INST_FIELD(sImm, Imm24Encoding, std::int32_t, Accessor::_Pcrel)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
@@ -12515,7 +12515,7 @@ template <> struct Accessor<OpClass::CAL> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100110);
   INST_FIELD(inc, INCEncoding, INC, Accessor::_Reg)
-  INST_FIELD(sImm, Imm24Encoding, std::int32_t)
+  INST_FIELD(sImm, Imm24Encoding, std::int32_t, Accessor::_Pcrel)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
@@ -12539,7 +12539,7 @@ template <> struct Accessor<OpClass::PRET> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100111);
   INST_FIELD(inc, INCEncoding, INC, Accessor::_Reg)
-  INST_FIELD(sImm, Imm24Encoding, std::int32_t)
+  INST_FIELD(sImm, Imm24Encoding, std::int32_t, Accessor::_Pcrel)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
@@ -12586,7 +12586,7 @@ template <> struct Accessor<OpClass::JCAL_c> : public AccessorBase {
 template <> struct Accessor<OpClass::SSY> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101001);
-  INST_FIELD(sImm, Imm24Encoding, std::int32_t)
+  INST_FIELD(sImm, Imm24Encoding, std::int32_t, Accessor::_Pcrel)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
@@ -12608,7 +12608,7 @@ template <> struct Accessor<OpClass::SSY_c> : public AccessorBase {
 template <> struct Accessor<OpClass::PLONGJMP> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101000);
-  INST_FIELD(sImm, Imm24Encoding, std::int32_t)
+  INST_FIELD(sImm, Imm24Encoding, std::int32_t, Accessor::_Pcrel)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
@@ -12630,7 +12630,7 @@ template <> struct Accessor<OpClass::PLONGJMP_c> : public AccessorBase {
 template <> struct Accessor<OpClass::PBK> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101010);
-  INST_FIELD(sImm, Imm24Encoding, std::int32_t)
+  INST_FIELD(sImm, Imm24Encoding, std::int32_t, Accessor::_Pcrel)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
@@ -12652,7 +12652,7 @@ template <> struct Accessor<OpClass::PBK_c> : public AccessorBase {
 template <> struct Accessor<OpClass::PCNT> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000101011);
-  INST_FIELD(sImm, Imm24Encoding, std::int32_t)
+  INST_FIELD(sImm, Imm24Encoding, std::int32_t, Accessor::_Pcrel)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
@@ -12747,7 +12747,7 @@ template <> struct Accessor<OpClass::EXIT> : public AccessorBase {
 template <> struct Accessor<OpClass::PEXIT> : public AccessorBase {
   using AccessorBase::AccessorBase;
   CONSTANT_FIELD(Opcode, std::uint64_t, 0b111000100011);
-  INST_FIELD(sImm, Imm24Encoding, std::int32_t)
+  INST_FIELD(sImm, Imm24Encoding, std::int32_t, Accessor::_Pcrel)
   CONSTANT_FIELD(req, REQ, REQ::req)
   SCHED_FIELD(req_bit_set, OEWaitOnSbEncoding, std::uint8_t)
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
