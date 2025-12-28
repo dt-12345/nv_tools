@@ -1,0 +1,3 @@
+nvidia clip state machine patent: https://patentimages.storage.googleapis.com/01/2c/00/fc2c7e6dbfa768/US8384736.pdf
+cuda programming guide: https://docs.nvidia.com/cuda/cuda-programming-guide/
+ptx (maybe similar enough to be useful?): https://docs.nvidia.com/cuda/parallel-thread-execution/

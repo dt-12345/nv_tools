@@ -31956,14 +31956,14 @@ std::optional<const std::string_view> ToString(ISWZ value) {
 
 std::optional<const std::string_view> ToString(Integer value) {
   switch (value) {
-    case static_cast<Integer>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
-    case static_cast<Integer>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
-    case static_cast<Integer>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
-    case static_cast<Integer>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
     case static_cast<Integer>(Integer64::U64): return std::make_optional<const std::string_view>("U64");
     case static_cast<Integer>(Integer64::S64): return std::make_optional<const std::string_view>("S64");
+    case static_cast<Integer>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
+    case static_cast<Integer>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
     case static_cast<Integer>(Integer16::U16): return std::make_optional<const std::string_view>("U16");
     case static_cast<Integer>(Integer16::S16): return std::make_optional<const std::string_view>("S16");
+    case static_cast<Integer>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
+    case static_cast<Integer>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
     default: return std::nullopt;
   }
 }
@@ -32014,46 +32014,46 @@ std::optional<const std::string_view> ToString(IntegerInv8No64 value) {
 
 std::optional<const std::string_view> ToString(IntegerNo16Inv64 value) {
   switch (value) {
-    case static_cast<IntegerNo16Inv64>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
-    case static_cast<IntegerNo16Inv64>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
     case static_cast<IntegerNo16Inv64>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
     case static_cast<IntegerNo16Inv64>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
     case static_cast<IntegerNo16Inv64>(Invalid64::INVALID6): return std::make_optional<const std::string_view>("INVALID6");
     case static_cast<IntegerNo16Inv64>(Invalid64::INVALID7): return std::make_optional<const std::string_view>("INVALID7");
+    case static_cast<IntegerNo16Inv64>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
+    case static_cast<IntegerNo16Inv64>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
     default: return std::nullopt;
   }
 }
 
 std::optional<const std::string_view> ToString(IntegerNo16No64 value) {
   switch (value) {
-    case static_cast<IntegerNo16No64>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
-    case static_cast<IntegerNo16No64>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
     case static_cast<IntegerNo16No64>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
     case static_cast<IntegerNo16No64>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
+    case static_cast<IntegerNo16No64>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
+    case static_cast<IntegerNo16No64>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
     default: return std::nullopt;
   }
 }
 
 std::optional<const std::string_view> ToString(IntegerNo64 value) {
   switch (value) {
-    case static_cast<IntegerNo64>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
-    case static_cast<IntegerNo64>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
     case static_cast<IntegerNo64>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
     case static_cast<IntegerNo64>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
     case static_cast<IntegerNo64>(Integer16::U16): return std::make_optional<const std::string_view>("U16");
     case static_cast<IntegerNo64>(Integer16::S16): return std::make_optional<const std::string_view>("S16");
+    case static_cast<IntegerNo64>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
+    case static_cast<IntegerNo64>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
     default: return std::nullopt;
   }
 }
 
 std::optional<const std::string_view> ToString(IntegerNo8 value) {
   switch (value) {
+    case static_cast<IntegerNo8>(Integer64::U64): return std::make_optional<const std::string_view>("U64");
+    case static_cast<IntegerNo8>(Integer64::S64): return std::make_optional<const std::string_view>("S64");
     case static_cast<IntegerNo8>(Invalid8::INVALID0): return std::make_optional<const std::string_view>("INVALID0");
     case static_cast<IntegerNo8>(Invalid8::INVALID1): return std::make_optional<const std::string_view>("INVALID1");
     case static_cast<IntegerNo8>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
     case static_cast<IntegerNo8>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
-    case static_cast<IntegerNo8>(Integer64::U64): return std::make_optional<const std::string_view>("U64");
-    case static_cast<IntegerNo8>(Integer64::S64): return std::make_optional<const std::string_view>("S64");
     case static_cast<IntegerNo8>(Integer16::U16): return std::make_optional<const std::string_view>("U16");
     case static_cast<IntegerNo8>(Integer16::S16): return std::make_optional<const std::string_view>("S16");
     default: return std::nullopt;
@@ -33477,9 +33477,9 @@ std::optional<const std::string_view> ToString(SHF_R value) {
 std::optional<const std::string_view> ToString(SInteger value) {
   switch (value) {
     case static_cast<SInteger>(SInteger64::S64): return std::make_optional<const std::string_view>("S64");
-    case static_cast<SInteger>(SInteger8::S8): return std::make_optional<const std::string_view>("S8");
-    case static_cast<SInteger>(SInteger16::S16): return std::make_optional<const std::string_view>("S16");
     case static_cast<SInteger>(SInteger32::S32): return std::make_optional<const std::string_view>("S32");
+    case static_cast<SInteger>(SInteger16::S16): return std::make_optional<const std::string_view>("S16");
+    case static_cast<SInteger>(SInteger8::S8): return std::make_optional<const std::string_view>("S8");
     default: return std::nullopt;
   }
 }
@@ -34024,10 +34024,10 @@ std::optional<const std::string_view> ToString(U8 value) {
 
 std::optional<const std::string_view> ToString(UInteger value) {
   switch (value) {
-    case static_cast<UInteger>(UInteger64::U64): return std::make_optional<const std::string_view>("U64");
-    case static_cast<UInteger>(UInteger32::U32): return std::make_optional<const std::string_view>("U32");
-    case static_cast<UInteger>(UInteger8::U8): return std::make_optional<const std::string_view>("U8");
     case static_cast<UInteger>(UInteger16::U16): return std::make_optional<const std::string_view>("U16");
+    case static_cast<UInteger>(UInteger64::U64): return std::make_optional<const std::string_view>("U64");
+    case static_cast<UInteger>(UInteger8::U8): return std::make_optional<const std::string_view>("U8");
+    case static_cast<UInteger>(UInteger32::U32): return std::make_optional<const std::string_view>("U32");
     default: return std::nullopt;
   }
 }
@@ -34049,9 +34049,9 @@ std::optional<const std::string_view> ToString(UInteger64 value) {
 std::optional<const std::string_view> ToString(UInteger_old value) {
   switch (value) {
     case static_cast<UInteger_old>(U16::U16): return std::make_optional<const std::string_view>("U16");
+    case static_cast<UInteger_old>(U8::U8): return std::make_optional<const std::string_view>("U8");
     case static_cast<UInteger_old>(U32::U32): return std::make_optional<const std::string_view>("U32");
     case static_cast<UInteger_old>(U32::INVALIDASEL7): return std::make_optional<const std::string_view>("INVALIDASEL7");
-    case static_cast<UInteger_old>(U8::U8): return std::make_optional<const std::string_view>("U8");
     default: return std::nullopt;
   }
 }

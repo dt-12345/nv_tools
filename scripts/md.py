@@ -1698,7 +1698,8 @@ template <OpClass CLASS> struct Accessor;
                             break
                     if index == -1:
                         raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
-                    header.write(f"  {macro}({fix_name(name).replace("@", "_")}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, bool, {encoding.table}, {index}, Accessor::_Bool)\n")
+                    header.write(f"  using {fix_name(name).replace("@", "_")}Encoding = Encoding<{",".join(f"BitRange<{r.start if r.start < 64 else r.start - 64}, {r.nbits}>" for r in sorted((r_ for enc in encoding.encodings for r_ in arch.funit.encodings[enc]), key=lambda info: info.start))}>;\n")
+                    header.write(f"  {macro}({fix_name(name).replace("@", "_")}, {fix_name(name).replace("@", "_")}Encoding, bool, {encoding.table}, {index}, Accessor::_Bool)\n")
         def handle_register_operand(field: RegisterOperand, opclass: OperationClass) -> None:
             if field.name in opclass.encoded_fields or field.register.name in opclass.encoded_fields:
                 encoding: EncodingField | MultiEncodingField
@@ -1721,7 +1722,8 @@ template <OpClass CLASS> struct Accessor;
                                 break
                         if index == -1:
                             raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
-                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {fix_name(field.register.name)}, {encoding.table}, {index}, Accessor::_Reg)\n")
+                        header.write(f"  using {fix_name(field.name)}Encoding = Encoding<{",".join(f"BitRange<{r.start if r.start < 64 else r.start - 64}, {r.nbits}>" for r in sorted((r_ for enc in encoding.encodings for r_ in arch.funit.encodings[enc]), key=lambda info: info.start))}>;\n")
+                        header.write(f"  {macro}({fix_name(field.name)}, {fix_name(field.name)}Encoding, {fix_name(field.register.name)}, {encoding.table}, {index}, Accessor::_Reg)\n")
                     elif arch.tables[encoding.table].lookup_type == 0:
                         macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
                         index: int = -1
@@ -1731,7 +1733,8 @@ template <OpClass CLASS> struct Accessor;
                                 break
                         if index == -1:
                             raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
-                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {fix_name(field.register.name)}, {encoding.table}<{fix_name(field.register.name)}>, {index}, Accessor::_Reg)\n")
+                        header.write(f"  using {fix_name(field.name)}Encoding = Encoding<{",".join(f"BitRange<{r.start if r.start < 64 else r.start - 64}, {r.nbits}>" for r in sorted((r_ for enc in encoding.encodings for r_ in arch.funit.encodings[enc]), key=lambda info: info.start))}>;\n")
+                        header.write(f"  {macro}({fix_name(field.name)}, {fix_name(field.name)}Encoding, {fix_name(field.register.name)}, {encoding.table}<{fix_name(field.register.name)}>, {index}, Accessor::_Reg)\n")
                     elif arch.tables[encoding.table].lookup_type in [11, 12]:
                         macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
                         index: int = -1
@@ -1742,7 +1745,7 @@ template <OpClass CLASS> struct Accessor;
                         if index == -1:
                             raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
                         # workaround for commas in typename passed to macro
-                        header.write(f"  using {fix_name(field.name)}Encoding = MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>;\n")
+                        header.write(f"  using {fix_name(field.name)}Encoding = Encoding<{",".join(f"BitRange<{r.start if r.start < 64 else r.start - 64}, {r.nbits}>" for r in sorted((r_ for enc in encoding.encodings for r_ in arch.funit.encodings[enc]), key=lambda info: info.start))}>;\n")
                         assert isinstance(encoding.arguments[1].value, ImmediateOperand), f"Offset for const banks must be an immediate!"
                         bitwidth: int = encoding.arguments[1].value.bitwidth
                         header.write(f"  {macro}({fix_name(field.name)}, {fix_name(field.name)}Encoding, {fix_name(field.register.name)}, {encoding.table}<{bitwidth}>, {index}, Accessor::_Reg)\n")
@@ -1820,7 +1823,8 @@ template <OpClass CLASS> struct Accessor;
                                 break
                         if index == -1:
                             raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
-                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {typename}, {encoding.table}, {index})\n")
+                        header.write(f"  using {fix_name(field.name)}Encoding = Encoding<{",".join(f"BitRange<{r.start if r.start < 64 else r.start - 64}, {r.nbits}>" for r in sorted((r_ for enc in encoding.encodings for r_ in arch.funit.encodings[enc]), key=lambda info: info.start))}>;\n")
+                        header.write(f"  {macro}({fix_name(field.name)}, {fix_name(field.name)}Encoding, {typename}, {encoding.table}, {index})\n")
                     elif arch.tables[encoding.table].lookup_type == 0:
                         macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
                         index: int = -1
@@ -1830,7 +1834,8 @@ template <OpClass CLASS> struct Accessor;
                                 break
                         if index == -1:
                             raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
-                        header.write(f"  {macro}({fix_name(field.name)}, MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>, {typename}, {encoding.table}<{typename}>, {index})\n")
+                        header.write(f"  using {fix_name(field.name)}Encoding = Encoding<{",".join(f"BitRange<{r.start if r.start < 64 else r.start - 64}, {r.nbits}>" for r in sorted((r_ for enc in encoding.encodings for r_ in arch.funit.encodings[enc]), key=lambda info: info.start))}>;\n")
+                        header.write(f"  {macro}({fix_name(field.name)}, {fix_name(field.name)}Encoding, {typename}, {encoding.table}<{typename}>, {index})\n")
                     elif arch.tables[encoding.table].lookup_type in [11, 12]:
                         macro: str = "INST_TABLE_FIELD" if all(r.start < 64 for enc in encoding.encodings for r in arch.funit.encodings[enc]) else "SCHED_TABLE_FIELD"
                         index: int = -1
@@ -1841,7 +1846,7 @@ template <OpClass CLASS> struct Accessor;
                         if index == -1:
                             raise ValueError("Could not find field index", field.name, opclass.name, encoding.table)
                         # workaround for commas in typename passed to macro
-                        header.write(f"  using {fix_name(field.name)}Encoding = MultiEncoding<{",".join(f"{fix_name(e)}Encoding" for e in encoding.encodings)}>;\n")
+                        header.write(f"  using {fix_name(field.name)}Encoding = Encoding<{",".join(f"BitRange<{r.start if r.start < 64 else r.start - 64}, {r.nbits}>" for r in sorted((r_ for enc in encoding.encodings for r_ in arch.funit.encodings[enc]), key=lambda info: info.start))}>;\n")
                         assert isinstance(encoding.arguments[1].value, ImmediateOperand), f"Offset for const banks must be an immediate!"
                         bitwidth: int = encoding.arguments[1].value.bitwidth
                         header.write(f"  {macro}({fix_name(field.name)}, {fix_name(field.name)}Encoding, {typename}, {encoding.table}<{bitwidth}>, {index})\n")
