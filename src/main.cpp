@@ -9,8 +9,12 @@
 
 static constexpr std::uint32_t cNVNGpuCodeHeaderMagic = 0x12345678;
 
-int main() {
-    std::ifstream infile("samples/shader1.bin", std::ios::binary | std::ios::ate);
+int main(int argc, const char* argv[]) {
+    const char* path = "samples/output_code_only.bin";
+    if (argc > 1) {
+        path = argv[1];
+    }
+    std::ifstream infile(path, std::ios::binary | std::ios::ate);
     std::size_t size = infile.tellg() >> 3;
     std::vector<std::uint64_t> data(size);
     infile.seekg(0);
@@ -38,12 +42,9 @@ int main() {
             const auto decoded = Maxwell::Decode(inst, sched);
             const std::uint64_t pc = i * 0x20 + j * 8 + 8 - start * 0x20;
             if (decoded.has_value()) {
-                std::cout << std::format("{:#010x}: {}\n", pc, Maxwell::Print(decoded->opclass, decoded->opcode, inst, sched, pc));
-                if (decoded->opclass == Maxwell::OpClass::EXIT) {
-                    return 0;
-                }
+                std::cout << std::format("{:#010x} [{:#018x}, {:#010x}]: {}\n", pc, inst, sched, Maxwell::Print(decoded->opclass, decoded->opcode, inst, sched, pc));
             } else {
-                std::cout << std::format("Failed to decode instruction at {:#010x} ({:#010x} {:#010x})\n", pc, inst, sched);
+                std::cout << std::format("{:#010x} [{:#018x}, {:#010x}]: Failed to decode instruction\n", pc, inst, sched);
             }
         }
     }

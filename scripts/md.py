@@ -1884,10 +1884,6 @@ template <OpClass CLASS> struct Accessor;
         header.write("#include <string_view>\n\n")
         header.write(f"namespace {arch.name} {{\n\n")
         header.write("std::string Print(OpClass opclass, const char* opcode, std::uint64_t inst, std::uint64_t sched, std::uint64_t pc);\n")
-        for register in sorted(seen_registers.values()):
-            reg: RegisterGroup = arch.register_groups[register]
-            if not reg.is_composite or len(reg.contained) > 1:
-                header.write(f"std::optional<const std::string_view> ToString({fix_name(register)} value);\n")
         header.write("\n")
         header.write(f"}} // {arch.name}")
     
@@ -1895,6 +1891,29 @@ template <OpClass CLASS> struct Accessor;
         source.write(f"#include \"{arch.name}Print.hpp\"\n\n")
         source.write("#include <format>\n\n")
         source.write(f"namespace {arch.name} {{\n\n")
+        for register in sorted(seen_registers.values()):
+            source.write(f"[[maybe_unused]] static std::optional<const std::string_view> ToString({fix_name(register)} value) {{\n")
+            source.write("  switch (value) {\n")
+            reg: RegisterGroup = arch.register_groups[register]
+            if reg.is_composite:
+                seen: set[int] = set()
+                for r in reg.contained:
+                    for value in arch.register_groups[r].values:
+                        v: Register = arch.register_groups[r].values[value]
+                        if v.value in seen:
+                            continue
+                        seen.add(v.value)
+                        source.write(f"    case static_cast<{fix_name(register)}>({fix_name(v.group.name)}::{fix_name(v.name)}): return std::make_optional<const std::string_view>(\"{v.name}\");\n")
+            else:
+                seen: set[int] = set()
+                for value in reg.values:
+                    if reg.values[value].value in seen:
+                        continue
+                    seen.add(reg.values[value].value)
+                    source.write(f"    case {fix_name(register)}::{fix_name(value)}: return std::make_optional<const std::string_view>(\"{value}\");\n")
+            source.write("    default: return std::nullopt;\n")
+            source.write("  }\n")
+            source.write("}\n\n")
         source.write("std::string PrintInstruction([[maybe_unused]] const char* opcode, [[maybe_unused]] const Accessor<OpClass::NOP_DEFAULT>& accessor) {\n")
         source.write(f"  return \"{arch.empty_instr}\";\n")
         source.write("}\n\n")
@@ -1990,29 +2009,6 @@ template <OpClass CLASS> struct Accessor;
         source.write("      UNREACHABLE_DEFAULT_CASE;\n")
         source.write("  }\n")
         source.write("}\n\n")
-        for register in sorted(seen_registers.values()):
-            source.write(f"std::optional<const std::string_view> ToString({fix_name(register)} value) {{\n")
-            source.write("  switch (value) {\n")
-            reg: RegisterGroup = arch.register_groups[register]
-            if reg.is_composite:
-                seen: set[int] = set()
-                for r in reg.contained:
-                    for value in arch.register_groups[r].values:
-                        v: Register = arch.register_groups[r].values[value]
-                        if v.value in seen:
-                            continue
-                        seen.add(v.value)
-                        source.write(f"    case static_cast<{fix_name(register)}>({fix_name(v.group.name)}::{fix_name(v.name)}): return std::make_optional<const std::string_view>(\"{v.name}\");\n")
-            else:
-                seen: set[int] = set()
-                for value in reg.values:
-                    if reg.values[value].value in seen:
-                        continue
-                    seen.add(reg.values[value].value)
-                    source.write(f"    case {fix_name(register)}::{fix_name(value)}: return std::make_optional<const std::string_view>(\"{value}\");\n")
-            source.write("    default: return std::nullopt;\n")
-            source.write("  }\n")
-            source.write("}\n\n")
         source.write(f"}} // {arch.name}")
 
 if __name__ == "__main__":

@@ -4,6 +4,3537 @@
 
 namespace Maxwell {
 
+[[maybe_unused]] static std::optional<const std::string_view> ToString(A value) {
+  switch (value) {
+    case A::A: return std::make_optional<const std::string_view>("A");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(AIO value) {
+  switch (value) {
+    case AIO::I: return std::make_optional<const std::string_view>("I");
+    case AIO::O: return std::make_optional<const std::string_view>("O");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(AInteger value) {
+  switch (value) {
+    case AInteger::_32: return std::make_optional<const std::string_view>("32");
+    case AInteger::_64: return std::make_optional<const std::string_view>("64");
+    case AInteger::_96: return std::make_optional<const std::string_view>("96");
+    case AInteger::_128: return std::make_optional<const std::string_view>("128");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(ALLOnly value) {
+  switch (value) {
+    case ALLOnly::ALL: return std::make_optional<const std::string_view>("ALL");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(ASel4 value) {
+  switch (value) {
+    case ASel4::_0000: return std::make_optional<const std::string_view>("0000");
+    case ASel4::_1111: return std::make_optional<const std::string_view>("1111");
+    case ASel4::_2222: return std::make_optional<const std::string_view>("2222");
+    case ASel4::_3333: return std::make_optional<const std::string_view>("3333");
+    case ASel4::_3210: return std::make_optional<const std::string_view>("3210");
+    case ASel4::_4321: return std::make_optional<const std::string_view>("4321");
+    case ASel4::_5432: return std::make_optional<const std::string_view>("5432");
+    case ASel4::_6543: return std::make_optional<const std::string_view>("6543");
+    case ASel4::_3201: return std::make_optional<const std::string_view>("3201");
+    case ASel4::_3012: return std::make_optional<const std::string_view>("3012");
+    case ASel4::_0213: return std::make_optional<const std::string_view>("0213");
+    case ASel4::_3120: return std::make_optional<const std::string_view>("3120");
+    case ASel4::_1230: return std::make_optional<const std::string_view>("1230");
+    case ASel4::_2310: return std::make_optional<const std::string_view>("2310");
+    case ASel4::ASEL4E: return std::make_optional<const std::string_view>("ASEL4E");
+    case ASel4::ASEL4F: return std::make_optional<const std::string_view>("ASEL4F");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(AdMode value) {
+  switch (value) {
+    case AdMode::IA: return std::make_optional<const std::string_view>("IA");
+    case AdMode::IL: return std::make_optional<const std::string_view>("IL");
+    case AdMode::IS: return std::make_optional<const std::string_view>("IS");
+    case AdMode::ISL: return std::make_optional<const std::string_view>("ISL");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(AtomOp value) {
+  switch (value) {
+    case AtomOp::INVALIDATOMOP0: return std::make_optional<const std::string_view>("INVALIDATOMOP0");
+    case AtomOp::INVALIDATOMOP1: return std::make_optional<const std::string_view>("INVALIDATOMOP1");
+    case AtomOp::INVALIDATOMOP2: return std::make_optional<const std::string_view>("INVALIDATOMOP2");
+    case AtomOp::INVALIDATOMOP3: return std::make_optional<const std::string_view>("INVALIDATOMOP3");
+    case AtomOp::INVALIDATOMOP4: return std::make_optional<const std::string_view>("INVALIDATOMOP4");
+    case AtomOp::INVALIDATOMOP5: return std::make_optional<const std::string_view>("INVALIDATOMOP5");
+    case AtomOp::INVALIDATOMOP6: return std::make_optional<const std::string_view>("INVALIDATOMOP6");
+    case AtomOp::INVALIDATOMOP7: return std::make_optional<const std::string_view>("INVALIDATOMOP7");
+    case AtomOp::INVALIDATOMOP8: return std::make_optional<const std::string_view>("INVALIDATOMOP8");
+    case AtomOp::INVALIDATOMOP9: return std::make_optional<const std::string_view>("INVALIDATOMOP9");
+    case AtomOp::INVALIDATOMOP10: return std::make_optional<const std::string_view>("INVALIDATOMOP10");
+    case AtomOp::INVALIDATOMOP11: return std::make_optional<const std::string_view>("INVALIDATOMOP11");
+    case AtomOp::INVALIDATOMOP12: return std::make_optional<const std::string_view>("INVALIDATOMOP12");
+    case AtomOp::INVALIDATOMOP13: return std::make_optional<const std::string_view>("INVALIDATOMOP13");
+    case AtomOp::INVALIDATOMOP14: return std::make_optional<const std::string_view>("INVALIDATOMOP14");
+    case AtomOp::INVALIDATOMOP15: return std::make_optional<const std::string_view>("INVALIDATOMOP15");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(AtomicInteger value) {
+  switch (value) {
+    case AtomicInteger::_32: return std::make_optional<const std::string_view>("32");
+    case AtomicInteger::_64: return std::make_optional<const std::string_view>("64");
+    case AtomicInteger::F32: return std::make_optional<const std::string_view>("F32");
+    case AtomicInteger::S32: return std::make_optional<const std::string_view>("S32");
+    case AtomicInteger::F16x2_FTZ_RN: return std::make_optional<const std::string_view>("F16x2.FTZ.RN");
+    case AtomicInteger::S64: return std::make_optional<const std::string_view>("S64");
+    case AtomicInteger::SD32: return std::make_optional<const std::string_view>("SD32");
+    case AtomicInteger::SD64: return std::make_optional<const std::string_view>("SD64");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(AtomsOp value) {
+  switch (value) {
+    case AtomsOp::INVALIDATOMSOP0: return std::make_optional<const std::string_view>("INVALIDATOMSOP0");
+    case AtomsOp::INVALIDATOMSOP1: return std::make_optional<const std::string_view>("INVALIDATOMSOP1");
+    case AtomsOp::INVALIDATOMSOP2: return std::make_optional<const std::string_view>("INVALIDATOMSOP2");
+    case AtomsOp::INVALIDATOMSOP3: return std::make_optional<const std::string_view>("INVALIDATOMSOP3");
+    case AtomsOp::INVALIDATOMSOP4: return std::make_optional<const std::string_view>("INVALIDATOMSOP4");
+    case AtomsOp::INVALIDATOMSOP5: return std::make_optional<const std::string_view>("INVALIDATOMSOP5");
+    case AtomsOp::INVALIDATOMSOP6: return std::make_optional<const std::string_view>("INVALIDATOMSOP6");
+    case AtomsOp::INVALIDATOMSOP7: return std::make_optional<const std::string_view>("INVALIDATOMSOP7");
+    case AtomsOp::INVALIDATOMSOP8: return std::make_optional<const std::string_view>("INVALIDATOMSOP8");
+    case AtomsOp::INVALIDATOMSOP9: return std::make_optional<const std::string_view>("INVALIDATOMSOP9");
+    case AtomsOp::INVALIDATOMSOP10: return std::make_optional<const std::string_view>("INVALIDATOMSOP10");
+    case AtomsOp::INVALIDATOMSOP11: return std::make_optional<const std::string_view>("INVALIDATOMSOP11");
+    case AtomsOp::INVALIDATOMSOP12: return std::make_optional<const std::string_view>("INVALIDATOMSOP12");
+    case AtomsOp::INVALIDATOMSOP13: return std::make_optional<const std::string_view>("INVALIDATOMSOP13");
+    case AtomsOp::INVALIDATOMSOP14: return std::make_optional<const std::string_view>("INVALIDATOMSOP14");
+    case AtomsOp::INVALIDATOMSOP15: return std::make_optional<const std::string_view>("INVALIDATOMSOP15");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(AtomsSPIN value) {
+  switch (value) {
+    case AtomsSPIN::noSPIN: return std::make_optional<const std::string_view>("noSPIN");
+    case AtomsSPIN::SPIN: return std::make_optional<const std::string_view>("SPIN");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(AtomsSz value) {
+  switch (value) {
+    case AtomsSz::_32: return std::make_optional<const std::string_view>("32");
+    case AtomsSz::S32: return std::make_optional<const std::string_view>("S32");
+    case AtomsSz::_64: return std::make_optional<const std::string_view>("64");
+    case AtomsSz::S64: return std::make_optional<const std::string_view>("S64");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(B1B0 value) {
+  switch (value) {
+    case B1B0::H0: return std::make_optional<const std::string_view>("H0");
+    case B1B0::H1: return std::make_optional<const std::string_view>("H1");
+    case B1B0::B1: return std::make_optional<const std::string_view>("B1");
+    case B1B0::B3: return std::make_optional<const std::string_view>("B3");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(B3B0 value) {
+  switch (value) {
+    case B3B0::B0: return std::make_optional<const std::string_view>("B0");
+    case B3B0::B1: return std::make_optional<const std::string_view>("B1");
+    case B3B0::B2: return std::make_optional<const std::string_view>("B2");
+    case B3B0::B3: return std::make_optional<const std::string_view>("B3");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BA value) {
+  switch (value) {
+    case BA::noBA: return std::make_optional<const std::string_view>("noBA");
+    case BA::BA: return std::make_optional<const std::string_view>("BA");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BASE value) {
+  switch (value) {
+    case BASE::MAP: return std::make_optional<const std::string_view>("MAP");
+    case BASE::PATCH: return std::make_optional<const std::string_view>("PATCH");
+    case BASE::PRIM: return std::make_optional<const std::string_view>("PRIM");
+    case BASE::ATTR: return std::make_optional<const std::string_view>("ATTR");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BOnly value) {
+  switch (value) {
+    case BOnly::B: return std::make_optional<const std::string_view>("B");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BPTMode value) {
+  switch (value) {
+    case BPTMode::DRAIN_ILLEGAL: return std::make_optional<const std::string_view>("DRAIN_ILLEGAL");
+    case BPTMode::CAL: return std::make_optional<const std::string_view>("CAL");
+    case BPTMode::PAUSE: return std::make_optional<const std::string_view>("PAUSE");
+    case BPTMode::TRAP: return std::make_optional<const std::string_view>("TRAP");
+    case BPTMode::INT: return std::make_optional<const std::string_view>("INT");
+    case BPTMode::DRAIN: return std::make_optional<const std::string_view>("DRAIN");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BREV value) {
+  switch (value) {
+    case BREV::noBREV: return std::make_optional<const std::string_view>("noBREV");
+    case BREV::BREV: return std::make_optional<const std::string_view>("BREV");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BSel4 value) {
+  switch (value) {
+    case BSel4::_4444: return std::make_optional<const std::string_view>("4444");
+    case BSel4::_5555: return std::make_optional<const std::string_view>("5555");
+    case BSel4::_6666: return std::make_optional<const std::string_view>("6666");
+    case BSel4::_7777: return std::make_optional<const std::string_view>("7777");
+    case BSel4::_7654: return std::make_optional<const std::string_view>("7654");
+    case BSel4::_6543: return std::make_optional<const std::string_view>("6543");
+    case BSel4::_5432: return std::make_optional<const std::string_view>("5432");
+    case BSel4::_4321: return std::make_optional<const std::string_view>("4321");
+    case BSel4::_4567: return std::make_optional<const std::string_view>("4567");
+    case BSel4::_6745: return std::make_optional<const std::string_view>("6745");
+    case BSel4::_5476: return std::make_optional<const std::string_view>("5476");
+    case BSel4::BSEL4B: return std::make_optional<const std::string_view>("BSEL4B");
+    case BSel4::BSEL4C: return std::make_optional<const std::string_view>("BSEL4C");
+    case BSel4::BSEL4D: return std::make_optional<const std::string_view>("BSEL4D");
+    case BSel4::BSEL4E: return std::make_optional<const std::string_view>("BSEL4E");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BVal value) {
+  switch (value) {
+    case BVal::BM: return std::make_optional<const std::string_view>("BM");
+    case BVal::BF: return std::make_optional<const std::string_view>("BF");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BarArv value) {
+  switch (value) {
+    case BarArv::ARV: return std::make_optional<const std::string_view>("ARV");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BarRED value) {
+  switch (value) {
+    case BarRED::RED: return std::make_optional<const std::string_view>("RED");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BarSCAN value) {
+  switch (value) {
+    case BarSCAN::SCAN: return std::make_optional<const std::string_view>("SCAN");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BarSYNCALL value) {
+  switch (value) {
+    case BarSYNCALL::SYNCALL: return std::make_optional<const std::string_view>("SYNCALL");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BarSync value) {
+  switch (value) {
+    case BarSync::SYNC: return std::make_optional<const std::string_view>("SYNC");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Barmd value) {
+  switch (value) {
+    case Barmd::BAR: return std::make_optional<const std::string_view>("BAR");
+    case Barmd::RESULT: return std::make_optional<const std::string_view>("RESULT");
+    case Barmd::WARP: return std::make_optional<const std::string_view>("WARP");
+    case Barmd::INVALID: return std::make_optional<const std::string_view>("INVALID");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BarmdBAR value) {
+  switch (value) {
+    case BarmdBAR::BAR: return std::make_optional<const std::string_view>("BAR");
+    case BarmdBAR::INVALID: return std::make_optional<const std::string_view>("INVALID");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BarmdRESULT value) {
+  switch (value) {
+    case BarmdRESULT::RESULT: return std::make_optional<const std::string_view>("RESULT");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(BarmdWARP value) {
+  switch (value) {
+    case BarmdWARP::WARP: return std::make_optional<const std::string_view>("WARP");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Bop value) {
+  switch (value) {
+    case Bop::AND: return std::make_optional<const std::string_view>("AND");
+    case Bop::OR: return std::make_optional<const std::string_view>("OR");
+    case Bop::XOR: return std::make_optional<const std::string_view>("XOR");
+    case Bop::INVALIDBOP03: return std::make_optional<const std::string_view>("INVALIDBOP03");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(C value) {
+  switch (value) {
+    case C::C: return std::make_optional<const std::string_view>("C");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CAS value) {
+  switch (value) {
+    case CAS::CAS: return std::make_optional<const std::string_view>("CAS");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CASInteger value) {
+  switch (value) {
+    case CASInteger::U32: return std::make_optional<const std::string_view>("U32");
+    case CASInteger::U64: return std::make_optional<const std::string_view>("U64");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CAST value) {
+  switch (value) {
+    case CAST::CAST: return std::make_optional<const std::string_view>("CAST");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CC value) {
+  switch (value) {
+    case CC::CC: return std::make_optional<const std::string_view>("CC");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CCPR value) {
+  switch (value) {
+    case CCPR::PR: return std::make_optional<const std::string_view>("PR");
+    case CCPR::CC: return std::make_optional<const std::string_view>("CC");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CCTLLOp2 value) {
+  switch (value) {
+    case CCTLLOp2::IVALL: return std::make_optional<const std::string_view>("IVALL");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CCTLLOp3 value) {
+  switch (value) {
+    case CCTLLOp3::WBALL: return std::make_optional<const std::string_view>("WBALL");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CCTLOp value) {
+  switch (value) {
+    case CCTLOp::PF1: return std::make_optional<const std::string_view>("PF1");
+    case CCTLOp::PF1_5: return std::make_optional<const std::string_view>("PF1.5");
+    case CCTLOp::PF2: return std::make_optional<const std::string_view>("PF2");
+    case CCTLOp::WB: return std::make_optional<const std::string_view>("WB");
+    case CCTLOp::IV: return std::make_optional<const std::string_view>("IV");
+    case CCTLOp::RS: return std::make_optional<const std::string_view>("RS");
+    case CCTLOp::RSLB: return std::make_optional<const std::string_view>("RSLB");
+    case CCTLOp::INVALIDCCTLOP10: return std::make_optional<const std::string_view>("INVALIDCCTLOP10");
+    case CCTLOp::INVALIDCCTLOP11: return std::make_optional<const std::string_view>("INVALIDCCTLOP11");
+    case CCTLOp::INVALIDCCTLOP12: return std::make_optional<const std::string_view>("INVALIDCCTLOP12");
+    case CCTLOp::INVALIDCCTLOP13: return std::make_optional<const std::string_view>("INVALIDCCTLOP13");
+    case CCTLOp::INVALIDCCTLOP14: return std::make_optional<const std::string_view>("INVALIDCCTLOP14");
+    case CCTLOp::INVALIDCCTLOP15: return std::make_optional<const std::string_view>("INVALIDCCTLOP15");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CCTLTOp value) {
+  switch (value) {
+    case CCTLTOp::IVTH: return std::make_optional<const std::string_view>("IVTH");
+    case CCTLTOp::INVALIDCCTLTOP2: return std::make_optional<const std::string_view>("INVALIDCCTLTOP2");
+    case CCTLTOp::INVALIDCCTLTOP3: return std::make_optional<const std::string_view>("INVALIDCCTLTOP3");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CCTLTOpIVALL value) {
+  switch (value) {
+    case CCTLTOpIVALL::IVALL: return std::make_optional<const std::string_view>("IVALL");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CInteger value) {
+  switch (value) {
+    case CInteger::SD: return std::make_optional<const std::string_view>("SD");
+    case CInteger::_16: return std::make_optional<const std::string_view>("16");
+    case CInteger::S8: return std::make_optional<const std::string_view>("S8");
+    case CInteger::S16: return std::make_optional<const std::string_view>("S16");
+    case CInteger::_32: return std::make_optional<const std::string_view>("32");
+    case CInteger::_64: return std::make_optional<const std::string_view>("64");
+    case CInteger::_128: return std::make_optional<const std::string_view>("128");
+    case CInteger::INVALIDSIZE7: return std::make_optional<const std::string_view>("INVALIDSIZE7");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CInteger_64 value) {
+  switch (value) {
+    case CInteger_64::_64: return std::make_optional<const std::string_view>("64");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CInteger_n64_n128 value) {
+  switch (value) {
+    case CInteger_n64_n128::SD: return std::make_optional<const std::string_view>("SD");
+    case CInteger_n64_n128::_16: return std::make_optional<const std::string_view>("16");
+    case CInteger_n64_n128::S8: return std::make_optional<const std::string_view>("S8");
+    case CInteger_n64_n128::S16: return std::make_optional<const std::string_view>("S16");
+    case CInteger_n64_n128::_32: return std::make_optional<const std::string_view>("32");
+    case CInteger_n64_n128::INVALIDSIZE6: return std::make_optional<const std::string_view>("INVALIDSIZE6");
+    case CInteger_n64_n128::INVALIDSIZE7: return std::make_optional<const std::string_view>("INVALIDSIZE7");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CL value) {
+  switch (value) {
+    case CL::noCL: return std::make_optional<const std::string_view>("noCL");
+    case CL::CL: return std::make_optional<const std::string_view>("CL");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CRSOnly value) {
+  switch (value) {
+    case CRSOnly::CRS: return std::make_optional<const std::string_view>("CRS");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(CWMode value) {
+  switch (value) {
+    case CWMode::C: return std::make_optional<const std::string_view>("C");
+    case CWMode::W: return std::make_optional<const std::string_view>("W");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Cache3 value) {
+  switch (value) {
+    case Cache3::D: return std::make_optional<const std::string_view>("D");
+    case Cache3::U: return std::make_optional<const std::string_view>("U");
+    case Cache3::C: return std::make_optional<const std::string_view>("C");
+    case Cache3::I: return std::make_optional<const std::string_view>("I");
+    case Cache3::CRS: return std::make_optional<const std::string_view>("CRS");
+    case Cache3::INVALIDCCTLCACHEOP5: return std::make_optional<const std::string_view>("INVALIDCCTLCACHEOP5");
+    case Cache3::INVALIDCCTLCACHEOP6: return std::make_optional<const std::string_view>("INVALIDCCTLCACHEOP6");
+    case Cache3::INVALIDCCTLCACHEOP7: return std::make_optional<const std::string_view>("INVALIDCCTLCACHEOP7");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Cache3CI value) {
+  switch (value) {
+    case Cache3CI::C: return std::make_optional<const std::string_view>("C");
+    case Cache3CI::I: return std::make_optional<const std::string_view>("I");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Cache3NoCI value) {
+  switch (value) {
+    case Cache3NoCI::D: return std::make_optional<const std::string_view>("D");
+    case Cache3NoCI::U: return std::make_optional<const std::string_view>("U");
+    case Cache3NoCI::CRS: return std::make_optional<const std::string_view>("CRS");
+    case Cache3NoCI::INVALIDCCTLCACHEOP5: return std::make_optional<const std::string_view>("INVALIDCCTLCACHEOP5");
+    case Cache3NoCI::INVALIDCCTLCACHEOP6: return std::make_optional<const std::string_view>("INVALIDCCTLCACHEOP6");
+    case Cache3NoCI::INVALIDCCTLCACHEOP7: return std::make_optional<const std::string_view>("INVALIDCCTLCACHEOP7");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(ChkMode value) {
+  switch (value) {
+    case ChkMode::DIVIDE: return std::make_optional<const std::string_view>("DIVIDE");
+    case ChkMode::INVALIDCHKMODE1: return std::make_optional<const std::string_view>("INVALIDCHKMODE1");
+    case ChkMode::INVALIDCHKMODE2: return std::make_optional<const std::string_view>("INVALIDCHKMODE2");
+    case ChkMode::INVALIDCHKMODE3: return std::make_optional<const std::string_view>("INVALIDCHKMODE3");
+    case ChkMode::INVALIDCHKMODE4: return std::make_optional<const std::string_view>("INVALIDCHKMODE4");
+    case ChkMode::INVALIDCHKMODE5: return std::make_optional<const std::string_view>("INVALIDCHKMODE5");
+    case ChkMode::INVALIDCHKMODE6: return std::make_optional<const std::string_view>("INVALIDCHKMODE6");
+    case ChkMode::INVALIDCHKMODE7: return std::make_optional<const std::string_view>("INVALIDCHKMODE7");
+    case ChkMode::INVALIDCHKMODE8: return std::make_optional<const std::string_view>("INVALIDCHKMODE8");
+    case ChkMode::INVALIDCHKMODE9: return std::make_optional<const std::string_view>("INVALIDCHKMODE9");
+    case ChkMode::INVALIDCHKMODE10: return std::make_optional<const std::string_view>("INVALIDCHKMODE10");
+    case ChkMode::INVALIDCHKMODE11: return std::make_optional<const std::string_view>("INVALIDCHKMODE11");
+    case ChkMode::INVALIDCHKMODE12: return std::make_optional<const std::string_view>("INVALIDCHKMODE12");
+    case ChkMode::INVALIDCHKMODE13: return std::make_optional<const std::string_view>("INVALIDCHKMODE13");
+    case ChkMode::INVALIDCHKMODE14: return std::make_optional<const std::string_view>("INVALIDCHKMODE14");
+    case ChkMode::INVALIDCHKMODE15: return std::make_optional<const std::string_view>("INVALIDCHKMODE15");
+    case ChkMode::INVALIDCHKMODE16: return std::make_optional<const std::string_view>("INVALIDCHKMODE16");
+    case ChkMode::INVALIDCHKMODE17: return std::make_optional<const std::string_view>("INVALIDCHKMODE17");
+    case ChkMode::INVALIDCHKMODE18: return std::make_optional<const std::string_view>("INVALIDCHKMODE18");
+    case ChkMode::INVALIDCHKMODE19: return std::make_optional<const std::string_view>("INVALIDCHKMODE19");
+    case ChkMode::INVALIDCHKMODE20: return std::make_optional<const std::string_view>("INVALIDCHKMODE20");
+    case ChkMode::INVALIDCHKMODE21: return std::make_optional<const std::string_view>("INVALIDCHKMODE21");
+    case ChkMode::INVALIDCHKMODE22: return std::make_optional<const std::string_view>("INVALIDCHKMODE22");
+    case ChkMode::INVALIDCHKMODE23: return std::make_optional<const std::string_view>("INVALIDCHKMODE23");
+    case ChkMode::INVALIDCHKMODE24: return std::make_optional<const std::string_view>("INVALIDCHKMODE24");
+    case ChkMode::INVALIDCHKMODE25: return std::make_optional<const std::string_view>("INVALIDCHKMODE25");
+    case ChkMode::INVALIDCHKMODE26: return std::make_optional<const std::string_view>("INVALIDCHKMODE26");
+    case ChkMode::INVALIDCHKMODE27: return std::make_optional<const std::string_view>("INVALIDCHKMODE27");
+    case ChkMode::INVALIDCHKMODE28: return std::make_optional<const std::string_view>("INVALIDCHKMODE28");
+    case ChkMode::INVALIDCHKMODE29: return std::make_optional<const std::string_view>("INVALIDCHKMODE29");
+    case ChkMode::INVALIDCHKMODE30: return std::make_optional<const std::string_view>("INVALIDCHKMODE30");
+    case ChkMode::INVALIDCHKMODE31: return std::make_optional<const std::string_view>("INVALIDCHKMODE31");
+    case ChkMode::INVALIDCHKMODE32: return std::make_optional<const std::string_view>("INVALIDCHKMODE32");
+    case ChkMode::INVALIDCHKMODE33: return std::make_optional<const std::string_view>("INVALIDCHKMODE33");
+    case ChkMode::INVALIDCHKMODE34: return std::make_optional<const std::string_view>("INVALIDCHKMODE34");
+    case ChkMode::INVALIDCHKMODE35: return std::make_optional<const std::string_view>("INVALIDCHKMODE35");
+    case ChkMode::INVALIDCHKMODE36: return std::make_optional<const std::string_view>("INVALIDCHKMODE36");
+    case ChkMode::INVALIDCHKMODE37: return std::make_optional<const std::string_view>("INVALIDCHKMODE37");
+    case ChkMode::INVALIDCHKMODE38: return std::make_optional<const std::string_view>("INVALIDCHKMODE38");
+    case ChkMode::INVALIDCHKMODE39: return std::make_optional<const std::string_view>("INVALIDCHKMODE39");
+    case ChkMode::INVALIDCHKMODE40: return std::make_optional<const std::string_view>("INVALIDCHKMODE40");
+    case ChkMode::INVALIDCHKMODE41: return std::make_optional<const std::string_view>("INVALIDCHKMODE41");
+    case ChkMode::INVALIDCHKMODE42: return std::make_optional<const std::string_view>("INVALIDCHKMODE42");
+    case ChkMode::INVALIDCHKMODE43: return std::make_optional<const std::string_view>("INVALIDCHKMODE43");
+    case ChkMode::INVALIDCHKMODE44: return std::make_optional<const std::string_view>("INVALIDCHKMODE44");
+    case ChkMode::INVALIDCHKMODE45: return std::make_optional<const std::string_view>("INVALIDCHKMODE45");
+    case ChkMode::INVALIDCHKMODE46: return std::make_optional<const std::string_view>("INVALIDCHKMODE46");
+    case ChkMode::INVALIDCHKMODE47: return std::make_optional<const std::string_view>("INVALIDCHKMODE47");
+    case ChkMode::INVALIDCHKMODE48: return std::make_optional<const std::string_view>("INVALIDCHKMODE48");
+    case ChkMode::INVALIDCHKMODE49: return std::make_optional<const std::string_view>("INVALIDCHKMODE49");
+    case ChkMode::INVALIDCHKMODE50: return std::make_optional<const std::string_view>("INVALIDCHKMODE50");
+    case ChkMode::INVALIDCHKMODE51: return std::make_optional<const std::string_view>("INVALIDCHKMODE51");
+    case ChkMode::INVALIDCHKMODE52: return std::make_optional<const std::string_view>("INVALIDCHKMODE52");
+    case ChkMode::INVALIDCHKMODE53: return std::make_optional<const std::string_view>("INVALIDCHKMODE53");
+    case ChkMode::INVALIDCHKMODE54: return std::make_optional<const std::string_view>("INVALIDCHKMODE54");
+    case ChkMode::INVALIDCHKMODE55: return std::make_optional<const std::string_view>("INVALIDCHKMODE55");
+    case ChkMode::INVALIDCHKMODE56: return std::make_optional<const std::string_view>("INVALIDCHKMODE56");
+    case ChkMode::INVALIDCHKMODE57: return std::make_optional<const std::string_view>("INVALIDCHKMODE57");
+    case ChkMode::INVALIDCHKMODE58: return std::make_optional<const std::string_view>("INVALIDCHKMODE58");
+    case ChkMode::INVALIDCHKMODE59: return std::make_optional<const std::string_view>("INVALIDCHKMODE59");
+    case ChkMode::INVALIDCHKMODE60: return std::make_optional<const std::string_view>("INVALIDCHKMODE60");
+    case ChkMode::INVALIDCHKMODE61: return std::make_optional<const std::string_view>("INVALIDCHKMODE61");
+    case ChkMode::INVALIDCHKMODE62: return std::make_optional<const std::string_view>("INVALIDCHKMODE62");
+    case ChkMode::INVALIDCHKMODE63: return std::make_optional<const std::string_view>("INVALIDCHKMODE63");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Clamp1 value) {
+  switch (value) {
+    case Clamp1::IGN: return std::make_optional<const std::string_view>("IGN");
+    case Clamp1::NEAR: return std::make_optional<const std::string_view>("NEAR");
+    case Clamp1::TRAP: return std::make_optional<const std::string_view>("TRAP");
+    case Clamp1::INVALIDSURFACECLAMP3: return std::make_optional<const std::string_view>("INVALIDSURFACECLAMP3");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(DC value) {
+  switch (value) {
+    case DC::noDC: return std::make_optional<const std::string_view>("noDC");
+    case DC::DC: return std::make_optional<const std::string_view>("DC");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(DFormat value) {
+  switch (value) {
+    case DFormat::UD: return std::make_optional<const std::string_view>("UD");
+    case DFormat::SD: return std::make_optional<const std::string_view>("SD");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(DIR value) {
+  switch (value) {
+    case DIR::NS: return std::make_optional<const std::string_view>("NS");
+    case DIR::RS: return std::make_optional<const std::string_view>("RS");
+    case DIR::LS: return std::make_optional<const std::string_view>("LS");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(DOnly value) {
+  switch (value) {
+    case DOnly::D: return std::make_optional<const std::string_view>("D");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Dim1 value) {
+  switch (value) {
+    case Dim1::_1D: return std::make_optional<const std::string_view>("1D");
+    case Dim1::_1D_BUFFER: return std::make_optional<const std::string_view>("1D_BUFFER");
+    case Dim1::_1D_ARRAY: return std::make_optional<const std::string_view>("1D_ARRAY");
+    case Dim1::_2D: return std::make_optional<const std::string_view>("2D");
+    case Dim1::_2D_ARRAY: return std::make_optional<const std::string_view>("2D_ARRAY");
+    case Dim1::_3D: return std::make_optional<const std::string_view>("3D");
+    case Dim1::INVALIDSURFACEDIM6: return std::make_optional<const std::string_view>("INVALIDSURFACEDIM6");
+    case Dim1::INVALIDSURFACEDIM7: return std::make_optional<const std::string_view>("INVALIDSURFACEDIM7");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(E value) {
+  switch (value) {
+    case E::noE: return std::make_optional<const std::string_view>("noE");
+    case E::E: return std::make_optional<const std::string_view>("E");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(F2FRound1 value) {
+  switch (value) {
+    case F2FRound1::PASS: return std::make_optional<const std::string_view>("PASS");
+    case F2FRound1::RN: return std::make_optional<const std::string_view>("RN");
+    case F2FRound1::RM: return std::make_optional<const std::string_view>("RM");
+    case F2FRound1::RP: return std::make_optional<const std::string_view>("RP");
+    case F2FRound1::RZ: return std::make_optional<const std::string_view>("RZ");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(F2FRound2 value) {
+  switch (value) {
+    case F2FRound2::PASS: return std::make_optional<const std::string_view>("PASS");
+    case F2FRound2::FLOOR: return std::make_optional<const std::string_view>("FLOOR");
+    case F2FRound2::CEIL: return std::make_optional<const std::string_view>("CEIL");
+    case F2FRound2::TRUNC: return std::make_optional<const std::string_view>("TRUNC");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(F2Ffmts1 value) {
+  switch (value) {
+    case F2Ffmts1::INVALIDFPDEST0_INVALIDFPSRC0: return std::make_optional<const std::string_view>("INVALIDFPDEST0.INVALIDFPSRC0");
+    case F2Ffmts1::F32_F32: return std::make_optional<const std::string_view>("F32.F32");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(F2Ffmts1_16 value) {
+  switch (value) {
+    case F2Ffmts1_16::F16_F16: return std::make_optional<const std::string_view>("F16.F16");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(F2Ffmts1_64 value) {
+  switch (value) {
+    case F2Ffmts1_64::F64_F64: return std::make_optional<const std::string_view>("F64.F64");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(F2Ffmts2 value) {
+  switch (value) {
+    case F2Ffmts2::F16_INVALIDFPSRC0: return std::make_optional<const std::string_view>("F16.INVALIDFPSRC0");
+    case F2Ffmts2::F32_INVALIDFPSRC0: return std::make_optional<const std::string_view>("F32.INVALIDFPSRC0");
+    case F2Ffmts2::F64_INVALIDFPSRC0: return std::make_optional<const std::string_view>("F64.INVALIDFPSRC0");
+    case F2Ffmts2::INVALIDFPDEST0_F32: return std::make_optional<const std::string_view>("INVALIDFPDEST0.F32");
+    case F2Ffmts2::F16_F32: return std::make_optional<const std::string_view>("F16.F32");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(F2Ffmts2_16 value) {
+  switch (value) {
+    case F2Ffmts2_16::INVALIDFPDEST0_F16: return std::make_optional<const std::string_view>("INVALIDFPDEST0.F16");
+    case F2Ffmts2_16::F32_F16: return std::make_optional<const std::string_view>("F32.F16");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(F2Ffmts2_64 value) {
+  switch (value) {
+    case F2Ffmts2_64::INVALIDFPDEST0_F64: return std::make_optional<const std::string_view>("INVALIDFPDEST0.F64");
+    case F2Ffmts2_64::F16_F64: return std::make_optional<const std::string_view>("F16.F64");
+    case F2Ffmts2_64::F32_F64: return std::make_optional<const std::string_view>("F32.F64");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(F2Ffmts2_64_16 value) {
+  switch (value) {
+    case F2Ffmts2_64_16::F64_F16: return std::make_optional<const std::string_view>("F64.F16");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(F2Ffmts2_64_32 value) {
+  switch (value) {
+    case F2Ffmts2_64_32::F64_F32: return std::make_optional<const std::string_view>("F64.F32");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(FMZ value) {
+  switch (value) {
+    case FMZ::noFTZ: return std::make_optional<const std::string_view>("noFTZ");
+    case FMZ::FTZ: return std::make_optional<const std::string_view>("FTZ");
+    case FMZ::FMZ: return std::make_optional<const std::string_view>("FMZ");
+    case FMZ::INVALIDFMZ3: return std::make_optional<const std::string_view>("INVALIDFMZ3");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(FTZ value) {
+  switch (value) {
+    case FTZ::noFTZ: return std::make_optional<const std::string_view>("noFTZ");
+    case FTZ::FTZ: return std::make_optional<const std::string_view>("FTZ");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Float value) {
+  switch (value) {
+    case Float::INVALIDFPDEST0: return std::make_optional<const std::string_view>("INVALIDFPDEST0");
+    case Float::F16: return std::make_optional<const std::string_view>("F16");
+    case Float::F32: return std::make_optional<const std::string_view>("F32");
+    case Float::F64: return std::make_optional<const std::string_view>("F64");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Float16 value) {
+  switch (value) {
+    case Float16::F16: return std::make_optional<const std::string_view>("F16");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Float32 value) {
+  switch (value) {
+    case Float32::INVALIDFPDEST0: return std::make_optional<const std::string_view>("INVALIDFPDEST0");
+    case Float32::F32: return std::make_optional<const std::string_view>("F32");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Float64 value) {
+  switch (value) {
+    case Float64::F64: return std::make_optional<const std::string_view>("F64");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(FloatNo64 value) {
+  switch (value) {
+    case FloatNo64::INVALIDFPDEST0: return std::make_optional<const std::string_view>("INVALIDFPDEST0");
+    case FloatNo64::F16: return std::make_optional<const std::string_view>("F16");
+    case FloatNo64::F32: return std::make_optional<const std::string_view>("F32");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(H1H0 value) {
+  switch (value) {
+    case H1H0::H0: return std::make_optional<const std::string_view>("H0");
+    case H1H0::H1: return std::make_optional<const std::string_view>("H1");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(HILO value) {
+  switch (value) {
+    case HILO::LO: return std::make_optional<const std::string_view>("LO");
+    case HILO::HI: return std::make_optional<const std::string_view>("HI");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(HIOnly value) {
+  switch (value) {
+    case HIOnly::HI: return std::make_optional<const std::string_view>("HI");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(H_AND value) {
+  switch (value) {
+    case H_AND::noH_AND: return std::make_optional<const std::string_view>("noH_AND");
+    case H_AND::H_AND: return std::make_optional<const std::string_view>("H_AND");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(I2XH value) {
+  switch (value) {
+    case I2XH::H0: return std::make_optional<const std::string_view>("H0");
+    case I2XH::INVALIDSIZE1: return std::make_optional<const std::string_view>("INVALIDSIZE1");
+    case I2XH::H1: return std::make_optional<const std::string_view>("H1");
+    case I2XH::INVALIDSIZE3: return std::make_optional<const std::string_view>("INVALIDSIZE3");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(ICmpAll value) {
+  switch (value) {
+    case ICmpAll::F: return std::make_optional<const std::string_view>("F");
+    case ICmpAll::LT: return std::make_optional<const std::string_view>("LT");
+    case ICmpAll::EQ: return std::make_optional<const std::string_view>("EQ");
+    case ICmpAll::LE: return std::make_optional<const std::string_view>("LE");
+    case ICmpAll::GT: return std::make_optional<const std::string_view>("GT");
+    case ICmpAll::NE: return std::make_optional<const std::string_view>("NE");
+    case ICmpAll::GE: return std::make_optional<const std::string_view>("GE");
+    case ICmpAll::T: return std::make_optional<const std::string_view>("T");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(ICmpU value) {
+  switch (value) {
+    case ICmpU::LO: return std::make_optional<const std::string_view>("LO");
+    case ICmpU::LS: return std::make_optional<const std::string_view>("LS");
+    case ICmpU::HI: return std::make_optional<const std::string_view>("HI");
+    case ICmpU::HS: return std::make_optional<const std::string_view>("HS");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(IDEActionDIOnly value) {
+  switch (value) {
+    case IDEActionDIOnly::DI: return std::make_optional<const std::string_view>("DI");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(IDEActionENOnly value) {
+  switch (value) {
+    case IDEActionENOnly::EN: return std::make_optional<const std::string_view>("EN");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(IDXOnly value) {
+  switch (value) {
+    case IDXOnly::IDX: return std::make_optional<const std::string_view>("IDX");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(INC value) {
+  switch (value) {
+    case INC::NOINC: return std::make_optional<const std::string_view>("NOINC");
+    case INC::INC: return std::make_optional<const std::string_view>("INC");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(IPAOp value) {
+  switch (value) {
+    case IPAOp::PASS: return std::make_optional<const std::string_view>("PASS");
+    case IPAOp::MUL: return std::make_optional<const std::string_view>("MUL");
+    case IPAOp::CONSTANT: return std::make_optional<const std::string_view>("CONSTANT");
+    case IPAOp::SC: return std::make_optional<const std::string_view>("SC");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(ISBERDInteger value) {
+  switch (value) {
+    case ISBERDInteger::U8: return std::make_optional<const std::string_view>("U8");
+    case ISBERDInteger::U16: return std::make_optional<const std::string_view>("U16");
+    case ISBERDInteger::_32: return std::make_optional<const std::string_view>("32");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(ISWZ value) {
+  switch (value) {
+    case ISWZ::H1_H0: return std::make_optional<const std::string_view>("H1_H0");
+    case ISWZ::F32: return std::make_optional<const std::string_view>("F32");
+    case ISWZ::H0_H0: return std::make_optional<const std::string_view>("H0_H0");
+    case ISWZ::H1_H1: return std::make_optional<const std::string_view>("H1_H1");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Integer value) {
+  switch (value) {
+    case static_cast<Integer>(Integer64::U64): return std::make_optional<const std::string_view>("U64");
+    case static_cast<Integer>(Integer64::S64): return std::make_optional<const std::string_view>("S64");
+    case static_cast<Integer>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
+    case static_cast<Integer>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
+    case static_cast<Integer>(Integer16::U16): return std::make_optional<const std::string_view>("U16");
+    case static_cast<Integer>(Integer16::S16): return std::make_optional<const std::string_view>("S16");
+    case static_cast<Integer>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
+    case static_cast<Integer>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Integer16 value) {
+  switch (value) {
+    case Integer16::U16: return std::make_optional<const std::string_view>("U16");
+    case Integer16::S16: return std::make_optional<const std::string_view>("S16");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Integer32 value) {
+  switch (value) {
+    case Integer32::U32: return std::make_optional<const std::string_view>("U32");
+    case Integer32::S32: return std::make_optional<const std::string_view>("S32");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Integer64 value) {
+  switch (value) {
+    case Integer64::U64: return std::make_optional<const std::string_view>("U64");
+    case Integer64::S64: return std::make_optional<const std::string_view>("S64");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Integer8 value) {
+  switch (value) {
+    case Integer8::U8: return std::make_optional<const std::string_view>("U8");
+    case Integer8::S8: return std::make_optional<const std::string_view>("S8");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(IntegerInv8No64 value) {
+  switch (value) {
+    case static_cast<IntegerInv8No64>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
+    case static_cast<IntegerInv8No64>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
+    case static_cast<IntegerInv8No64>(Invalid8::INVALID0): return std::make_optional<const std::string_view>("INVALID0");
+    case static_cast<IntegerInv8No64>(Invalid8::INVALID1): return std::make_optional<const std::string_view>("INVALID1");
+    case static_cast<IntegerInv8No64>(Integer16::U16): return std::make_optional<const std::string_view>("U16");
+    case static_cast<IntegerInv8No64>(Integer16::S16): return std::make_optional<const std::string_view>("S16");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(IntegerNo16Inv64 value) {
+  switch (value) {
+    case static_cast<IntegerNo16Inv64>(Invalid64::INVALID6): return std::make_optional<const std::string_view>("INVALID6");
+    case static_cast<IntegerNo16Inv64>(Invalid64::INVALID7): return std::make_optional<const std::string_view>("INVALID7");
+    case static_cast<IntegerNo16Inv64>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
+    case static_cast<IntegerNo16Inv64>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
+    case static_cast<IntegerNo16Inv64>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
+    case static_cast<IntegerNo16Inv64>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(IntegerNo16No64 value) {
+  switch (value) {
+    case static_cast<IntegerNo16No64>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
+    case static_cast<IntegerNo16No64>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
+    case static_cast<IntegerNo16No64>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
+    case static_cast<IntegerNo16No64>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(IntegerNo64 value) {
+  switch (value) {
+    case static_cast<IntegerNo64>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
+    case static_cast<IntegerNo64>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
+    case static_cast<IntegerNo64>(Integer16::U16): return std::make_optional<const std::string_view>("U16");
+    case static_cast<IntegerNo64>(Integer16::S16): return std::make_optional<const std::string_view>("S16");
+    case static_cast<IntegerNo64>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
+    case static_cast<IntegerNo64>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(IntegerNo8 value) {
+  switch (value) {
+    case static_cast<IntegerNo8>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
+    case static_cast<IntegerNo8>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
+    case static_cast<IntegerNo8>(Integer64::U64): return std::make_optional<const std::string_view>("U64");
+    case static_cast<IntegerNo8>(Integer64::S64): return std::make_optional<const std::string_view>("S64");
+    case static_cast<IntegerNo8>(Invalid8::INVALID0): return std::make_optional<const std::string_view>("INVALID0");
+    case static_cast<IntegerNo8>(Invalid8::INVALID1): return std::make_optional<const std::string_view>("INVALID1");
+    case static_cast<IntegerNo8>(Integer16::U16): return std::make_optional<const std::string_view>("U16");
+    case static_cast<IntegerNo8>(Integer16::S16): return std::make_optional<const std::string_view>("S16");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(IntegerSPA value) {
+  switch (value) {
+    case IntegerSPA::U32: return std::make_optional<const std::string_view>("U32");
+    case IntegerSPA::S32: return std::make_optional<const std::string_view>("S32");
+    case IntegerSPA::U24: return std::make_optional<const std::string_view>("U24");
+    case IntegerSPA::S24: return std::make_optional<const std::string_view>("S24");
+    case IntegerSPA::U16H0: return std::make_optional<const std::string_view>("U16H0");
+    case IntegerSPA::S16H0: return std::make_optional<const std::string_view>("S16H0");
+    case IntegerSPA::U16H1: return std::make_optional<const std::string_view>("U16H1");
+    case IntegerSPA::S16H1: return std::make_optional<const std::string_view>("S16H1");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(IntegerSPB value) {
+  switch (value) {
+    case IntegerSPB::U16H0: return std::make_optional<const std::string_view>("U16H0");
+    case IntegerSPB::S16H0: return std::make_optional<const std::string_view>("S16H0");
+    case IntegerSPB::U24: return std::make_optional<const std::string_view>("U24");
+    case IntegerSPB::S24: return std::make_optional<const std::string_view>("S24");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(IntegerSPC value) {
+  switch (value) {
+    case IntegerSPC::U32: return std::make_optional<const std::string_view>("U32");
+    case IntegerSPC::S32: return std::make_optional<const std::string_view>("S32");
+    case IntegerSPC::U24: return std::make_optional<const std::string_view>("U24");
+    case IntegerSPC::S24: return std::make_optional<const std::string_view>("S24");
+    case IntegerSPC::U16H0: return std::make_optional<const std::string_view>("U16H0");
+    case IntegerSPC::S16H0: return std::make_optional<const std::string_view>("S16H0");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Invalid64 value) {
+  switch (value) {
+    case Invalid64::INVALID6: return std::make_optional<const std::string_view>("INVALID6");
+    case Invalid64::INVALID7: return std::make_optional<const std::string_view>("INVALID7");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Invalid8 value) {
+  switch (value) {
+    case Invalid8::INVALID0: return std::make_optional<const std::string_view>("INVALID0");
+    case Invalid8::INVALID1: return std::make_optional<const std::string_view>("INVALID1");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(KeepRefCount value) {
+  switch (value) {
+    case KeepRefCount::noKEEPREFCOUNT: return std::make_optional<const std::string_view>("noKEEPREFCOUNT");
+    case KeepRefCount::KEEPREFCOUNT: return std::make_optional<const std::string_view>("KEEPREFCOUNT");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LC value) {
+  switch (value) {
+    case LC::noLC: return std::make_optional<const std::string_view>("noLC");
+    case LC::LC: return std::make_optional<const std::string_view>("LC");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LCache value) {
+  switch (value) {
+    case LCache::D: return std::make_optional<const std::string_view>("D");
+    case LCache::INVALIDLCACHETYPE2: return std::make_optional<const std::string_view>("INVALIDLCACHETYPE2");
+    case LCache::INVALIDLCACHETYPE3: return std::make_optional<const std::string_view>("INVALIDLCACHETYPE3");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LDInteger value) {
+  switch (value) {
+    case LDInteger::_8: return std::make_optional<const std::string_view>("8");
+    case LDInteger::_16: return std::make_optional<const std::string_view>("16");
+    case LDInteger::S8: return std::make_optional<const std::string_view>("S8");
+    case LDInteger::S16: return std::make_optional<const std::string_view>("S16");
+    case LDInteger::_32: return std::make_optional<const std::string_view>("32");
+    case LDInteger::_64: return std::make_optional<const std::string_view>("64");
+    case LDInteger::_128: return std::make_optional<const std::string_view>("128");
+    case LDInteger::U_128: return std::make_optional<const std::string_view>("U.128");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LDInteger_nU128 value) {
+  switch (value) {
+    case LDInteger_nU128::_8: return std::make_optional<const std::string_view>("8");
+    case LDInteger_nU128::_16: return std::make_optional<const std::string_view>("16");
+    case LDInteger_nU128::S8: return std::make_optional<const std::string_view>("S8");
+    case LDInteger_nU128::S16: return std::make_optional<const std::string_view>("S16");
+    case LDInteger_nU128::_32: return std::make_optional<const std::string_view>("32");
+    case LDInteger_nU128::_64: return std::make_optional<const std::string_view>("64");
+    case LDInteger_nU128::_128: return std::make_optional<const std::string_view>("128");
+    case LDInteger_nU128::INVALIDSIZE7: return std::make_optional<const std::string_view>("INVALIDSIZE7");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LDSInteger value) {
+  switch (value) {
+    case LDSInteger::_8: return std::make_optional<const std::string_view>("8");
+    case LDSInteger::U_8: return std::make_optional<const std::string_view>("U.8");
+    case LDSInteger::_16: return std::make_optional<const std::string_view>("16");
+    case LDSInteger::U_16: return std::make_optional<const std::string_view>("U.16");
+    case LDSInteger::S8: return std::make_optional<const std::string_view>("S8");
+    case LDSInteger::U_S8: return std::make_optional<const std::string_view>("U.S8");
+    case LDSInteger::S16: return std::make_optional<const std::string_view>("S16");
+    case LDSInteger::U_S16: return std::make_optional<const std::string_view>("U.S16");
+    case LDSInteger::_32: return std::make_optional<const std::string_view>("32");
+    case LDSInteger::U_32: return std::make_optional<const std::string_view>("U.32");
+    case LDSInteger::_64: return std::make_optional<const std::string_view>("64");
+    case LDSInteger::U_64: return std::make_optional<const std::string_view>("U.64");
+    case LDSInteger::_128: return std::make_optional<const std::string_view>("128");
+    case LDSInteger::U_128: return std::make_optional<const std::string_view>("U.128");
+    case LDSInteger::INVALIDSIZE7: return std::make_optional<const std::string_view>("INVALIDSIZE7");
+    case LDSInteger::U_INVALIDSIZE7: return std::make_optional<const std::string_view>("U.INVALIDSIZE7");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LEOnly value) {
+  switch (value) {
+    case LEOnly::LE: return std::make_optional<const std::string_view>("LE");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LLoadCacheOp value) {
+  switch (value) {
+    case LLoadCacheOp::CS: return std::make_optional<const std::string_view>("CS");
+    case LLoadCacheOp::LU: return std::make_optional<const std::string_view>("LU");
+    case LLoadCacheOp::CI: return std::make_optional<const std::string_view>("CI");
+    case LLoadCacheOp::CV: return std::make_optional<const std::string_view>("CV");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LMT value) {
+  switch (value) {
+    case LMT::noLMT: return std::make_optional<const std::string_view>("noLMT");
+    case LMT::LMT: return std::make_optional<const std::string_view>("LMT");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LOD value) {
+  switch (value) {
+    case LOD::noLOD: return std::make_optional<const std::string_view>("noLOD");
+    case LOD::LZ: return std::make_optional<const std::string_view>("LZ");
+    case LOD::LB: return std::make_optional<const std::string_view>("LB");
+    case LOD::LL: return std::make_optional<const std::string_view>("LL");
+    case LOD::INVALIDBLOD4: return std::make_optional<const std::string_view>("INVALIDBLOD4");
+    case LOD::INVALIDBLOD5: return std::make_optional<const std::string_view>("INVALIDBLOD5");
+    case LOD::LBA: return std::make_optional<const std::string_view>("LBA");
+    case LOD::LLA: return std::make_optional<const std::string_view>("LLA");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LOD1 value) {
+  switch (value) {
+    case LOD1::LZ: return std::make_optional<const std::string_view>("LZ");
+    case LOD1::LL: return std::make_optional<const std::string_view>("LL");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LOD2 value) {
+  switch (value) {
+    case LOD2::noLOD: return std::make_optional<const std::string_view>("noLOD");
+    case LOD2::LZ: return std::make_optional<const std::string_view>("LZ");
+    case LOD2::LL: return std::make_optional<const std::string_view>("LL");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LODOnly value) {
+  switch (value) {
+    case LODOnly::LOD: return std::make_optional<const std::string_view>("LOD");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LOOnly value) {
+  switch (value) {
+    case LOOnly::LO: return std::make_optional<const std::string_view>("LO");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LOP value) {
+  switch (value) {
+    case LOP::AND: return std::make_optional<const std::string_view>("AND");
+    case LOP::OR: return std::make_optional<const std::string_view>("OR");
+    case LOP::XOR: return std::make_optional<const std::string_view>("XOR");
+    case LOP::PASS_B: return std::make_optional<const std::string_view>("PASS_B");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LUTOnly value) {
+  switch (value) {
+    case LUTOnly::LUT: return std::make_optional<const std::string_view>("LUT");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LaneMask4 value) {
+  switch (value) {
+    case LaneMask4::X: return std::make_optional<const std::string_view>("X");
+    case LaneMask4::Y: return std::make_optional<const std::string_view>("Y");
+    case LaneMask4::Z: return std::make_optional<const std::string_view>("Z");
+    case LaneMask4::W: return std::make_optional<const std::string_view>("W");
+    case LaneMask4::XW: return std::make_optional<const std::string_view>("XW");
+    case LaneMask4::YW: return std::make_optional<const std::string_view>("YW");
+    case LaneMask4::ZW: return std::make_optional<const std::string_view>("ZW");
+    case LaneMask4::XZ: return std::make_optional<const std::string_view>("XZ");
+    case LaneMask4::YZ: return std::make_optional<const std::string_view>("YZ");
+    case LaneMask4::XY: return std::make_optional<const std::string_view>("XY");
+    case LaneMask4::YZW: return std::make_optional<const std::string_view>("YZW");
+    case LaneMask4::XZW: return std::make_optional<const std::string_view>("XZW");
+    case LaneMask4::XYW: return std::make_optional<const std::string_view>("XYW");
+    case LaneMask4::XYZ: return std::make_optional<const std::string_view>("XYZ");
+    case LaneMask4::XYZW: return std::make_optional<const std::string_view>("XYZW");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(LoadCacheOp value) {
+  switch (value) {
+    case LoadCacheOp::CS: return std::make_optional<const std::string_view>("CS");
+    case LoadCacheOp::LU: return std::make_optional<const std::string_view>("LU");
+    case LoadCacheOp::CI: return std::make_optional<const std::string_view>("CI");
+    case LoadCacheOp::CV: return std::make_optional<const std::string_view>("CV");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(MN value) {
+  switch (value) {
+    case MN::MN: return std::make_optional<const std::string_view>("MN");
+    case MN::MX: return std::make_optional<const std::string_view>("MX");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(MRG value) {
+  switch (value) {
+    case MRG::noMRG: return std::make_optional<const std::string_view>("noMRG");
+    case MRG::MRG: return std::make_optional<const std::string_view>("MRG");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(MS value) {
+  switch (value) {
+    case MS::noMS: return std::make_optional<const std::string_view>("noMS");
+    case MS::MS: return std::make_optional<const std::string_view>("MS");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(MSI value) {
+  switch (value) {
+    case MSI::C: return std::make_optional<const std::string_view>("C");
+    case MSI::INVALIDMSI3: return std::make_optional<const std::string_view>("INVALIDMSI3");
+    case MSI::CENTROID: return std::make_optional<const std::string_view>("CENTROID");
+    case MSI::OFFSET: return std::make_optional<const std::string_view>("OFFSET");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(MemBarIvall value) {
+  switch (value) {
+    case MemBarIvall::NOIVALL: return std::make_optional<const std::string_view>("NOIVALL");
+    case MemBarIvall::IVALLD: return std::make_optional<const std::string_view>("IVALLD");
+    case MemBarIvall::IVALLT: return std::make_optional<const std::string_view>("IVALLT");
+    case MemBarIvall::IVALLTD: return std::make_optional<const std::string_view>("IVALLTD");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(MemBarLevel value) {
+  switch (value) {
+    case MemBarLevel::CTA: return std::make_optional<const std::string_view>("CTA");
+    case MemBarLevel::GL: return std::make_optional<const std::string_view>("GL");
+    case MemBarLevel::SYS: return std::make_optional<const std::string_view>("SYS");
+    case MemBarLevel::VC: return std::make_optional<const std::string_view>("VC");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(MufuOp value) {
+  switch (value) {
+    case MufuOp::COS: return std::make_optional<const std::string_view>("COS");
+    case MufuOp::SIN: return std::make_optional<const std::string_view>("SIN");
+    case MufuOp::EX2: return std::make_optional<const std::string_view>("EX2");
+    case MufuOp::LG2: return std::make_optional<const std::string_view>("LG2");
+    case MufuOp::RCP: return std::make_optional<const std::string_view>("RCP");
+    case MufuOp::RSQ: return std::make_optional<const std::string_view>("RSQ");
+    case MufuOp::RCP64H: return std::make_optional<const std::string_view>("RCP64H");
+    case MufuOp::RSQ64H: return std::make_optional<const std::string_view>("RSQ64H");
+    case MufuOp::SQRT: return std::make_optional<const std::string_view>("SQRT");
+    case MufuOp::INVALIDMUFUOPCODE9: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODE9");
+    case MufuOp::INVALIDMUFUOPCODEA: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODEA");
+    case MufuOp::INVALIDMUFUOPCODEB: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODEB");
+    case MufuOp::INVALIDMUFUOPCODEC: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODEC");
+    case MufuOp::INVALIDMUFUOPCODED: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODED");
+    case MufuOp::INVALIDMUFUOPCODEE: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODEE");
+    case MufuOp::INVALIDMUFUOPCODEF: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODEF");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(NDV value) {
+  switch (value) {
+    case NDV::noNDV: return std::make_optional<const std::string_view>("noNDV");
+    case NDV::NDV: return std::make_optional<const std::string_view>("NDV");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(NODEP value) {
+  switch (value) {
+    case NODEP::noNODEP: return std::make_optional<const std::string_view>("noNODEP");
+    case NODEP::NODEP: return std::make_optional<const std::string_view>("NODEP");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(NonZeroRegister value) {
+  switch (value) {
+    case NonZeroRegister::R00: return std::make_optional<const std::string_view>("R00");
+    case NonZeroRegister::R01: return std::make_optional<const std::string_view>("R01");
+    case NonZeroRegister::R02: return std::make_optional<const std::string_view>("R02");
+    case NonZeroRegister::R03: return std::make_optional<const std::string_view>("R03");
+    case NonZeroRegister::R04: return std::make_optional<const std::string_view>("R04");
+    case NonZeroRegister::R05: return std::make_optional<const std::string_view>("R05");
+    case NonZeroRegister::R06: return std::make_optional<const std::string_view>("R06");
+    case NonZeroRegister::R07: return std::make_optional<const std::string_view>("R07");
+    case NonZeroRegister::R08: return std::make_optional<const std::string_view>("R08");
+    case NonZeroRegister::R09: return std::make_optional<const std::string_view>("R09");
+    case NonZeroRegister::R10: return std::make_optional<const std::string_view>("R10");
+    case NonZeroRegister::R11: return std::make_optional<const std::string_view>("R11");
+    case NonZeroRegister::R12: return std::make_optional<const std::string_view>("R12");
+    case NonZeroRegister::R13: return std::make_optional<const std::string_view>("R13");
+    case NonZeroRegister::R14: return std::make_optional<const std::string_view>("R14");
+    case NonZeroRegister::R15: return std::make_optional<const std::string_view>("R15");
+    case NonZeroRegister::R16: return std::make_optional<const std::string_view>("R16");
+    case NonZeroRegister::R17: return std::make_optional<const std::string_view>("R17");
+    case NonZeroRegister::R18: return std::make_optional<const std::string_view>("R18");
+    case NonZeroRegister::R19: return std::make_optional<const std::string_view>("R19");
+    case NonZeroRegister::R20: return std::make_optional<const std::string_view>("R20");
+    case NonZeroRegister::R21: return std::make_optional<const std::string_view>("R21");
+    case NonZeroRegister::R22: return std::make_optional<const std::string_view>("R22");
+    case NonZeroRegister::R23: return std::make_optional<const std::string_view>("R23");
+    case NonZeroRegister::R24: return std::make_optional<const std::string_view>("R24");
+    case NonZeroRegister::R25: return std::make_optional<const std::string_view>("R25");
+    case NonZeroRegister::R26: return std::make_optional<const std::string_view>("R26");
+    case NonZeroRegister::R27: return std::make_optional<const std::string_view>("R27");
+    case NonZeroRegister::R28: return std::make_optional<const std::string_view>("R28");
+    case NonZeroRegister::R29: return std::make_optional<const std::string_view>("R29");
+    case NonZeroRegister::R30: return std::make_optional<const std::string_view>("R30");
+    case NonZeroRegister::R31: return std::make_optional<const std::string_view>("R31");
+    case NonZeroRegister::R32: return std::make_optional<const std::string_view>("R32");
+    case NonZeroRegister::R33: return std::make_optional<const std::string_view>("R33");
+    case NonZeroRegister::R34: return std::make_optional<const std::string_view>("R34");
+    case NonZeroRegister::R35: return std::make_optional<const std::string_view>("R35");
+    case NonZeroRegister::R36: return std::make_optional<const std::string_view>("R36");
+    case NonZeroRegister::R37: return std::make_optional<const std::string_view>("R37");
+    case NonZeroRegister::R38: return std::make_optional<const std::string_view>("R38");
+    case NonZeroRegister::R39: return std::make_optional<const std::string_view>("R39");
+    case NonZeroRegister::R40: return std::make_optional<const std::string_view>("R40");
+    case NonZeroRegister::R41: return std::make_optional<const std::string_view>("R41");
+    case NonZeroRegister::R42: return std::make_optional<const std::string_view>("R42");
+    case NonZeroRegister::R43: return std::make_optional<const std::string_view>("R43");
+    case NonZeroRegister::R44: return std::make_optional<const std::string_view>("R44");
+    case NonZeroRegister::R45: return std::make_optional<const std::string_view>("R45");
+    case NonZeroRegister::R46: return std::make_optional<const std::string_view>("R46");
+    case NonZeroRegister::R47: return std::make_optional<const std::string_view>("R47");
+    case NonZeroRegister::R48: return std::make_optional<const std::string_view>("R48");
+    case NonZeroRegister::R49: return std::make_optional<const std::string_view>("R49");
+    case NonZeroRegister::R50: return std::make_optional<const std::string_view>("R50");
+    case NonZeroRegister::R51: return std::make_optional<const std::string_view>("R51");
+    case NonZeroRegister::R52: return std::make_optional<const std::string_view>("R52");
+    case NonZeroRegister::R53: return std::make_optional<const std::string_view>("R53");
+    case NonZeroRegister::R54: return std::make_optional<const std::string_view>("R54");
+    case NonZeroRegister::R55: return std::make_optional<const std::string_view>("R55");
+    case NonZeroRegister::R56: return std::make_optional<const std::string_view>("R56");
+    case NonZeroRegister::R57: return std::make_optional<const std::string_view>("R57");
+    case NonZeroRegister::R58: return std::make_optional<const std::string_view>("R58");
+    case NonZeroRegister::R59: return std::make_optional<const std::string_view>("R59");
+    case NonZeroRegister::R60: return std::make_optional<const std::string_view>("R60");
+    case NonZeroRegister::R61: return std::make_optional<const std::string_view>("R61");
+    case NonZeroRegister::R62: return std::make_optional<const std::string_view>("R62");
+    case NonZeroRegister::R63: return std::make_optional<const std::string_view>("R63");
+    case NonZeroRegister::R64: return std::make_optional<const std::string_view>("R64");
+    case NonZeroRegister::R65: return std::make_optional<const std::string_view>("R65");
+    case NonZeroRegister::R66: return std::make_optional<const std::string_view>("R66");
+    case NonZeroRegister::R67: return std::make_optional<const std::string_view>("R67");
+    case NonZeroRegister::R68: return std::make_optional<const std::string_view>("R68");
+    case NonZeroRegister::R69: return std::make_optional<const std::string_view>("R69");
+    case NonZeroRegister::R70: return std::make_optional<const std::string_view>("R70");
+    case NonZeroRegister::R71: return std::make_optional<const std::string_view>("R71");
+    case NonZeroRegister::R72: return std::make_optional<const std::string_view>("R72");
+    case NonZeroRegister::R73: return std::make_optional<const std::string_view>("R73");
+    case NonZeroRegister::R74: return std::make_optional<const std::string_view>("R74");
+    case NonZeroRegister::R75: return std::make_optional<const std::string_view>("R75");
+    case NonZeroRegister::R76: return std::make_optional<const std::string_view>("R76");
+    case NonZeroRegister::R77: return std::make_optional<const std::string_view>("R77");
+    case NonZeroRegister::R78: return std::make_optional<const std::string_view>("R78");
+    case NonZeroRegister::R79: return std::make_optional<const std::string_view>("R79");
+    case NonZeroRegister::R80: return std::make_optional<const std::string_view>("R80");
+    case NonZeroRegister::R81: return std::make_optional<const std::string_view>("R81");
+    case NonZeroRegister::R82: return std::make_optional<const std::string_view>("R82");
+    case NonZeroRegister::R83: return std::make_optional<const std::string_view>("R83");
+    case NonZeroRegister::R84: return std::make_optional<const std::string_view>("R84");
+    case NonZeroRegister::R85: return std::make_optional<const std::string_view>("R85");
+    case NonZeroRegister::R86: return std::make_optional<const std::string_view>("R86");
+    case NonZeroRegister::R87: return std::make_optional<const std::string_view>("R87");
+    case NonZeroRegister::R88: return std::make_optional<const std::string_view>("R88");
+    case NonZeroRegister::R89: return std::make_optional<const std::string_view>("R89");
+    case NonZeroRegister::R90: return std::make_optional<const std::string_view>("R90");
+    case NonZeroRegister::R91: return std::make_optional<const std::string_view>("R91");
+    case NonZeroRegister::R92: return std::make_optional<const std::string_view>("R92");
+    case NonZeroRegister::R93: return std::make_optional<const std::string_view>("R93");
+    case NonZeroRegister::R94: return std::make_optional<const std::string_view>("R94");
+    case NonZeroRegister::R95: return std::make_optional<const std::string_view>("R95");
+    case NonZeroRegister::R96: return std::make_optional<const std::string_view>("R96");
+    case NonZeroRegister::R97: return std::make_optional<const std::string_view>("R97");
+    case NonZeroRegister::R98: return std::make_optional<const std::string_view>("R98");
+    case NonZeroRegister::R99: return std::make_optional<const std::string_view>("R99");
+    case NonZeroRegister::R100: return std::make_optional<const std::string_view>("R100");
+    case NonZeroRegister::R101: return std::make_optional<const std::string_view>("R101");
+    case NonZeroRegister::R102: return std::make_optional<const std::string_view>("R102");
+    case NonZeroRegister::R103: return std::make_optional<const std::string_view>("R103");
+    case NonZeroRegister::R104: return std::make_optional<const std::string_view>("R104");
+    case NonZeroRegister::R105: return std::make_optional<const std::string_view>("R105");
+    case NonZeroRegister::R106: return std::make_optional<const std::string_view>("R106");
+    case NonZeroRegister::R107: return std::make_optional<const std::string_view>("R107");
+    case NonZeroRegister::R108: return std::make_optional<const std::string_view>("R108");
+    case NonZeroRegister::R109: return std::make_optional<const std::string_view>("R109");
+    case NonZeroRegister::R110: return std::make_optional<const std::string_view>("R110");
+    case NonZeroRegister::R111: return std::make_optional<const std::string_view>("R111");
+    case NonZeroRegister::R112: return std::make_optional<const std::string_view>("R112");
+    case NonZeroRegister::R113: return std::make_optional<const std::string_view>("R113");
+    case NonZeroRegister::R114: return std::make_optional<const std::string_view>("R114");
+    case NonZeroRegister::R115: return std::make_optional<const std::string_view>("R115");
+    case NonZeroRegister::R116: return std::make_optional<const std::string_view>("R116");
+    case NonZeroRegister::R117: return std::make_optional<const std::string_view>("R117");
+    case NonZeroRegister::R118: return std::make_optional<const std::string_view>("R118");
+    case NonZeroRegister::R119: return std::make_optional<const std::string_view>("R119");
+    case NonZeroRegister::R120: return std::make_optional<const std::string_view>("R120");
+    case NonZeroRegister::R121: return std::make_optional<const std::string_view>("R121");
+    case NonZeroRegister::R122: return std::make_optional<const std::string_view>("R122");
+    case NonZeroRegister::R123: return std::make_optional<const std::string_view>("R123");
+    case NonZeroRegister::R124: return std::make_optional<const std::string_view>("R124");
+    case NonZeroRegister::R125: return std::make_optional<const std::string_view>("R125");
+    case NonZeroRegister::R126: return std::make_optional<const std::string_view>("R126");
+    case NonZeroRegister::R127: return std::make_optional<const std::string_view>("R127");
+    case NonZeroRegister::R128: return std::make_optional<const std::string_view>("R128");
+    case NonZeroRegister::R129: return std::make_optional<const std::string_view>("R129");
+    case NonZeroRegister::R130: return std::make_optional<const std::string_view>("R130");
+    case NonZeroRegister::R131: return std::make_optional<const std::string_view>("R131");
+    case NonZeroRegister::R132: return std::make_optional<const std::string_view>("R132");
+    case NonZeroRegister::R133: return std::make_optional<const std::string_view>("R133");
+    case NonZeroRegister::R134: return std::make_optional<const std::string_view>("R134");
+    case NonZeroRegister::R135: return std::make_optional<const std::string_view>("R135");
+    case NonZeroRegister::R136: return std::make_optional<const std::string_view>("R136");
+    case NonZeroRegister::R137: return std::make_optional<const std::string_view>("R137");
+    case NonZeroRegister::R138: return std::make_optional<const std::string_view>("R138");
+    case NonZeroRegister::R139: return std::make_optional<const std::string_view>("R139");
+    case NonZeroRegister::R140: return std::make_optional<const std::string_view>("R140");
+    case NonZeroRegister::R141: return std::make_optional<const std::string_view>("R141");
+    case NonZeroRegister::R142: return std::make_optional<const std::string_view>("R142");
+    case NonZeroRegister::R143: return std::make_optional<const std::string_view>("R143");
+    case NonZeroRegister::R144: return std::make_optional<const std::string_view>("R144");
+    case NonZeroRegister::R145: return std::make_optional<const std::string_view>("R145");
+    case NonZeroRegister::R146: return std::make_optional<const std::string_view>("R146");
+    case NonZeroRegister::R147: return std::make_optional<const std::string_view>("R147");
+    case NonZeroRegister::R148: return std::make_optional<const std::string_view>("R148");
+    case NonZeroRegister::R149: return std::make_optional<const std::string_view>("R149");
+    case NonZeroRegister::R150: return std::make_optional<const std::string_view>("R150");
+    case NonZeroRegister::R151: return std::make_optional<const std::string_view>("R151");
+    case NonZeroRegister::R152: return std::make_optional<const std::string_view>("R152");
+    case NonZeroRegister::R153: return std::make_optional<const std::string_view>("R153");
+    case NonZeroRegister::R154: return std::make_optional<const std::string_view>("R154");
+    case NonZeroRegister::R155: return std::make_optional<const std::string_view>("R155");
+    case NonZeroRegister::R156: return std::make_optional<const std::string_view>("R156");
+    case NonZeroRegister::R157: return std::make_optional<const std::string_view>("R157");
+    case NonZeroRegister::R158: return std::make_optional<const std::string_view>("R158");
+    case NonZeroRegister::R159: return std::make_optional<const std::string_view>("R159");
+    case NonZeroRegister::R160: return std::make_optional<const std::string_view>("R160");
+    case NonZeroRegister::R161: return std::make_optional<const std::string_view>("R161");
+    case NonZeroRegister::R162: return std::make_optional<const std::string_view>("R162");
+    case NonZeroRegister::R163: return std::make_optional<const std::string_view>("R163");
+    case NonZeroRegister::R164: return std::make_optional<const std::string_view>("R164");
+    case NonZeroRegister::R165: return std::make_optional<const std::string_view>("R165");
+    case NonZeroRegister::R166: return std::make_optional<const std::string_view>("R166");
+    case NonZeroRegister::R167: return std::make_optional<const std::string_view>("R167");
+    case NonZeroRegister::R168: return std::make_optional<const std::string_view>("R168");
+    case NonZeroRegister::R169: return std::make_optional<const std::string_view>("R169");
+    case NonZeroRegister::R170: return std::make_optional<const std::string_view>("R170");
+    case NonZeroRegister::R171: return std::make_optional<const std::string_view>("R171");
+    case NonZeroRegister::R172: return std::make_optional<const std::string_view>("R172");
+    case NonZeroRegister::R173: return std::make_optional<const std::string_view>("R173");
+    case NonZeroRegister::R174: return std::make_optional<const std::string_view>("R174");
+    case NonZeroRegister::R175: return std::make_optional<const std::string_view>("R175");
+    case NonZeroRegister::R176: return std::make_optional<const std::string_view>("R176");
+    case NonZeroRegister::R177: return std::make_optional<const std::string_view>("R177");
+    case NonZeroRegister::R178: return std::make_optional<const std::string_view>("R178");
+    case NonZeroRegister::R179: return std::make_optional<const std::string_view>("R179");
+    case NonZeroRegister::R180: return std::make_optional<const std::string_view>("R180");
+    case NonZeroRegister::R181: return std::make_optional<const std::string_view>("R181");
+    case NonZeroRegister::R182: return std::make_optional<const std::string_view>("R182");
+    case NonZeroRegister::R183: return std::make_optional<const std::string_view>("R183");
+    case NonZeroRegister::R184: return std::make_optional<const std::string_view>("R184");
+    case NonZeroRegister::R185: return std::make_optional<const std::string_view>("R185");
+    case NonZeroRegister::R186: return std::make_optional<const std::string_view>("R186");
+    case NonZeroRegister::R187: return std::make_optional<const std::string_view>("R187");
+    case NonZeroRegister::R188: return std::make_optional<const std::string_view>("R188");
+    case NonZeroRegister::R189: return std::make_optional<const std::string_view>("R189");
+    case NonZeroRegister::R190: return std::make_optional<const std::string_view>("R190");
+    case NonZeroRegister::R191: return std::make_optional<const std::string_view>("R191");
+    case NonZeroRegister::R192: return std::make_optional<const std::string_view>("R192");
+    case NonZeroRegister::R193: return std::make_optional<const std::string_view>("R193");
+    case NonZeroRegister::R194: return std::make_optional<const std::string_view>("R194");
+    case NonZeroRegister::R195: return std::make_optional<const std::string_view>("R195");
+    case NonZeroRegister::R196: return std::make_optional<const std::string_view>("R196");
+    case NonZeroRegister::R197: return std::make_optional<const std::string_view>("R197");
+    case NonZeroRegister::R198: return std::make_optional<const std::string_view>("R198");
+    case NonZeroRegister::R199: return std::make_optional<const std::string_view>("R199");
+    case NonZeroRegister::R200: return std::make_optional<const std::string_view>("R200");
+    case NonZeroRegister::R201: return std::make_optional<const std::string_view>("R201");
+    case NonZeroRegister::R202: return std::make_optional<const std::string_view>("R202");
+    case NonZeroRegister::R203: return std::make_optional<const std::string_view>("R203");
+    case NonZeroRegister::R204: return std::make_optional<const std::string_view>("R204");
+    case NonZeroRegister::R205: return std::make_optional<const std::string_view>("R205");
+    case NonZeroRegister::R206: return std::make_optional<const std::string_view>("R206");
+    case NonZeroRegister::R207: return std::make_optional<const std::string_view>("R207");
+    case NonZeroRegister::R208: return std::make_optional<const std::string_view>("R208");
+    case NonZeroRegister::R209: return std::make_optional<const std::string_view>("R209");
+    case NonZeroRegister::R210: return std::make_optional<const std::string_view>("R210");
+    case NonZeroRegister::R211: return std::make_optional<const std::string_view>("R211");
+    case NonZeroRegister::R212: return std::make_optional<const std::string_view>("R212");
+    case NonZeroRegister::R213: return std::make_optional<const std::string_view>("R213");
+    case NonZeroRegister::R214: return std::make_optional<const std::string_view>("R214");
+    case NonZeroRegister::R215: return std::make_optional<const std::string_view>("R215");
+    case NonZeroRegister::R216: return std::make_optional<const std::string_view>("R216");
+    case NonZeroRegister::R217: return std::make_optional<const std::string_view>("R217");
+    case NonZeroRegister::R218: return std::make_optional<const std::string_view>("R218");
+    case NonZeroRegister::R219: return std::make_optional<const std::string_view>("R219");
+    case NonZeroRegister::R220: return std::make_optional<const std::string_view>("R220");
+    case NonZeroRegister::R221: return std::make_optional<const std::string_view>("R221");
+    case NonZeroRegister::R222: return std::make_optional<const std::string_view>("R222");
+    case NonZeroRegister::R223: return std::make_optional<const std::string_view>("R223");
+    case NonZeroRegister::R224: return std::make_optional<const std::string_view>("R224");
+    case NonZeroRegister::R225: return std::make_optional<const std::string_view>("R225");
+    case NonZeroRegister::R226: return std::make_optional<const std::string_view>("R226");
+    case NonZeroRegister::R227: return std::make_optional<const std::string_view>("R227");
+    case NonZeroRegister::R228: return std::make_optional<const std::string_view>("R228");
+    case NonZeroRegister::R229: return std::make_optional<const std::string_view>("R229");
+    case NonZeroRegister::R230: return std::make_optional<const std::string_view>("R230");
+    case NonZeroRegister::R231: return std::make_optional<const std::string_view>("R231");
+    case NonZeroRegister::R232: return std::make_optional<const std::string_view>("R232");
+    case NonZeroRegister::R233: return std::make_optional<const std::string_view>("R233");
+    case NonZeroRegister::R234: return std::make_optional<const std::string_view>("R234");
+    case NonZeroRegister::R235: return std::make_optional<const std::string_view>("R235");
+    case NonZeroRegister::R236: return std::make_optional<const std::string_view>("R236");
+    case NonZeroRegister::R237: return std::make_optional<const std::string_view>("R237");
+    case NonZeroRegister::R238: return std::make_optional<const std::string_view>("R238");
+    case NonZeroRegister::R239: return std::make_optional<const std::string_view>("R239");
+    case NonZeroRegister::R240: return std::make_optional<const std::string_view>("R240");
+    case NonZeroRegister::R241: return std::make_optional<const std::string_view>("R241");
+    case NonZeroRegister::R242: return std::make_optional<const std::string_view>("R242");
+    case NonZeroRegister::R243: return std::make_optional<const std::string_view>("R243");
+    case NonZeroRegister::R244: return std::make_optional<const std::string_view>("R244");
+    case NonZeroRegister::R245: return std::make_optional<const std::string_view>("R245");
+    case NonZeroRegister::R246: return std::make_optional<const std::string_view>("R246");
+    case NonZeroRegister::R247: return std::make_optional<const std::string_view>("R247");
+    case NonZeroRegister::R248: return std::make_optional<const std::string_view>("R248");
+    case NonZeroRegister::R249: return std::make_optional<const std::string_view>("R249");
+    case NonZeroRegister::R250: return std::make_optional<const std::string_view>("R250");
+    case NonZeroRegister::R251: return std::make_optional<const std::string_view>("R251");
+    case NonZeroRegister::R252: return std::make_optional<const std::string_view>("R252");
+    case NonZeroRegister::R253: return std::make_optional<const std::string_view>("R253");
+    case NonZeroRegister::R254: return std::make_optional<const std::string_view>("R254");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Ofmt_FP16 value) {
+  switch (value) {
+    case Ofmt_FP16::F16_V2: return std::make_optional<const std::string_view>("F16_V2");
+    case Ofmt_FP16::F32: return std::make_optional<const std::string_view>("F32");
+    case Ofmt_FP16::MRG_H0: return std::make_optional<const std::string_view>("MRG_H0");
+    case Ofmt_FP16::MRG_H1: return std::make_optional<const std::string_view>("MRG_H1");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(OnlyQry value) {
+  switch (value) {
+    case OnlyQry::QRY1: return std::make_optional<const std::string_view>("QRY1");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(OutType value) {
+  switch (value) {
+    case OutType::INVALIDOUTSTYPE0: return std::make_optional<const std::string_view>("INVALIDOUTSTYPE0");
+    case OutType::EMIT: return std::make_optional<const std::string_view>("EMIT");
+    case OutType::CUT: return std::make_optional<const std::string_view>("CUT");
+    case OutType::EMIT_THEN_CUT: return std::make_optional<const std::string_view>("EMIT_THEN_CUT");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(PMode value) {
+  switch (value) {
+    case PMode::IDX: return std::make_optional<const std::string_view>("IDX");
+    case PMode::F4E: return std::make_optional<const std::string_view>("F4E");
+    case PMode::B4E: return std::make_optional<const std::string_view>("B4E");
+    case PMode::RC8: return std::make_optional<const std::string_view>("RC8");
+    case PMode::ECL: return std::make_optional<const std::string_view>("ECL");
+    case PMode::ECR: return std::make_optional<const std::string_view>("ECR");
+    case PMode::RC16: return std::make_optional<const std::string_view>("RC16");
+    case PMode::INVALIDPMODE7: return std::make_optional<const std::string_view>("INVALIDPMODE7");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(PNWord value) {
+  switch (value) {
+    case PNWord::PPPPPPPP: return std::make_optional<const std::string_view>("PPPPPPPP");
+    case PNWord::PPPPPPNP: return std::make_optional<const std::string_view>("PPPPPPNP");
+    case PNWord::PPPPPPPN: return std::make_optional<const std::string_view>("PPPPPPPN");
+    case PNWord::PPPPPPZP: return std::make_optional<const std::string_view>("PPPPPPZP");
+    case PNWord::PPPPNPPP: return std::make_optional<const std::string_view>("PPPPNPPP");
+    case PNWord::PPPPNPNP: return std::make_optional<const std::string_view>("PPPPNPNP");
+    case PNWord::PPPPNPPN: return std::make_optional<const std::string_view>("PPPPNPPN");
+    case PNWord::PPPPNPZP: return std::make_optional<const std::string_view>("PPPPNPZP");
+    case PNWord::PPPPPNPP: return std::make_optional<const std::string_view>("PPPPPNPP");
+    case PNWord::PPPPPNNP: return std::make_optional<const std::string_view>("PPPPPNNP");
+    case PNWord::PPPPPNPN: return std::make_optional<const std::string_view>("PPPPPNPN");
+    case PNWord::PPPPPNZP: return std::make_optional<const std::string_view>("PPPPPNZP");
+    case PNWord::PPPPZPPP: return std::make_optional<const std::string_view>("PPPPZPPP");
+    case PNWord::PPPPZPNP: return std::make_optional<const std::string_view>("PPPPZPNP");
+    case PNWord::PPPPZPPN: return std::make_optional<const std::string_view>("PPPPZPPN");
+    case PNWord::PPPPZPZP: return std::make_optional<const std::string_view>("PPPPZPZP");
+    case PNWord::PPNPPPPP: return std::make_optional<const std::string_view>("PPNPPPPP");
+    case PNWord::PPNPPPNP: return std::make_optional<const std::string_view>("PPNPPPNP");
+    case PNWord::PPNPPPPN: return std::make_optional<const std::string_view>("PPNPPPPN");
+    case PNWord::PPNPPPZP: return std::make_optional<const std::string_view>("PPNPPPZP");
+    case PNWord::PPNPNPPP: return std::make_optional<const std::string_view>("PPNPNPPP");
+    case PNWord::PPNPNPNP: return std::make_optional<const std::string_view>("PPNPNPNP");
+    case PNWord::PPNPNPPN: return std::make_optional<const std::string_view>("PPNPNPPN");
+    case PNWord::PPNPNPZP: return std::make_optional<const std::string_view>("PPNPNPZP");
+    case PNWord::PPNPPNPP: return std::make_optional<const std::string_view>("PPNPPNPP");
+    case PNWord::PPNPPNNP: return std::make_optional<const std::string_view>("PPNPPNNP");
+    case PNWord::PPNPPNPN: return std::make_optional<const std::string_view>("PPNPPNPN");
+    case PNWord::PPNPPNZP: return std::make_optional<const std::string_view>("PPNPPNZP");
+    case PNWord::PPNPZPPP: return std::make_optional<const std::string_view>("PPNPZPPP");
+    case PNWord::PPNPZPNP: return std::make_optional<const std::string_view>("PPNPZPNP");
+    case PNWord::PPNPZPPN: return std::make_optional<const std::string_view>("PPNPZPPN");
+    case PNWord::PPNPZPZP: return std::make_optional<const std::string_view>("PPNPZPZP");
+    case PNWord::PPPNPPPP: return std::make_optional<const std::string_view>("PPPNPPPP");
+    case PNWord::PPPNPPNP: return std::make_optional<const std::string_view>("PPPNPPNP");
+    case PNWord::PPPNPPPN: return std::make_optional<const std::string_view>("PPPNPPPN");
+    case PNWord::PPPNPPZP: return std::make_optional<const std::string_view>("PPPNPPZP");
+    case PNWord::PPPNNPPP: return std::make_optional<const std::string_view>("PPPNNPPP");
+    case PNWord::PPPNNPNP: return std::make_optional<const std::string_view>("PPPNNPNP");
+    case PNWord::PPPNNPPN: return std::make_optional<const std::string_view>("PPPNNPPN");
+    case PNWord::PPPNNPZP: return std::make_optional<const std::string_view>("PPPNNPZP");
+    case PNWord::PPPNPNPP: return std::make_optional<const std::string_view>("PPPNPNPP");
+    case PNWord::PPPNPNNP: return std::make_optional<const std::string_view>("PPPNPNNP");
+    case PNWord::PPPNPNPN: return std::make_optional<const std::string_view>("PPPNPNPN");
+    case PNWord::PPPNPNZP: return std::make_optional<const std::string_view>("PPPNPNZP");
+    case PNWord::PPPNZPPP: return std::make_optional<const std::string_view>("PPPNZPPP");
+    case PNWord::PPPNZPNP: return std::make_optional<const std::string_view>("PPPNZPNP");
+    case PNWord::PPPNZPPN: return std::make_optional<const std::string_view>("PPPNZPPN");
+    case PNWord::PPPNZPZP: return std::make_optional<const std::string_view>("PPPNZPZP");
+    case PNWord::PPZPPPPP: return std::make_optional<const std::string_view>("PPZPPPPP");
+    case PNWord::PPZPPPNP: return std::make_optional<const std::string_view>("PPZPPPNP");
+    case PNWord::PPZPPPPN: return std::make_optional<const std::string_view>("PPZPPPPN");
+    case PNWord::PPZPPPZP: return std::make_optional<const std::string_view>("PPZPPPZP");
+    case PNWord::PPZPNPPP: return std::make_optional<const std::string_view>("PPZPNPPP");
+    case PNWord::PPZPNPNP: return std::make_optional<const std::string_view>("PPZPNPNP");
+    case PNWord::PPZPNPPN: return std::make_optional<const std::string_view>("PPZPNPPN");
+    case PNWord::PPZPNPZP: return std::make_optional<const std::string_view>("PPZPNPZP");
+    case PNWord::PPZPPNPP: return std::make_optional<const std::string_view>("PPZPPNPP");
+    case PNWord::PPZPPNNP: return std::make_optional<const std::string_view>("PPZPPNNP");
+    case PNWord::PPZPPNPN: return std::make_optional<const std::string_view>("PPZPPNPN");
+    case PNWord::PPZPPNZP: return std::make_optional<const std::string_view>("PPZPPNZP");
+    case PNWord::PPZPZPPP: return std::make_optional<const std::string_view>("PPZPZPPP");
+    case PNWord::PPZPZPNP: return std::make_optional<const std::string_view>("PPZPZPNP");
+    case PNWord::PPZPZPPN: return std::make_optional<const std::string_view>("PPZPZPPN");
+    case PNWord::PPZPZPZP: return std::make_optional<const std::string_view>("PPZPZPZP");
+    case PNWord::NPPPPPPP: return std::make_optional<const std::string_view>("NPPPPPPP");
+    case PNWord::NPPPPPNP: return std::make_optional<const std::string_view>("NPPPPPNP");
+    case PNWord::NPPPPPPN: return std::make_optional<const std::string_view>("NPPPPPPN");
+    case PNWord::NPPPPPZP: return std::make_optional<const std::string_view>("NPPPPPZP");
+    case PNWord::NPPPNPPP: return std::make_optional<const std::string_view>("NPPPNPPP");
+    case PNWord::NPPPNPNP: return std::make_optional<const std::string_view>("NPPPNPNP");
+    case PNWord::NPPPNPPN: return std::make_optional<const std::string_view>("NPPPNPPN");
+    case PNWord::NPPPNPZP: return std::make_optional<const std::string_view>("NPPPNPZP");
+    case PNWord::NPPPPNPP: return std::make_optional<const std::string_view>("NPPPPNPP");
+    case PNWord::NPPPPNNP: return std::make_optional<const std::string_view>("NPPPPNNP");
+    case PNWord::NPPPPNPN: return std::make_optional<const std::string_view>("NPPPPNPN");
+    case PNWord::NPPPPNZP: return std::make_optional<const std::string_view>("NPPPPNZP");
+    case PNWord::NPPPZPPP: return std::make_optional<const std::string_view>("NPPPZPPP");
+    case PNWord::NPPPZPNP: return std::make_optional<const std::string_view>("NPPPZPNP");
+    case PNWord::NPPPZPPN: return std::make_optional<const std::string_view>("NPPPZPPN");
+    case PNWord::NPPPZPZP: return std::make_optional<const std::string_view>("NPPPZPZP");
+    case PNWord::NPNPPPPP: return std::make_optional<const std::string_view>("NPNPPPPP");
+    case PNWord::NPNPPPNP: return std::make_optional<const std::string_view>("NPNPPPNP");
+    case PNWord::NPNPPPPN: return std::make_optional<const std::string_view>("NPNPPPPN");
+    case PNWord::NPNPPPZP: return std::make_optional<const std::string_view>("NPNPPPZP");
+    case PNWord::NPNPNPPP: return std::make_optional<const std::string_view>("NPNPNPPP");
+    case PNWord::NPNPNPNP: return std::make_optional<const std::string_view>("NPNPNPNP");
+    case PNWord::NPNPNPPN: return std::make_optional<const std::string_view>("NPNPNPPN");
+    case PNWord::NPNPNPZP: return std::make_optional<const std::string_view>("NPNPNPZP");
+    case PNWord::NPNPPNPP: return std::make_optional<const std::string_view>("NPNPPNPP");
+    case PNWord::NPNPPNNP: return std::make_optional<const std::string_view>("NPNPPNNP");
+    case PNWord::NPNPPNPN: return std::make_optional<const std::string_view>("NPNPPNPN");
+    case PNWord::NPNPPNZP: return std::make_optional<const std::string_view>("NPNPPNZP");
+    case PNWord::NPNPZPPP: return std::make_optional<const std::string_view>("NPNPZPPP");
+    case PNWord::NPNPZPNP: return std::make_optional<const std::string_view>("NPNPZPNP");
+    case PNWord::NPNPZPPN: return std::make_optional<const std::string_view>("NPNPZPPN");
+    case PNWord::NPNPZPZP: return std::make_optional<const std::string_view>("NPNPZPZP");
+    case PNWord::NPPNPPPP: return std::make_optional<const std::string_view>("NPPNPPPP");
+    case PNWord::NPPNPPNP: return std::make_optional<const std::string_view>("NPPNPPNP");
+    case PNWord::NPPNPPPN: return std::make_optional<const std::string_view>("NPPNPPPN");
+    case PNWord::NPPNPPZP: return std::make_optional<const std::string_view>("NPPNPPZP");
+    case PNWord::NPPNNPPP: return std::make_optional<const std::string_view>("NPPNNPPP");
+    case PNWord::NPPNNPNP: return std::make_optional<const std::string_view>("NPPNNPNP");
+    case PNWord::NPPNNPPN: return std::make_optional<const std::string_view>("NPPNNPPN");
+    case PNWord::NPPNNPZP: return std::make_optional<const std::string_view>("NPPNNPZP");
+    case PNWord::NPPNPNPP: return std::make_optional<const std::string_view>("NPPNPNPP");
+    case PNWord::NPPNPNNP: return std::make_optional<const std::string_view>("NPPNPNNP");
+    case PNWord::NPPNPNPN: return std::make_optional<const std::string_view>("NPPNPNPN");
+    case PNWord::NPPNPNZP: return std::make_optional<const std::string_view>("NPPNPNZP");
+    case PNWord::NPPNZPPP: return std::make_optional<const std::string_view>("NPPNZPPP");
+    case PNWord::NPPNZPNP: return std::make_optional<const std::string_view>("NPPNZPNP");
+    case PNWord::NPPNZPPN: return std::make_optional<const std::string_view>("NPPNZPPN");
+    case PNWord::NPPNZPZP: return std::make_optional<const std::string_view>("NPPNZPZP");
+    case PNWord::NPZPPPPP: return std::make_optional<const std::string_view>("NPZPPPPP");
+    case PNWord::NPZPPPNP: return std::make_optional<const std::string_view>("NPZPPPNP");
+    case PNWord::NPZPPPPN: return std::make_optional<const std::string_view>("NPZPPPPN");
+    case PNWord::NPZPPPZP: return std::make_optional<const std::string_view>("NPZPPPZP");
+    case PNWord::NPZPNPPP: return std::make_optional<const std::string_view>("NPZPNPPP");
+    case PNWord::NPZPNPNP: return std::make_optional<const std::string_view>("NPZPNPNP");
+    case PNWord::NPZPNPPN: return std::make_optional<const std::string_view>("NPZPNPPN");
+    case PNWord::NPZPNPZP: return std::make_optional<const std::string_view>("NPZPNPZP");
+    case PNWord::NPZPPNPP: return std::make_optional<const std::string_view>("NPZPPNPP");
+    case PNWord::NPZPPNNP: return std::make_optional<const std::string_view>("NPZPPNNP");
+    case PNWord::NPZPPNPN: return std::make_optional<const std::string_view>("NPZPPNPN");
+    case PNWord::NPZPPNZP: return std::make_optional<const std::string_view>("NPZPPNZP");
+    case PNWord::NPZPZPPP: return std::make_optional<const std::string_view>("NPZPZPPP");
+    case PNWord::NPZPZPNP: return std::make_optional<const std::string_view>("NPZPZPNP");
+    case PNWord::NPZPZPPN: return std::make_optional<const std::string_view>("NPZPZPPN");
+    case PNWord::NPZPZPZP: return std::make_optional<const std::string_view>("NPZPZPZP");
+    case PNWord::PNPPPPPP: return std::make_optional<const std::string_view>("PNPPPPPP");
+    case PNWord::PNPPPPNP: return std::make_optional<const std::string_view>("PNPPPPNP");
+    case PNWord::PNPPPPPN: return std::make_optional<const std::string_view>("PNPPPPPN");
+    case PNWord::PNPPPPZP: return std::make_optional<const std::string_view>("PNPPPPZP");
+    case PNWord::PNPPNPPP: return std::make_optional<const std::string_view>("PNPPNPPP");
+    case PNWord::PNPPNPNP: return std::make_optional<const std::string_view>("PNPPNPNP");
+    case PNWord::PNPPNPPN: return std::make_optional<const std::string_view>("PNPPNPPN");
+    case PNWord::PNPPNPZP: return std::make_optional<const std::string_view>("PNPPNPZP");
+    case PNWord::PNPPPNPP: return std::make_optional<const std::string_view>("PNPPPNPP");
+    case PNWord::PNPPPNNP: return std::make_optional<const std::string_view>("PNPPPNNP");
+    case PNWord::PNPPPNPN: return std::make_optional<const std::string_view>("PNPPPNPN");
+    case PNWord::PNPPPNZP: return std::make_optional<const std::string_view>("PNPPPNZP");
+    case PNWord::PNPPZPPP: return std::make_optional<const std::string_view>("PNPPZPPP");
+    case PNWord::PNPPZPNP: return std::make_optional<const std::string_view>("PNPPZPNP");
+    case PNWord::PNPPZPPN: return std::make_optional<const std::string_view>("PNPPZPPN");
+    case PNWord::PNPPZPZP: return std::make_optional<const std::string_view>("PNPPZPZP");
+    case PNWord::PNNPPPPP: return std::make_optional<const std::string_view>("PNNPPPPP");
+    case PNWord::PNNPPPNP: return std::make_optional<const std::string_view>("PNNPPPNP");
+    case PNWord::PNNPPPPN: return std::make_optional<const std::string_view>("PNNPPPPN");
+    case PNWord::PNNPPPZP: return std::make_optional<const std::string_view>("PNNPPPZP");
+    case PNWord::PNNPNPPP: return std::make_optional<const std::string_view>("PNNPNPPP");
+    case PNWord::PNNPNPNP: return std::make_optional<const std::string_view>("PNNPNPNP");
+    case PNWord::PNNPNPPN: return std::make_optional<const std::string_view>("PNNPNPPN");
+    case PNWord::PNNPNPZP: return std::make_optional<const std::string_view>("PNNPNPZP");
+    case PNWord::PNNPPNPP: return std::make_optional<const std::string_view>("PNNPPNPP");
+    case PNWord::PNNPPNNP: return std::make_optional<const std::string_view>("PNNPPNNP");
+    case PNWord::PNNPPNPN: return std::make_optional<const std::string_view>("PNNPPNPN");
+    case PNWord::PNNPPNZP: return std::make_optional<const std::string_view>("PNNPPNZP");
+    case PNWord::PNNPZPPP: return std::make_optional<const std::string_view>("PNNPZPPP");
+    case PNWord::PNNPZPNP: return std::make_optional<const std::string_view>("PNNPZPNP");
+    case PNWord::PNNPZPPN: return std::make_optional<const std::string_view>("PNNPZPPN");
+    case PNWord::PNNPZPZP: return std::make_optional<const std::string_view>("PNNPZPZP");
+    case PNWord::PNPNPPPP: return std::make_optional<const std::string_view>("PNPNPPPP");
+    case PNWord::PNPNPPNP: return std::make_optional<const std::string_view>("PNPNPPNP");
+    case PNWord::PNPNPPPN: return std::make_optional<const std::string_view>("PNPNPPPN");
+    case PNWord::PNPNPPZP: return std::make_optional<const std::string_view>("PNPNPPZP");
+    case PNWord::PNPNNPPP: return std::make_optional<const std::string_view>("PNPNNPPP");
+    case PNWord::PNPNNPNP: return std::make_optional<const std::string_view>("PNPNNPNP");
+    case PNWord::PNPNNPPN: return std::make_optional<const std::string_view>("PNPNNPPN");
+    case PNWord::PNPNNPZP: return std::make_optional<const std::string_view>("PNPNNPZP");
+    case PNWord::PNPNPNPP: return std::make_optional<const std::string_view>("PNPNPNPP");
+    case PNWord::PNPNPNNP: return std::make_optional<const std::string_view>("PNPNPNNP");
+    case PNWord::PNPNPNPN: return std::make_optional<const std::string_view>("PNPNPNPN");
+    case PNWord::PNPNPNZP: return std::make_optional<const std::string_view>("PNPNPNZP");
+    case PNWord::PNPNZPPP: return std::make_optional<const std::string_view>("PNPNZPPP");
+    case PNWord::PNPNZPNP: return std::make_optional<const std::string_view>("PNPNZPNP");
+    case PNWord::PNPNZPPN: return std::make_optional<const std::string_view>("PNPNZPPN");
+    case PNWord::PNPNZPZP: return std::make_optional<const std::string_view>("PNPNZPZP");
+    case PNWord::PNZPPPPP: return std::make_optional<const std::string_view>("PNZPPPPP");
+    case PNWord::PNZPPPNP: return std::make_optional<const std::string_view>("PNZPPPNP");
+    case PNWord::PNZPPPPN: return std::make_optional<const std::string_view>("PNZPPPPN");
+    case PNWord::PNZPPPZP: return std::make_optional<const std::string_view>("PNZPPPZP");
+    case PNWord::PNZPNPPP: return std::make_optional<const std::string_view>("PNZPNPPP");
+    case PNWord::PNZPNPNP: return std::make_optional<const std::string_view>("PNZPNPNP");
+    case PNWord::PNZPNPPN: return std::make_optional<const std::string_view>("PNZPNPPN");
+    case PNWord::PNZPNPZP: return std::make_optional<const std::string_view>("PNZPNPZP");
+    case PNWord::PNZPPNPP: return std::make_optional<const std::string_view>("PNZPPNPP");
+    case PNWord::PNZPPNNP: return std::make_optional<const std::string_view>("PNZPPNNP");
+    case PNWord::PNZPPNPN: return std::make_optional<const std::string_view>("PNZPPNPN");
+    case PNWord::PNZPPNZP: return std::make_optional<const std::string_view>("PNZPPNZP");
+    case PNWord::PNZPZPPP: return std::make_optional<const std::string_view>("PNZPZPPP");
+    case PNWord::PNZPZPNP: return std::make_optional<const std::string_view>("PNZPZPNP");
+    case PNWord::PNZPZPPN: return std::make_optional<const std::string_view>("PNZPZPPN");
+    case PNWord::PNZPZPZP: return std::make_optional<const std::string_view>("PNZPZPZP");
+    case PNWord::ZPPPPPPP: return std::make_optional<const std::string_view>("ZPPPPPPP");
+    case PNWord::ZPPPPPNP: return std::make_optional<const std::string_view>("ZPPPPPNP");
+    case PNWord::ZPPPPPPN: return std::make_optional<const std::string_view>("ZPPPPPPN");
+    case PNWord::ZPPPPPZP: return std::make_optional<const std::string_view>("ZPPPPPZP");
+    case PNWord::ZPPPNPPP: return std::make_optional<const std::string_view>("ZPPPNPPP");
+    case PNWord::ZPPPNPNP: return std::make_optional<const std::string_view>("ZPPPNPNP");
+    case PNWord::ZPPPNPPN: return std::make_optional<const std::string_view>("ZPPPNPPN");
+    case PNWord::ZPPPNPZP: return std::make_optional<const std::string_view>("ZPPPNPZP");
+    case PNWord::ZPPPPNPP: return std::make_optional<const std::string_view>("ZPPPPNPP");
+    case PNWord::ZPPPPNNP: return std::make_optional<const std::string_view>("ZPPPPNNP");
+    case PNWord::ZPPPPNPN: return std::make_optional<const std::string_view>("ZPPPPNPN");
+    case PNWord::ZPPPPNZP: return std::make_optional<const std::string_view>("ZPPPPNZP");
+    case PNWord::ZPPPZPPP: return std::make_optional<const std::string_view>("ZPPPZPPP");
+    case PNWord::ZPPPZPNP: return std::make_optional<const std::string_view>("ZPPPZPNP");
+    case PNWord::ZPPPZPPN: return std::make_optional<const std::string_view>("ZPPPZPPN");
+    case PNWord::ZPPPZPZP: return std::make_optional<const std::string_view>("ZPPPZPZP");
+    case PNWord::ZPNPPPPP: return std::make_optional<const std::string_view>("ZPNPPPPP");
+    case PNWord::ZPNPPPNP: return std::make_optional<const std::string_view>("ZPNPPPNP");
+    case PNWord::ZPNPPPPN: return std::make_optional<const std::string_view>("ZPNPPPPN");
+    case PNWord::ZPNPPPZP: return std::make_optional<const std::string_view>("ZPNPPPZP");
+    case PNWord::ZPNPNPPP: return std::make_optional<const std::string_view>("ZPNPNPPP");
+    case PNWord::ZPNPNPNP: return std::make_optional<const std::string_view>("ZPNPNPNP");
+    case PNWord::ZPNPNPPN: return std::make_optional<const std::string_view>("ZPNPNPPN");
+    case PNWord::ZPNPNPZP: return std::make_optional<const std::string_view>("ZPNPNPZP");
+    case PNWord::ZPNPPNPP: return std::make_optional<const std::string_view>("ZPNPPNPP");
+    case PNWord::ZPNPPNNP: return std::make_optional<const std::string_view>("ZPNPPNNP");
+    case PNWord::ZPNPPNPN: return std::make_optional<const std::string_view>("ZPNPPNPN");
+    case PNWord::ZPNPPNZP: return std::make_optional<const std::string_view>("ZPNPPNZP");
+    case PNWord::ZPNPZPPP: return std::make_optional<const std::string_view>("ZPNPZPPP");
+    case PNWord::ZPNPZPNP: return std::make_optional<const std::string_view>("ZPNPZPNP");
+    case PNWord::ZPNPZPPN: return std::make_optional<const std::string_view>("ZPNPZPPN");
+    case PNWord::ZPNPZPZP: return std::make_optional<const std::string_view>("ZPNPZPZP");
+    case PNWord::ZPPNPPPP: return std::make_optional<const std::string_view>("ZPPNPPPP");
+    case PNWord::ZPPNPPNP: return std::make_optional<const std::string_view>("ZPPNPPNP");
+    case PNWord::ZPPNPPPN: return std::make_optional<const std::string_view>("ZPPNPPPN");
+    case PNWord::ZPPNPPZP: return std::make_optional<const std::string_view>("ZPPNPPZP");
+    case PNWord::ZPPNNPPP: return std::make_optional<const std::string_view>("ZPPNNPPP");
+    case PNWord::ZPPNNPNP: return std::make_optional<const std::string_view>("ZPPNNPNP");
+    case PNWord::ZPPNNPPN: return std::make_optional<const std::string_view>("ZPPNNPPN");
+    case PNWord::ZPPNNPZP: return std::make_optional<const std::string_view>("ZPPNNPZP");
+    case PNWord::ZPPNPNPP: return std::make_optional<const std::string_view>("ZPPNPNPP");
+    case PNWord::ZPPNPNNP: return std::make_optional<const std::string_view>("ZPPNPNNP");
+    case PNWord::ZPPNPNPN: return std::make_optional<const std::string_view>("ZPPNPNPN");
+    case PNWord::ZPPNPNZP: return std::make_optional<const std::string_view>("ZPPNPNZP");
+    case PNWord::ZPPNZPPP: return std::make_optional<const std::string_view>("ZPPNZPPP");
+    case PNWord::ZPPNZPNP: return std::make_optional<const std::string_view>("ZPPNZPNP");
+    case PNWord::ZPPNZPPN: return std::make_optional<const std::string_view>("ZPPNZPPN");
+    case PNWord::ZPPNZPZP: return std::make_optional<const std::string_view>("ZPPNZPZP");
+    case PNWord::ZPZPPPPP: return std::make_optional<const std::string_view>("ZPZPPPPP");
+    case PNWord::ZPZPPPNP: return std::make_optional<const std::string_view>("ZPZPPPNP");
+    case PNWord::ZPZPPPPN: return std::make_optional<const std::string_view>("ZPZPPPPN");
+    case PNWord::ZPZPPPZP: return std::make_optional<const std::string_view>("ZPZPPPZP");
+    case PNWord::ZPZPNPPP: return std::make_optional<const std::string_view>("ZPZPNPPP");
+    case PNWord::ZPZPNPNP: return std::make_optional<const std::string_view>("ZPZPNPNP");
+    case PNWord::ZPZPNPPN: return std::make_optional<const std::string_view>("ZPZPNPPN");
+    case PNWord::ZPZPNPZP: return std::make_optional<const std::string_view>("ZPZPNPZP");
+    case PNWord::ZPZPPNPP: return std::make_optional<const std::string_view>("ZPZPPNPP");
+    case PNWord::ZPZPPNNP: return std::make_optional<const std::string_view>("ZPZPPNNP");
+    case PNWord::ZPZPPNPN: return std::make_optional<const std::string_view>("ZPZPPNPN");
+    case PNWord::ZPZPPNZP: return std::make_optional<const std::string_view>("ZPZPPNZP");
+    case PNWord::ZPZPZPPP: return std::make_optional<const std::string_view>("ZPZPZPPP");
+    case PNWord::ZPZPZPNP: return std::make_optional<const std::string_view>("ZPZPZPNP");
+    case PNWord::ZPZPZPPN: return std::make_optional<const std::string_view>("ZPZPZPPN");
+    case PNWord::ZPZPZPZP: return std::make_optional<const std::string_view>("ZPZPZPZP");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(PO value) {
+  switch (value) {
+    case PO::noPO: return std::make_optional<const std::string_view>("noPO");
+    case PO::PO: return std::make_optional<const std::string_view>("PO");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(POP value) {
+  switch (value) {
+    case POP::F: return std::make_optional<const std::string_view>("F");
+    case POP::T: return std::make_optional<const std::string_view>("T");
+    case POP::Z: return std::make_optional<const std::string_view>("Z");
+    case POP::NZ: return std::make_optional<const std::string_view>("NZ");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(POnly value) {
+  switch (value) {
+    case POnly::P: return std::make_optional<const std::string_view>("P");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(PSL value) {
+  switch (value) {
+    case PSL::noPSL: return std::make_optional<const std::string_view>("noPSL");
+    case PSL::PSL: return std::make_optional<const std::string_view>("PSL");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(ParamA value) {
+  switch (value) {
+    case ParamA::_1D: return std::make_optional<const std::string_view>("_1D");
+    case ParamA::RECT: return std::make_optional<const std::string_view>("RECT");
+    case ParamA::_3D: return std::make_optional<const std::string_view>("_3D");
+    case ParamA::CUBE: return std::make_optional<const std::string_view>("CUBE");
+    case ParamA::ARRAY_1D: return std::make_optional<const std::string_view>("ARRAY_1D");
+    case ParamA::ARRAY_RECT: return std::make_optional<const std::string_view>("ARRAY_RECT");
+    case ParamA::ARRAY_3D: return std::make_optional<const std::string_view>("ARRAY_3D");
+    case ParamA::CUBEARRAY: return std::make_optional<const std::string_view>("CUBEARRAY");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Partsel value) {
+  switch (value) {
+    case Partsel::_32: return std::make_optional<const std::string_view>("32");
+    case Partsel::H0: return std::make_optional<const std::string_view>("H0");
+    case Partsel::H1: return std::make_optional<const std::string_view>("H1");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Phys value) {
+  switch (value) {
+    case Phys::PHYS: return std::make_optional<const std::string_view>("PHYS");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(PixMode value) {
+  switch (value) {
+    case PixMode::MSCOUNT: return std::make_optional<const std::string_view>("MSCOUNT");
+    case PixMode::COVMASK: return std::make_optional<const std::string_view>("COVMASK");
+    case PixMode::COVERED: return std::make_optional<const std::string_view>("COVERED");
+    case PixMode::OFFSET: return std::make_optional<const std::string_view>("OFFSET");
+    case PixMode::CENTROID_OFFSET: return std::make_optional<const std::string_view>("CENTROID_OFFSET");
+    case PixMode::MY_INDEX: return std::make_optional<const std::string_view>("MY_INDEX");
+    case PixMode::INVALIDPIXMODE6: return std::make_optional<const std::string_view>("INVALIDPIXMODE6");
+    case PixMode::INVALIDPIXMODE7: return std::make_optional<const std::string_view>("INVALIDPIXMODE7");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Predicate value) {
+  switch (value) {
+    case Predicate::P0: return std::make_optional<const std::string_view>("P0");
+    case Predicate::P1: return std::make_optional<const std::string_view>("P1");
+    case Predicate::P2: return std::make_optional<const std::string_view>("P2");
+    case Predicate::P3: return std::make_optional<const std::string_view>("P3");
+    case Predicate::P4: return std::make_optional<const std::string_view>("P4");
+    case Predicate::P5: return std::make_optional<const std::string_view>("P5");
+    case Predicate::P6: return std::make_optional<const std::string_view>("P6");
+    case Predicate::P7: return std::make_optional<const std::string_view>("P7");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(RD value) {
+  switch (value) {
+    case RD::rd: return std::make_optional<const std::string_view>("rd");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(REQ value) {
+  switch (value) {
+    case REQ::req: return std::make_optional<const std::string_view>("req");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(REUSE value) {
+  switch (value) {
+    case REUSE::reuse: return std::make_optional<const std::string_view>("reuse");
+    case REUSE::noreuse: return std::make_optional<const std::string_view>("noreuse");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(RGBA value) {
+  switch (value) {
+    case RGBA::INVALIDRGBAMASK1: return std::make_optional<const std::string_view>("INVALIDRGBAMASK1");
+    case RGBA::INVALIDRGBAMASK2: return std::make_optional<const std::string_view>("INVALIDRGBAMASK2");
+    case RGBA::INVALIDRGBAMASK3: return std::make_optional<const std::string_view>("INVALIDRGBAMASK3");
+    case RGBA::INVALIDRGBAMASK4: return std::make_optional<const std::string_view>("INVALIDRGBAMASK4");
+    case RGBA::INVALIDRGBAMASK5: return std::make_optional<const std::string_view>("INVALIDRGBAMASK5");
+    case RGBA::INVALIDRGBAMASK6: return std::make_optional<const std::string_view>("INVALIDRGBAMASK6");
+    case RGBA::INVALIDRGBAMASK7: return std::make_optional<const std::string_view>("INVALIDRGBAMASK7");
+    case RGBA::INVALIDRGBAMASK8: return std::make_optional<const std::string_view>("INVALIDRGBAMASK8");
+    case RGBA::INVALIDRGBAMASK9: return std::make_optional<const std::string_view>("INVALIDRGBAMASK9");
+    case RGBA::INVALIDRGBAMASK10: return std::make_optional<const std::string_view>("INVALIDRGBAMASK10");
+    case RGBA::INVALIDRGBAMASK11: return std::make_optional<const std::string_view>("INVALIDRGBAMASK11");
+    case RGBA::INVALIDRGBAMASK12: return std::make_optional<const std::string_view>("INVALIDRGBAMASK12");
+    case RGBA::INVALIDRGBAMASK13: return std::make_optional<const std::string_view>("INVALIDRGBAMASK13");
+    case RGBA::INVALIDRGBAMASK14: return std::make_optional<const std::string_view>("INVALIDRGBAMASK14");
+    case RGBA::INVALIDRGBAMASK15: return std::make_optional<const std::string_view>("INVALIDRGBAMASK15");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(RROOp value) {
+  switch (value) {
+    case RROOp::SINCOS: return std::make_optional<const std::string_view>("SINCOS");
+    case RROOp::EX2: return std::make_optional<const std::string_view>("EX2");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(RTTOp value) {
+  switch (value) {
+    case RTTOp::POPCRS: return std::make_optional<const std::string_view>("POPCRS");
+    case RTTOp::TERMINATE: return std::make_optional<const std::string_view>("TERMINATE");
+    case RTTOp::FALLTHROUGH: return std::make_optional<const std::string_view>("FALLTHROUGH");
+    case RTTOp::PREEMPTED: return std::make_optional<const std::string_view>("PREEMPTED");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Red value) {
+  switch (value) {
+    case Red::POPC: return std::make_optional<const std::string_view>("POPC");
+    case Red::AND: return std::make_optional<const std::string_view>("AND");
+    case Red::OR: return std::make_optional<const std::string_view>("OR");
+    case Red::INVALIDBARMODE3: return std::make_optional<const std::string_view>("INVALIDBARMODE3");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(RedOp value) {
+  switch (value) {
+    case RedOp::INVALIDREDOP0: return std::make_optional<const std::string_view>("INVALIDREDOP0");
+    case RedOp::INVALIDREDOP1: return std::make_optional<const std::string_view>("INVALIDREDOP1");
+    case RedOp::INVALIDREDOP2: return std::make_optional<const std::string_view>("INVALIDREDOP2");
+    case RedOp::INVALIDREDOP3: return std::make_optional<const std::string_view>("INVALIDREDOP3");
+    case RedOp::INVALIDREDOP4: return std::make_optional<const std::string_view>("INVALIDREDOP4");
+    case RedOp::INVALIDREDOP5: return std::make_optional<const std::string_view>("INVALIDREDOP5");
+    case RedOp::INVALIDREDOP6: return std::make_optional<const std::string_view>("INVALIDREDOP6");
+    case RedOp::INVALIDREDOP7: return std::make_optional<const std::string_view>("INVALIDREDOP7");
+    case RedOp::INVALIDREDOP8: return std::make_optional<const std::string_view>("INVALIDREDOP8");
+    case RedOp::INVALIDREDOP9: return std::make_optional<const std::string_view>("INVALIDREDOP9");
+    case RedOp::INVALIDREDOP10: return std::make_optional<const std::string_view>("INVALIDREDOP10");
+    case RedOp::INVALIDREDOP11: return std::make_optional<const std::string_view>("INVALIDREDOP11");
+    case RedOp::INVALIDREDOP12: return std::make_optional<const std::string_view>("INVALIDREDOP12");
+    case RedOp::INVALIDREDOP13: return std::make_optional<const std::string_view>("INVALIDREDOP13");
+    case RedOp::INVALIDREDOP14: return std::make_optional<const std::string_view>("INVALIDREDOP14");
+    case RedOp::INVALIDREDOP15: return std::make_optional<const std::string_view>("INVALIDREDOP15");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Register value) {
+  switch (value) {
+    case static_cast<Register>(ZeroRegister::RZ): return std::make_optional<const std::string_view>("RZ");
+    case static_cast<Register>(NonZeroRegister::R00): return std::make_optional<const std::string_view>("R00");
+    case static_cast<Register>(NonZeroRegister::R01): return std::make_optional<const std::string_view>("R01");
+    case static_cast<Register>(NonZeroRegister::R02): return std::make_optional<const std::string_view>("R02");
+    case static_cast<Register>(NonZeroRegister::R03): return std::make_optional<const std::string_view>("R03");
+    case static_cast<Register>(NonZeroRegister::R04): return std::make_optional<const std::string_view>("R04");
+    case static_cast<Register>(NonZeroRegister::R05): return std::make_optional<const std::string_view>("R05");
+    case static_cast<Register>(NonZeroRegister::R06): return std::make_optional<const std::string_view>("R06");
+    case static_cast<Register>(NonZeroRegister::R07): return std::make_optional<const std::string_view>("R07");
+    case static_cast<Register>(NonZeroRegister::R08): return std::make_optional<const std::string_view>("R08");
+    case static_cast<Register>(NonZeroRegister::R09): return std::make_optional<const std::string_view>("R09");
+    case static_cast<Register>(NonZeroRegister::R10): return std::make_optional<const std::string_view>("R10");
+    case static_cast<Register>(NonZeroRegister::R11): return std::make_optional<const std::string_view>("R11");
+    case static_cast<Register>(NonZeroRegister::R12): return std::make_optional<const std::string_view>("R12");
+    case static_cast<Register>(NonZeroRegister::R13): return std::make_optional<const std::string_view>("R13");
+    case static_cast<Register>(NonZeroRegister::R14): return std::make_optional<const std::string_view>("R14");
+    case static_cast<Register>(NonZeroRegister::R15): return std::make_optional<const std::string_view>("R15");
+    case static_cast<Register>(NonZeroRegister::R16): return std::make_optional<const std::string_view>("R16");
+    case static_cast<Register>(NonZeroRegister::R17): return std::make_optional<const std::string_view>("R17");
+    case static_cast<Register>(NonZeroRegister::R18): return std::make_optional<const std::string_view>("R18");
+    case static_cast<Register>(NonZeroRegister::R19): return std::make_optional<const std::string_view>("R19");
+    case static_cast<Register>(NonZeroRegister::R20): return std::make_optional<const std::string_view>("R20");
+    case static_cast<Register>(NonZeroRegister::R21): return std::make_optional<const std::string_view>("R21");
+    case static_cast<Register>(NonZeroRegister::R22): return std::make_optional<const std::string_view>("R22");
+    case static_cast<Register>(NonZeroRegister::R23): return std::make_optional<const std::string_view>("R23");
+    case static_cast<Register>(NonZeroRegister::R24): return std::make_optional<const std::string_view>("R24");
+    case static_cast<Register>(NonZeroRegister::R25): return std::make_optional<const std::string_view>("R25");
+    case static_cast<Register>(NonZeroRegister::R26): return std::make_optional<const std::string_view>("R26");
+    case static_cast<Register>(NonZeroRegister::R27): return std::make_optional<const std::string_view>("R27");
+    case static_cast<Register>(NonZeroRegister::R28): return std::make_optional<const std::string_view>("R28");
+    case static_cast<Register>(NonZeroRegister::R29): return std::make_optional<const std::string_view>("R29");
+    case static_cast<Register>(NonZeroRegister::R30): return std::make_optional<const std::string_view>("R30");
+    case static_cast<Register>(NonZeroRegister::R31): return std::make_optional<const std::string_view>("R31");
+    case static_cast<Register>(NonZeroRegister::R32): return std::make_optional<const std::string_view>("R32");
+    case static_cast<Register>(NonZeroRegister::R33): return std::make_optional<const std::string_view>("R33");
+    case static_cast<Register>(NonZeroRegister::R34): return std::make_optional<const std::string_view>("R34");
+    case static_cast<Register>(NonZeroRegister::R35): return std::make_optional<const std::string_view>("R35");
+    case static_cast<Register>(NonZeroRegister::R36): return std::make_optional<const std::string_view>("R36");
+    case static_cast<Register>(NonZeroRegister::R37): return std::make_optional<const std::string_view>("R37");
+    case static_cast<Register>(NonZeroRegister::R38): return std::make_optional<const std::string_view>("R38");
+    case static_cast<Register>(NonZeroRegister::R39): return std::make_optional<const std::string_view>("R39");
+    case static_cast<Register>(NonZeroRegister::R40): return std::make_optional<const std::string_view>("R40");
+    case static_cast<Register>(NonZeroRegister::R41): return std::make_optional<const std::string_view>("R41");
+    case static_cast<Register>(NonZeroRegister::R42): return std::make_optional<const std::string_view>("R42");
+    case static_cast<Register>(NonZeroRegister::R43): return std::make_optional<const std::string_view>("R43");
+    case static_cast<Register>(NonZeroRegister::R44): return std::make_optional<const std::string_view>("R44");
+    case static_cast<Register>(NonZeroRegister::R45): return std::make_optional<const std::string_view>("R45");
+    case static_cast<Register>(NonZeroRegister::R46): return std::make_optional<const std::string_view>("R46");
+    case static_cast<Register>(NonZeroRegister::R47): return std::make_optional<const std::string_view>("R47");
+    case static_cast<Register>(NonZeroRegister::R48): return std::make_optional<const std::string_view>("R48");
+    case static_cast<Register>(NonZeroRegister::R49): return std::make_optional<const std::string_view>("R49");
+    case static_cast<Register>(NonZeroRegister::R50): return std::make_optional<const std::string_view>("R50");
+    case static_cast<Register>(NonZeroRegister::R51): return std::make_optional<const std::string_view>("R51");
+    case static_cast<Register>(NonZeroRegister::R52): return std::make_optional<const std::string_view>("R52");
+    case static_cast<Register>(NonZeroRegister::R53): return std::make_optional<const std::string_view>("R53");
+    case static_cast<Register>(NonZeroRegister::R54): return std::make_optional<const std::string_view>("R54");
+    case static_cast<Register>(NonZeroRegister::R55): return std::make_optional<const std::string_view>("R55");
+    case static_cast<Register>(NonZeroRegister::R56): return std::make_optional<const std::string_view>("R56");
+    case static_cast<Register>(NonZeroRegister::R57): return std::make_optional<const std::string_view>("R57");
+    case static_cast<Register>(NonZeroRegister::R58): return std::make_optional<const std::string_view>("R58");
+    case static_cast<Register>(NonZeroRegister::R59): return std::make_optional<const std::string_view>("R59");
+    case static_cast<Register>(NonZeroRegister::R60): return std::make_optional<const std::string_view>("R60");
+    case static_cast<Register>(NonZeroRegister::R61): return std::make_optional<const std::string_view>("R61");
+    case static_cast<Register>(NonZeroRegister::R62): return std::make_optional<const std::string_view>("R62");
+    case static_cast<Register>(NonZeroRegister::R63): return std::make_optional<const std::string_view>("R63");
+    case static_cast<Register>(NonZeroRegister::R64): return std::make_optional<const std::string_view>("R64");
+    case static_cast<Register>(NonZeroRegister::R65): return std::make_optional<const std::string_view>("R65");
+    case static_cast<Register>(NonZeroRegister::R66): return std::make_optional<const std::string_view>("R66");
+    case static_cast<Register>(NonZeroRegister::R67): return std::make_optional<const std::string_view>("R67");
+    case static_cast<Register>(NonZeroRegister::R68): return std::make_optional<const std::string_view>("R68");
+    case static_cast<Register>(NonZeroRegister::R69): return std::make_optional<const std::string_view>("R69");
+    case static_cast<Register>(NonZeroRegister::R70): return std::make_optional<const std::string_view>("R70");
+    case static_cast<Register>(NonZeroRegister::R71): return std::make_optional<const std::string_view>("R71");
+    case static_cast<Register>(NonZeroRegister::R72): return std::make_optional<const std::string_view>("R72");
+    case static_cast<Register>(NonZeroRegister::R73): return std::make_optional<const std::string_view>("R73");
+    case static_cast<Register>(NonZeroRegister::R74): return std::make_optional<const std::string_view>("R74");
+    case static_cast<Register>(NonZeroRegister::R75): return std::make_optional<const std::string_view>("R75");
+    case static_cast<Register>(NonZeroRegister::R76): return std::make_optional<const std::string_view>("R76");
+    case static_cast<Register>(NonZeroRegister::R77): return std::make_optional<const std::string_view>("R77");
+    case static_cast<Register>(NonZeroRegister::R78): return std::make_optional<const std::string_view>("R78");
+    case static_cast<Register>(NonZeroRegister::R79): return std::make_optional<const std::string_view>("R79");
+    case static_cast<Register>(NonZeroRegister::R80): return std::make_optional<const std::string_view>("R80");
+    case static_cast<Register>(NonZeroRegister::R81): return std::make_optional<const std::string_view>("R81");
+    case static_cast<Register>(NonZeroRegister::R82): return std::make_optional<const std::string_view>("R82");
+    case static_cast<Register>(NonZeroRegister::R83): return std::make_optional<const std::string_view>("R83");
+    case static_cast<Register>(NonZeroRegister::R84): return std::make_optional<const std::string_view>("R84");
+    case static_cast<Register>(NonZeroRegister::R85): return std::make_optional<const std::string_view>("R85");
+    case static_cast<Register>(NonZeroRegister::R86): return std::make_optional<const std::string_view>("R86");
+    case static_cast<Register>(NonZeroRegister::R87): return std::make_optional<const std::string_view>("R87");
+    case static_cast<Register>(NonZeroRegister::R88): return std::make_optional<const std::string_view>("R88");
+    case static_cast<Register>(NonZeroRegister::R89): return std::make_optional<const std::string_view>("R89");
+    case static_cast<Register>(NonZeroRegister::R90): return std::make_optional<const std::string_view>("R90");
+    case static_cast<Register>(NonZeroRegister::R91): return std::make_optional<const std::string_view>("R91");
+    case static_cast<Register>(NonZeroRegister::R92): return std::make_optional<const std::string_view>("R92");
+    case static_cast<Register>(NonZeroRegister::R93): return std::make_optional<const std::string_view>("R93");
+    case static_cast<Register>(NonZeroRegister::R94): return std::make_optional<const std::string_view>("R94");
+    case static_cast<Register>(NonZeroRegister::R95): return std::make_optional<const std::string_view>("R95");
+    case static_cast<Register>(NonZeroRegister::R96): return std::make_optional<const std::string_view>("R96");
+    case static_cast<Register>(NonZeroRegister::R97): return std::make_optional<const std::string_view>("R97");
+    case static_cast<Register>(NonZeroRegister::R98): return std::make_optional<const std::string_view>("R98");
+    case static_cast<Register>(NonZeroRegister::R99): return std::make_optional<const std::string_view>("R99");
+    case static_cast<Register>(NonZeroRegister::R100): return std::make_optional<const std::string_view>("R100");
+    case static_cast<Register>(NonZeroRegister::R101): return std::make_optional<const std::string_view>("R101");
+    case static_cast<Register>(NonZeroRegister::R102): return std::make_optional<const std::string_view>("R102");
+    case static_cast<Register>(NonZeroRegister::R103): return std::make_optional<const std::string_view>("R103");
+    case static_cast<Register>(NonZeroRegister::R104): return std::make_optional<const std::string_view>("R104");
+    case static_cast<Register>(NonZeroRegister::R105): return std::make_optional<const std::string_view>("R105");
+    case static_cast<Register>(NonZeroRegister::R106): return std::make_optional<const std::string_view>("R106");
+    case static_cast<Register>(NonZeroRegister::R107): return std::make_optional<const std::string_view>("R107");
+    case static_cast<Register>(NonZeroRegister::R108): return std::make_optional<const std::string_view>("R108");
+    case static_cast<Register>(NonZeroRegister::R109): return std::make_optional<const std::string_view>("R109");
+    case static_cast<Register>(NonZeroRegister::R110): return std::make_optional<const std::string_view>("R110");
+    case static_cast<Register>(NonZeroRegister::R111): return std::make_optional<const std::string_view>("R111");
+    case static_cast<Register>(NonZeroRegister::R112): return std::make_optional<const std::string_view>("R112");
+    case static_cast<Register>(NonZeroRegister::R113): return std::make_optional<const std::string_view>("R113");
+    case static_cast<Register>(NonZeroRegister::R114): return std::make_optional<const std::string_view>("R114");
+    case static_cast<Register>(NonZeroRegister::R115): return std::make_optional<const std::string_view>("R115");
+    case static_cast<Register>(NonZeroRegister::R116): return std::make_optional<const std::string_view>("R116");
+    case static_cast<Register>(NonZeroRegister::R117): return std::make_optional<const std::string_view>("R117");
+    case static_cast<Register>(NonZeroRegister::R118): return std::make_optional<const std::string_view>("R118");
+    case static_cast<Register>(NonZeroRegister::R119): return std::make_optional<const std::string_view>("R119");
+    case static_cast<Register>(NonZeroRegister::R120): return std::make_optional<const std::string_view>("R120");
+    case static_cast<Register>(NonZeroRegister::R121): return std::make_optional<const std::string_view>("R121");
+    case static_cast<Register>(NonZeroRegister::R122): return std::make_optional<const std::string_view>("R122");
+    case static_cast<Register>(NonZeroRegister::R123): return std::make_optional<const std::string_view>("R123");
+    case static_cast<Register>(NonZeroRegister::R124): return std::make_optional<const std::string_view>("R124");
+    case static_cast<Register>(NonZeroRegister::R125): return std::make_optional<const std::string_view>("R125");
+    case static_cast<Register>(NonZeroRegister::R126): return std::make_optional<const std::string_view>("R126");
+    case static_cast<Register>(NonZeroRegister::R127): return std::make_optional<const std::string_view>("R127");
+    case static_cast<Register>(NonZeroRegister::R128): return std::make_optional<const std::string_view>("R128");
+    case static_cast<Register>(NonZeroRegister::R129): return std::make_optional<const std::string_view>("R129");
+    case static_cast<Register>(NonZeroRegister::R130): return std::make_optional<const std::string_view>("R130");
+    case static_cast<Register>(NonZeroRegister::R131): return std::make_optional<const std::string_view>("R131");
+    case static_cast<Register>(NonZeroRegister::R132): return std::make_optional<const std::string_view>("R132");
+    case static_cast<Register>(NonZeroRegister::R133): return std::make_optional<const std::string_view>("R133");
+    case static_cast<Register>(NonZeroRegister::R134): return std::make_optional<const std::string_view>("R134");
+    case static_cast<Register>(NonZeroRegister::R135): return std::make_optional<const std::string_view>("R135");
+    case static_cast<Register>(NonZeroRegister::R136): return std::make_optional<const std::string_view>("R136");
+    case static_cast<Register>(NonZeroRegister::R137): return std::make_optional<const std::string_view>("R137");
+    case static_cast<Register>(NonZeroRegister::R138): return std::make_optional<const std::string_view>("R138");
+    case static_cast<Register>(NonZeroRegister::R139): return std::make_optional<const std::string_view>("R139");
+    case static_cast<Register>(NonZeroRegister::R140): return std::make_optional<const std::string_view>("R140");
+    case static_cast<Register>(NonZeroRegister::R141): return std::make_optional<const std::string_view>("R141");
+    case static_cast<Register>(NonZeroRegister::R142): return std::make_optional<const std::string_view>("R142");
+    case static_cast<Register>(NonZeroRegister::R143): return std::make_optional<const std::string_view>("R143");
+    case static_cast<Register>(NonZeroRegister::R144): return std::make_optional<const std::string_view>("R144");
+    case static_cast<Register>(NonZeroRegister::R145): return std::make_optional<const std::string_view>("R145");
+    case static_cast<Register>(NonZeroRegister::R146): return std::make_optional<const std::string_view>("R146");
+    case static_cast<Register>(NonZeroRegister::R147): return std::make_optional<const std::string_view>("R147");
+    case static_cast<Register>(NonZeroRegister::R148): return std::make_optional<const std::string_view>("R148");
+    case static_cast<Register>(NonZeroRegister::R149): return std::make_optional<const std::string_view>("R149");
+    case static_cast<Register>(NonZeroRegister::R150): return std::make_optional<const std::string_view>("R150");
+    case static_cast<Register>(NonZeroRegister::R151): return std::make_optional<const std::string_view>("R151");
+    case static_cast<Register>(NonZeroRegister::R152): return std::make_optional<const std::string_view>("R152");
+    case static_cast<Register>(NonZeroRegister::R153): return std::make_optional<const std::string_view>("R153");
+    case static_cast<Register>(NonZeroRegister::R154): return std::make_optional<const std::string_view>("R154");
+    case static_cast<Register>(NonZeroRegister::R155): return std::make_optional<const std::string_view>("R155");
+    case static_cast<Register>(NonZeroRegister::R156): return std::make_optional<const std::string_view>("R156");
+    case static_cast<Register>(NonZeroRegister::R157): return std::make_optional<const std::string_view>("R157");
+    case static_cast<Register>(NonZeroRegister::R158): return std::make_optional<const std::string_view>("R158");
+    case static_cast<Register>(NonZeroRegister::R159): return std::make_optional<const std::string_view>("R159");
+    case static_cast<Register>(NonZeroRegister::R160): return std::make_optional<const std::string_view>("R160");
+    case static_cast<Register>(NonZeroRegister::R161): return std::make_optional<const std::string_view>("R161");
+    case static_cast<Register>(NonZeroRegister::R162): return std::make_optional<const std::string_view>("R162");
+    case static_cast<Register>(NonZeroRegister::R163): return std::make_optional<const std::string_view>("R163");
+    case static_cast<Register>(NonZeroRegister::R164): return std::make_optional<const std::string_view>("R164");
+    case static_cast<Register>(NonZeroRegister::R165): return std::make_optional<const std::string_view>("R165");
+    case static_cast<Register>(NonZeroRegister::R166): return std::make_optional<const std::string_view>("R166");
+    case static_cast<Register>(NonZeroRegister::R167): return std::make_optional<const std::string_view>("R167");
+    case static_cast<Register>(NonZeroRegister::R168): return std::make_optional<const std::string_view>("R168");
+    case static_cast<Register>(NonZeroRegister::R169): return std::make_optional<const std::string_view>("R169");
+    case static_cast<Register>(NonZeroRegister::R170): return std::make_optional<const std::string_view>("R170");
+    case static_cast<Register>(NonZeroRegister::R171): return std::make_optional<const std::string_view>("R171");
+    case static_cast<Register>(NonZeroRegister::R172): return std::make_optional<const std::string_view>("R172");
+    case static_cast<Register>(NonZeroRegister::R173): return std::make_optional<const std::string_view>("R173");
+    case static_cast<Register>(NonZeroRegister::R174): return std::make_optional<const std::string_view>("R174");
+    case static_cast<Register>(NonZeroRegister::R175): return std::make_optional<const std::string_view>("R175");
+    case static_cast<Register>(NonZeroRegister::R176): return std::make_optional<const std::string_view>("R176");
+    case static_cast<Register>(NonZeroRegister::R177): return std::make_optional<const std::string_view>("R177");
+    case static_cast<Register>(NonZeroRegister::R178): return std::make_optional<const std::string_view>("R178");
+    case static_cast<Register>(NonZeroRegister::R179): return std::make_optional<const std::string_view>("R179");
+    case static_cast<Register>(NonZeroRegister::R180): return std::make_optional<const std::string_view>("R180");
+    case static_cast<Register>(NonZeroRegister::R181): return std::make_optional<const std::string_view>("R181");
+    case static_cast<Register>(NonZeroRegister::R182): return std::make_optional<const std::string_view>("R182");
+    case static_cast<Register>(NonZeroRegister::R183): return std::make_optional<const std::string_view>("R183");
+    case static_cast<Register>(NonZeroRegister::R184): return std::make_optional<const std::string_view>("R184");
+    case static_cast<Register>(NonZeroRegister::R185): return std::make_optional<const std::string_view>("R185");
+    case static_cast<Register>(NonZeroRegister::R186): return std::make_optional<const std::string_view>("R186");
+    case static_cast<Register>(NonZeroRegister::R187): return std::make_optional<const std::string_view>("R187");
+    case static_cast<Register>(NonZeroRegister::R188): return std::make_optional<const std::string_view>("R188");
+    case static_cast<Register>(NonZeroRegister::R189): return std::make_optional<const std::string_view>("R189");
+    case static_cast<Register>(NonZeroRegister::R190): return std::make_optional<const std::string_view>("R190");
+    case static_cast<Register>(NonZeroRegister::R191): return std::make_optional<const std::string_view>("R191");
+    case static_cast<Register>(NonZeroRegister::R192): return std::make_optional<const std::string_view>("R192");
+    case static_cast<Register>(NonZeroRegister::R193): return std::make_optional<const std::string_view>("R193");
+    case static_cast<Register>(NonZeroRegister::R194): return std::make_optional<const std::string_view>("R194");
+    case static_cast<Register>(NonZeroRegister::R195): return std::make_optional<const std::string_view>("R195");
+    case static_cast<Register>(NonZeroRegister::R196): return std::make_optional<const std::string_view>("R196");
+    case static_cast<Register>(NonZeroRegister::R197): return std::make_optional<const std::string_view>("R197");
+    case static_cast<Register>(NonZeroRegister::R198): return std::make_optional<const std::string_view>("R198");
+    case static_cast<Register>(NonZeroRegister::R199): return std::make_optional<const std::string_view>("R199");
+    case static_cast<Register>(NonZeroRegister::R200): return std::make_optional<const std::string_view>("R200");
+    case static_cast<Register>(NonZeroRegister::R201): return std::make_optional<const std::string_view>("R201");
+    case static_cast<Register>(NonZeroRegister::R202): return std::make_optional<const std::string_view>("R202");
+    case static_cast<Register>(NonZeroRegister::R203): return std::make_optional<const std::string_view>("R203");
+    case static_cast<Register>(NonZeroRegister::R204): return std::make_optional<const std::string_view>("R204");
+    case static_cast<Register>(NonZeroRegister::R205): return std::make_optional<const std::string_view>("R205");
+    case static_cast<Register>(NonZeroRegister::R206): return std::make_optional<const std::string_view>("R206");
+    case static_cast<Register>(NonZeroRegister::R207): return std::make_optional<const std::string_view>("R207");
+    case static_cast<Register>(NonZeroRegister::R208): return std::make_optional<const std::string_view>("R208");
+    case static_cast<Register>(NonZeroRegister::R209): return std::make_optional<const std::string_view>("R209");
+    case static_cast<Register>(NonZeroRegister::R210): return std::make_optional<const std::string_view>("R210");
+    case static_cast<Register>(NonZeroRegister::R211): return std::make_optional<const std::string_view>("R211");
+    case static_cast<Register>(NonZeroRegister::R212): return std::make_optional<const std::string_view>("R212");
+    case static_cast<Register>(NonZeroRegister::R213): return std::make_optional<const std::string_view>("R213");
+    case static_cast<Register>(NonZeroRegister::R214): return std::make_optional<const std::string_view>("R214");
+    case static_cast<Register>(NonZeroRegister::R215): return std::make_optional<const std::string_view>("R215");
+    case static_cast<Register>(NonZeroRegister::R216): return std::make_optional<const std::string_view>("R216");
+    case static_cast<Register>(NonZeroRegister::R217): return std::make_optional<const std::string_view>("R217");
+    case static_cast<Register>(NonZeroRegister::R218): return std::make_optional<const std::string_view>("R218");
+    case static_cast<Register>(NonZeroRegister::R219): return std::make_optional<const std::string_view>("R219");
+    case static_cast<Register>(NonZeroRegister::R220): return std::make_optional<const std::string_view>("R220");
+    case static_cast<Register>(NonZeroRegister::R221): return std::make_optional<const std::string_view>("R221");
+    case static_cast<Register>(NonZeroRegister::R222): return std::make_optional<const std::string_view>("R222");
+    case static_cast<Register>(NonZeroRegister::R223): return std::make_optional<const std::string_view>("R223");
+    case static_cast<Register>(NonZeroRegister::R224): return std::make_optional<const std::string_view>("R224");
+    case static_cast<Register>(NonZeroRegister::R225): return std::make_optional<const std::string_view>("R225");
+    case static_cast<Register>(NonZeroRegister::R226): return std::make_optional<const std::string_view>("R226");
+    case static_cast<Register>(NonZeroRegister::R227): return std::make_optional<const std::string_view>("R227");
+    case static_cast<Register>(NonZeroRegister::R228): return std::make_optional<const std::string_view>("R228");
+    case static_cast<Register>(NonZeroRegister::R229): return std::make_optional<const std::string_view>("R229");
+    case static_cast<Register>(NonZeroRegister::R230): return std::make_optional<const std::string_view>("R230");
+    case static_cast<Register>(NonZeroRegister::R231): return std::make_optional<const std::string_view>("R231");
+    case static_cast<Register>(NonZeroRegister::R232): return std::make_optional<const std::string_view>("R232");
+    case static_cast<Register>(NonZeroRegister::R233): return std::make_optional<const std::string_view>("R233");
+    case static_cast<Register>(NonZeroRegister::R234): return std::make_optional<const std::string_view>("R234");
+    case static_cast<Register>(NonZeroRegister::R235): return std::make_optional<const std::string_view>("R235");
+    case static_cast<Register>(NonZeroRegister::R236): return std::make_optional<const std::string_view>("R236");
+    case static_cast<Register>(NonZeroRegister::R237): return std::make_optional<const std::string_view>("R237");
+    case static_cast<Register>(NonZeroRegister::R238): return std::make_optional<const std::string_view>("R238");
+    case static_cast<Register>(NonZeroRegister::R239): return std::make_optional<const std::string_view>("R239");
+    case static_cast<Register>(NonZeroRegister::R240): return std::make_optional<const std::string_view>("R240");
+    case static_cast<Register>(NonZeroRegister::R241): return std::make_optional<const std::string_view>("R241");
+    case static_cast<Register>(NonZeroRegister::R242): return std::make_optional<const std::string_view>("R242");
+    case static_cast<Register>(NonZeroRegister::R243): return std::make_optional<const std::string_view>("R243");
+    case static_cast<Register>(NonZeroRegister::R244): return std::make_optional<const std::string_view>("R244");
+    case static_cast<Register>(NonZeroRegister::R245): return std::make_optional<const std::string_view>("R245");
+    case static_cast<Register>(NonZeroRegister::R246): return std::make_optional<const std::string_view>("R246");
+    case static_cast<Register>(NonZeroRegister::R247): return std::make_optional<const std::string_view>("R247");
+    case static_cast<Register>(NonZeroRegister::R248): return std::make_optional<const std::string_view>("R248");
+    case static_cast<Register>(NonZeroRegister::R249): return std::make_optional<const std::string_view>("R249");
+    case static_cast<Register>(NonZeroRegister::R250): return std::make_optional<const std::string_view>("R250");
+    case static_cast<Register>(NonZeroRegister::R251): return std::make_optional<const std::string_view>("R251");
+    case static_cast<Register>(NonZeroRegister::R252): return std::make_optional<const std::string_view>("R252");
+    case static_cast<Register>(NonZeroRegister::R253): return std::make_optional<const std::string_view>("R253");
+    case static_cast<Register>(NonZeroRegister::R254): return std::make_optional<const std::string_view>("R254");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Round1 value) {
+  switch (value) {
+    case Round1::RN: return std::make_optional<const std::string_view>("RN");
+    case Round1::RM: return std::make_optional<const std::string_view>("RM");
+    case Round1::RP: return std::make_optional<const std::string_view>("RP");
+    case Round1::RZ: return std::make_optional<const std::string_view>("RZ");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Round3 value) {
+  switch (value) {
+    case Round3::ROUND: return std::make_optional<const std::string_view>("ROUND");
+    case Round3::FLOOR: return std::make_optional<const std::string_view>("FLOOR");
+    case Round3::CEIL: return std::make_optional<const std::string_view>("CEIL");
+    case Round3::TRUNC: return std::make_optional<const std::string_view>("TRUNC");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(S16 value) {
+  switch (value) {
+    case S16::S16: return std::make_optional<const std::string_view>("S16");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(SAT value) {
+  switch (value) {
+    case SAT::noSAT: return std::make_optional<const std::string_view>("noSAT");
+    case SAT::SAT: return std::make_optional<const std::string_view>("SAT");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(SH value) {
+  switch (value) {
+    case SH::noSH: return std::make_optional<const std::string_view>("noSH");
+    case SH::SH: return std::make_optional<const std::string_view>("SH");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(SHFXMode value) {
+  switch (value) {
+    case SHFXMode::NONE: return std::make_optional<const std::string_view>("NONE");
+    case SHFXMode::HI: return std::make_optional<const std::string_view>("HI");
+    case SHFXMode::X: return std::make_optional<const std::string_view>("X");
+    case SHFXMode::XHI: return std::make_optional<const std::string_view>("XHI");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(SHF_L value) {
+  switch (value) {
+    case SHF_L::L: return std::make_optional<const std::string_view>("L");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(SHF_R value) {
+  switch (value) {
+    case SHF_R::R: return std::make_optional<const std::string_view>("R");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(SInteger value) {
+  switch (value) {
+    case static_cast<SInteger>(SInteger16::S16): return std::make_optional<const std::string_view>("S16");
+    case static_cast<SInteger>(SInteger8::S8): return std::make_optional<const std::string_view>("S8");
+    case static_cast<SInteger>(SInteger64::S64): return std::make_optional<const std::string_view>("S64");
+    case static_cast<SInteger>(SInteger32::S32): return std::make_optional<const std::string_view>("S32");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(SInteger32 value) {
+  switch (value) {
+    case SInteger32::S32: return std::make_optional<const std::string_view>("S32");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(SInteger64 value) {
+  switch (value) {
+    case SInteger64::S64: return std::make_optional<const std::string_view>("S64");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(SInteger8 value) {
+  switch (value) {
+    case SInteger8::S8: return std::make_optional<const std::string_view>("S8");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(SKEW value) {
+  switch (value) {
+    case SKEW::noSKEW: return std::make_optional<const std::string_view>("noSKEW");
+    case SKEW::SKEW: return std::make_optional<const std::string_view>("SKEW");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(SQInteger value) {
+  switch (value) {
+    case SQInteger::U8: return std::make_optional<const std::string_view>("U8");
+    case SQInteger::_32: return std::make_optional<const std::string_view>("32");
+    case SQInteger::_64: return std::make_optional<const std::string_view>("64");
+    case SQInteger::F32: return std::make_optional<const std::string_view>("F32");
+    case SQInteger::F16x2_FTZ_RN: return std::make_optional<const std::string_view>("F16x2.FTZ.RN");
+    case SQInteger::S32: return std::make_optional<const std::string_view>("S32");
+    case SQInteger::S64: return std::make_optional<const std::string_view>("S64");
+    case SQInteger::INVALIDATOMICSIZE6: return std::make_optional<const std::string_view>("INVALIDATOMICSIZE6");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(STPMode value) {
+  switch (value) {
+    case STPMode::noWAIT: return std::make_optional<const std::string_view>("noWAIT");
+    case STPMode::WAIT: return std::make_optional<const std::string_view>("WAIT");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Scale value) {
+  switch (value) {
+    case Scale::NONE: return std::make_optional<const std::string_view>("NONE");
+    case Scale::D2: return std::make_optional<const std::string_view>("D2");
+    case Scale::D4: return std::make_optional<const std::string_view>("D4");
+    case Scale::D8: return std::make_optional<const std::string_view>("D8");
+    case Scale::M8: return std::make_optional<const std::string_view>("M8");
+    case Scale::M4: return std::make_optional<const std::string_view>("M4");
+    case Scale::M2: return std::make_optional<const std::string_view>("M2");
+    case Scale::INVALIDSCALE37: return std::make_optional<const std::string_view>("INVALIDSCALE37");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Scoreboard value) {
+  switch (value) {
+    case Scoreboard::SB0: return std::make_optional<const std::string_view>("SB0");
+    case Scoreboard::SB1: return std::make_optional<const std::string_view>("SB1");
+    case Scoreboard::SB2: return std::make_optional<const std::string_view>("SB2");
+    case Scoreboard::SB3: return std::make_optional<const std::string_view>("SB3");
+    case Scoreboard::SB4: return std::make_optional<const std::string_view>("SB4");
+    case Scoreboard::SB5: return std::make_optional<const std::string_view>("SB5");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Shflmd value) {
+  switch (value) {
+    case Shflmd::IDX: return std::make_optional<const std::string_view>("IDX");
+    case Shflmd::UP: return std::make_optional<const std::string_view>("UP");
+    case Shflmd::DOWN: return std::make_optional<const std::string_view>("DOWN");
+    case Shflmd::BFLY: return std::make_optional<const std::string_view>("BFLY");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(SpecialRegister value) {
+  switch (value) {
+    case SpecialRegister::SR0: return std::make_optional<const std::string_view>("SR0");
+    case SpecialRegister::SR1: return std::make_optional<const std::string_view>("SR1");
+    case SpecialRegister::SR2: return std::make_optional<const std::string_view>("SR2");
+    case SpecialRegister::SR3: return std::make_optional<const std::string_view>("SR3");
+    case SpecialRegister::SR4: return std::make_optional<const std::string_view>("SR4");
+    case SpecialRegister::SR5: return std::make_optional<const std::string_view>("SR5");
+    case SpecialRegister::SR6: return std::make_optional<const std::string_view>("SR6");
+    case SpecialRegister::SR7: return std::make_optional<const std::string_view>("SR7");
+    case SpecialRegister::SR8: return std::make_optional<const std::string_view>("SR8");
+    case SpecialRegister::SR9: return std::make_optional<const std::string_view>("SR9");
+    case SpecialRegister::SR10: return std::make_optional<const std::string_view>("SR10");
+    case SpecialRegister::SR11: return std::make_optional<const std::string_view>("SR11");
+    case SpecialRegister::SR12: return std::make_optional<const std::string_view>("SR12");
+    case SpecialRegister::SR13: return std::make_optional<const std::string_view>("SR13");
+    case SpecialRegister::SR14: return std::make_optional<const std::string_view>("SR14");
+    case SpecialRegister::SR15: return std::make_optional<const std::string_view>("SR15");
+    case SpecialRegister::SR16: return std::make_optional<const std::string_view>("SR16");
+    case SpecialRegister::SR17: return std::make_optional<const std::string_view>("SR17");
+    case SpecialRegister::SR18: return std::make_optional<const std::string_view>("SR18");
+    case SpecialRegister::SR19: return std::make_optional<const std::string_view>("SR19");
+    case SpecialRegister::SR20: return std::make_optional<const std::string_view>("SR20");
+    case SpecialRegister::SR21: return std::make_optional<const std::string_view>("SR21");
+    case SpecialRegister::SR22: return std::make_optional<const std::string_view>("SR22");
+    case SpecialRegister::SR23: return std::make_optional<const std::string_view>("SR23");
+    case SpecialRegister::SR24: return std::make_optional<const std::string_view>("SR24");
+    case SpecialRegister::SR25: return std::make_optional<const std::string_view>("SR25");
+    case SpecialRegister::SR26: return std::make_optional<const std::string_view>("SR26");
+    case SpecialRegister::SR27: return std::make_optional<const std::string_view>("SR27");
+    case SpecialRegister::SR28: return std::make_optional<const std::string_view>("SR28");
+    case SpecialRegister::SR29: return std::make_optional<const std::string_view>("SR29");
+    case SpecialRegister::SR30: return std::make_optional<const std::string_view>("SR30");
+    case SpecialRegister::SR31: return std::make_optional<const std::string_view>("SR31");
+    case SpecialRegister::SR32: return std::make_optional<const std::string_view>("SR32");
+    case SpecialRegister::SR33: return std::make_optional<const std::string_view>("SR33");
+    case SpecialRegister::SR34: return std::make_optional<const std::string_view>("SR34");
+    case SpecialRegister::SR35: return std::make_optional<const std::string_view>("SR35");
+    case SpecialRegister::SR36: return std::make_optional<const std::string_view>("SR36");
+    case SpecialRegister::SR37: return std::make_optional<const std::string_view>("SR37");
+    case SpecialRegister::SR38: return std::make_optional<const std::string_view>("SR38");
+    case SpecialRegister::SR39: return std::make_optional<const std::string_view>("SR39");
+    case SpecialRegister::SR40: return std::make_optional<const std::string_view>("SR40");
+    case SpecialRegister::SR41: return std::make_optional<const std::string_view>("SR41");
+    case SpecialRegister::SR42: return std::make_optional<const std::string_view>("SR42");
+    case SpecialRegister::SR43: return std::make_optional<const std::string_view>("SR43");
+    case SpecialRegister::SR44: return std::make_optional<const std::string_view>("SR44");
+    case SpecialRegister::SR45: return std::make_optional<const std::string_view>("SR45");
+    case SpecialRegister::SR46: return std::make_optional<const std::string_view>("SR46");
+    case SpecialRegister::SR47: return std::make_optional<const std::string_view>("SR47");
+    case SpecialRegister::SR48: return std::make_optional<const std::string_view>("SR48");
+    case SpecialRegister::SR49: return std::make_optional<const std::string_view>("SR49");
+    case SpecialRegister::SR50: return std::make_optional<const std::string_view>("SR50");
+    case SpecialRegister::SR51: return std::make_optional<const std::string_view>("SR51");
+    case SpecialRegister::SR52: return std::make_optional<const std::string_view>("SR52");
+    case SpecialRegister::SR53: return std::make_optional<const std::string_view>("SR53");
+    case SpecialRegister::SR54: return std::make_optional<const std::string_view>("SR54");
+    case SpecialRegister::SR55: return std::make_optional<const std::string_view>("SR55");
+    case SpecialRegister::SR56: return std::make_optional<const std::string_view>("SR56");
+    case SpecialRegister::SR57: return std::make_optional<const std::string_view>("SR57");
+    case SpecialRegister::SR58: return std::make_optional<const std::string_view>("SR58");
+    case SpecialRegister::SR59: return std::make_optional<const std::string_view>("SR59");
+    case SpecialRegister::SR60: return std::make_optional<const std::string_view>("SR60");
+    case SpecialRegister::SR61: return std::make_optional<const std::string_view>("SR61");
+    case SpecialRegister::SR62: return std::make_optional<const std::string_view>("SR62");
+    case SpecialRegister::SR63: return std::make_optional<const std::string_view>("SR63");
+    case SpecialRegister::SR64: return std::make_optional<const std::string_view>("SR64");
+    case SpecialRegister::SR65: return std::make_optional<const std::string_view>("SR65");
+    case SpecialRegister::SR66: return std::make_optional<const std::string_view>("SR66");
+    case SpecialRegister::SR67: return std::make_optional<const std::string_view>("SR67");
+    case SpecialRegister::SR68: return std::make_optional<const std::string_view>("SR68");
+    case SpecialRegister::SR69: return std::make_optional<const std::string_view>("SR69");
+    case SpecialRegister::SR70: return std::make_optional<const std::string_view>("SR70");
+    case SpecialRegister::SR71: return std::make_optional<const std::string_view>("SR71");
+    case SpecialRegister::SR72: return std::make_optional<const std::string_view>("SR72");
+    case SpecialRegister::SR73: return std::make_optional<const std::string_view>("SR73");
+    case SpecialRegister::SR74: return std::make_optional<const std::string_view>("SR74");
+    case SpecialRegister::SR75: return std::make_optional<const std::string_view>("SR75");
+    case SpecialRegister::SR76: return std::make_optional<const std::string_view>("SR76");
+    case SpecialRegister::SR77: return std::make_optional<const std::string_view>("SR77");
+    case SpecialRegister::SR78: return std::make_optional<const std::string_view>("SR78");
+    case SpecialRegister::SR79: return std::make_optional<const std::string_view>("SR79");
+    case SpecialRegister::SR80: return std::make_optional<const std::string_view>("SR80");
+    case SpecialRegister::SR81: return std::make_optional<const std::string_view>("SR81");
+    case SpecialRegister::SR82: return std::make_optional<const std::string_view>("SR82");
+    case SpecialRegister::SR83: return std::make_optional<const std::string_view>("SR83");
+    case SpecialRegister::SR84: return std::make_optional<const std::string_view>("SR84");
+    case SpecialRegister::SR85: return std::make_optional<const std::string_view>("SR85");
+    case SpecialRegister::SR86: return std::make_optional<const std::string_view>("SR86");
+    case SpecialRegister::SR87: return std::make_optional<const std::string_view>("SR87");
+    case SpecialRegister::SR88: return std::make_optional<const std::string_view>("SR88");
+    case SpecialRegister::SR89: return std::make_optional<const std::string_view>("SR89");
+    case SpecialRegister::SR90: return std::make_optional<const std::string_view>("SR90");
+    case SpecialRegister::SR91: return std::make_optional<const std::string_view>("SR91");
+    case SpecialRegister::SR92: return std::make_optional<const std::string_view>("SR92");
+    case SpecialRegister::SR93: return std::make_optional<const std::string_view>("SR93");
+    case SpecialRegister::SR94: return std::make_optional<const std::string_view>("SR94");
+    case SpecialRegister::SR95: return std::make_optional<const std::string_view>("SR95");
+    case SpecialRegister::SR96: return std::make_optional<const std::string_view>("SR96");
+    case SpecialRegister::SR97: return std::make_optional<const std::string_view>("SR97");
+    case SpecialRegister::SR98: return std::make_optional<const std::string_view>("SR98");
+    case SpecialRegister::SR99: return std::make_optional<const std::string_view>("SR99");
+    case SpecialRegister::SR100: return std::make_optional<const std::string_view>("SR100");
+    case SpecialRegister::SR101: return std::make_optional<const std::string_view>("SR101");
+    case SpecialRegister::SR102: return std::make_optional<const std::string_view>("SR102");
+    case SpecialRegister::SR103: return std::make_optional<const std::string_view>("SR103");
+    case SpecialRegister::SR104: return std::make_optional<const std::string_view>("SR104");
+    case SpecialRegister::SR105: return std::make_optional<const std::string_view>("SR105");
+    case SpecialRegister::SR106: return std::make_optional<const std::string_view>("SR106");
+    case SpecialRegister::SR107: return std::make_optional<const std::string_view>("SR107");
+    case SpecialRegister::SR108: return std::make_optional<const std::string_view>("SR108");
+    case SpecialRegister::SR109: return std::make_optional<const std::string_view>("SR109");
+    case SpecialRegister::SR110: return std::make_optional<const std::string_view>("SR110");
+    case SpecialRegister::SR111: return std::make_optional<const std::string_view>("SR111");
+    case SpecialRegister::SR112: return std::make_optional<const std::string_view>("SR112");
+    case SpecialRegister::SR113: return std::make_optional<const std::string_view>("SR113");
+    case SpecialRegister::SR114: return std::make_optional<const std::string_view>("SR114");
+    case SpecialRegister::SR115: return std::make_optional<const std::string_view>("SR115");
+    case SpecialRegister::SR116: return std::make_optional<const std::string_view>("SR116");
+    case SpecialRegister::SR117: return std::make_optional<const std::string_view>("SR117");
+    case SpecialRegister::SR118: return std::make_optional<const std::string_view>("SR118");
+    case SpecialRegister::SR119: return std::make_optional<const std::string_view>("SR119");
+    case SpecialRegister::SR120: return std::make_optional<const std::string_view>("SR120");
+    case SpecialRegister::SR121: return std::make_optional<const std::string_view>("SR121");
+    case SpecialRegister::SR122: return std::make_optional<const std::string_view>("SR122");
+    case SpecialRegister::SR123: return std::make_optional<const std::string_view>("SR123");
+    case SpecialRegister::SR124: return std::make_optional<const std::string_view>("SR124");
+    case SpecialRegister::SR125: return std::make_optional<const std::string_view>("SR125");
+    case SpecialRegister::SR126: return std::make_optional<const std::string_view>("SR126");
+    case SpecialRegister::SR127: return std::make_optional<const std::string_view>("SR127");
+    case SpecialRegister::SR128: return std::make_optional<const std::string_view>("SR128");
+    case SpecialRegister::SR129: return std::make_optional<const std::string_view>("SR129");
+    case SpecialRegister::SR130: return std::make_optional<const std::string_view>("SR130");
+    case SpecialRegister::SR131: return std::make_optional<const std::string_view>("SR131");
+    case SpecialRegister::SR132: return std::make_optional<const std::string_view>("SR132");
+    case SpecialRegister::SR133: return std::make_optional<const std::string_view>("SR133");
+    case SpecialRegister::SR134: return std::make_optional<const std::string_view>("SR134");
+    case SpecialRegister::SR135: return std::make_optional<const std::string_view>("SR135");
+    case SpecialRegister::SR136: return std::make_optional<const std::string_view>("SR136");
+    case SpecialRegister::SR137: return std::make_optional<const std::string_view>("SR137");
+    case SpecialRegister::SR138: return std::make_optional<const std::string_view>("SR138");
+    case SpecialRegister::SR139: return std::make_optional<const std::string_view>("SR139");
+    case SpecialRegister::SR140: return std::make_optional<const std::string_view>("SR140");
+    case SpecialRegister::SR141: return std::make_optional<const std::string_view>("SR141");
+    case SpecialRegister::SR142: return std::make_optional<const std::string_view>("SR142");
+    case SpecialRegister::SR143: return std::make_optional<const std::string_view>("SR143");
+    case SpecialRegister::SR144: return std::make_optional<const std::string_view>("SR144");
+    case SpecialRegister::SR145: return std::make_optional<const std::string_view>("SR145");
+    case SpecialRegister::SR146: return std::make_optional<const std::string_view>("SR146");
+    case SpecialRegister::SR147: return std::make_optional<const std::string_view>("SR147");
+    case SpecialRegister::SR148: return std::make_optional<const std::string_view>("SR148");
+    case SpecialRegister::SR149: return std::make_optional<const std::string_view>("SR149");
+    case SpecialRegister::SR150: return std::make_optional<const std::string_view>("SR150");
+    case SpecialRegister::SR151: return std::make_optional<const std::string_view>("SR151");
+    case SpecialRegister::SR152: return std::make_optional<const std::string_view>("SR152");
+    case SpecialRegister::SR153: return std::make_optional<const std::string_view>("SR153");
+    case SpecialRegister::SR154: return std::make_optional<const std::string_view>("SR154");
+    case SpecialRegister::SR155: return std::make_optional<const std::string_view>("SR155");
+    case SpecialRegister::SR156: return std::make_optional<const std::string_view>("SR156");
+    case SpecialRegister::SR157: return std::make_optional<const std::string_view>("SR157");
+    case SpecialRegister::SR158: return std::make_optional<const std::string_view>("SR158");
+    case SpecialRegister::SR159: return std::make_optional<const std::string_view>("SR159");
+    case SpecialRegister::SR160: return std::make_optional<const std::string_view>("SR160");
+    case SpecialRegister::SR161: return std::make_optional<const std::string_view>("SR161");
+    case SpecialRegister::SR162: return std::make_optional<const std::string_view>("SR162");
+    case SpecialRegister::SR163: return std::make_optional<const std::string_view>("SR163");
+    case SpecialRegister::SR164: return std::make_optional<const std::string_view>("SR164");
+    case SpecialRegister::SR165: return std::make_optional<const std::string_view>("SR165");
+    case SpecialRegister::SR166: return std::make_optional<const std::string_view>("SR166");
+    case SpecialRegister::SR167: return std::make_optional<const std::string_view>("SR167");
+    case SpecialRegister::SR168: return std::make_optional<const std::string_view>("SR168");
+    case SpecialRegister::SR169: return std::make_optional<const std::string_view>("SR169");
+    case SpecialRegister::SR170: return std::make_optional<const std::string_view>("SR170");
+    case SpecialRegister::SR171: return std::make_optional<const std::string_view>("SR171");
+    case SpecialRegister::SR172: return std::make_optional<const std::string_view>("SR172");
+    case SpecialRegister::SR173: return std::make_optional<const std::string_view>("SR173");
+    case SpecialRegister::SR174: return std::make_optional<const std::string_view>("SR174");
+    case SpecialRegister::SR175: return std::make_optional<const std::string_view>("SR175");
+    case SpecialRegister::SR176: return std::make_optional<const std::string_view>("SR176");
+    case SpecialRegister::SR177: return std::make_optional<const std::string_view>("SR177");
+    case SpecialRegister::SR178: return std::make_optional<const std::string_view>("SR178");
+    case SpecialRegister::SR179: return std::make_optional<const std::string_view>("SR179");
+    case SpecialRegister::SR180: return std::make_optional<const std::string_view>("SR180");
+    case SpecialRegister::SR181: return std::make_optional<const std::string_view>("SR181");
+    case SpecialRegister::SR182: return std::make_optional<const std::string_view>("SR182");
+    case SpecialRegister::SR183: return std::make_optional<const std::string_view>("SR183");
+    case SpecialRegister::SR184: return std::make_optional<const std::string_view>("SR184");
+    case SpecialRegister::SR185: return std::make_optional<const std::string_view>("SR185");
+    case SpecialRegister::SR186: return std::make_optional<const std::string_view>("SR186");
+    case SpecialRegister::SR187: return std::make_optional<const std::string_view>("SR187");
+    case SpecialRegister::SR188: return std::make_optional<const std::string_view>("SR188");
+    case SpecialRegister::SR189: return std::make_optional<const std::string_view>("SR189");
+    case SpecialRegister::SR190: return std::make_optional<const std::string_view>("SR190");
+    case SpecialRegister::SR191: return std::make_optional<const std::string_view>("SR191");
+    case SpecialRegister::SR192: return std::make_optional<const std::string_view>("SR192");
+    case SpecialRegister::SR193: return std::make_optional<const std::string_view>("SR193");
+    case SpecialRegister::SR194: return std::make_optional<const std::string_view>("SR194");
+    case SpecialRegister::SR195: return std::make_optional<const std::string_view>("SR195");
+    case SpecialRegister::SR196: return std::make_optional<const std::string_view>("SR196");
+    case SpecialRegister::SR197: return std::make_optional<const std::string_view>("SR197");
+    case SpecialRegister::SR198: return std::make_optional<const std::string_view>("SR198");
+    case SpecialRegister::SR199: return std::make_optional<const std::string_view>("SR199");
+    case SpecialRegister::SR200: return std::make_optional<const std::string_view>("SR200");
+    case SpecialRegister::SR201: return std::make_optional<const std::string_view>("SR201");
+    case SpecialRegister::SR202: return std::make_optional<const std::string_view>("SR202");
+    case SpecialRegister::SR203: return std::make_optional<const std::string_view>("SR203");
+    case SpecialRegister::SR204: return std::make_optional<const std::string_view>("SR204");
+    case SpecialRegister::SR205: return std::make_optional<const std::string_view>("SR205");
+    case SpecialRegister::SR206: return std::make_optional<const std::string_view>("SR206");
+    case SpecialRegister::SR207: return std::make_optional<const std::string_view>("SR207");
+    case SpecialRegister::SR208: return std::make_optional<const std::string_view>("SR208");
+    case SpecialRegister::SR209: return std::make_optional<const std::string_view>("SR209");
+    case SpecialRegister::SR210: return std::make_optional<const std::string_view>("SR210");
+    case SpecialRegister::SR211: return std::make_optional<const std::string_view>("SR211");
+    case SpecialRegister::SR212: return std::make_optional<const std::string_view>("SR212");
+    case SpecialRegister::SR213: return std::make_optional<const std::string_view>("SR213");
+    case SpecialRegister::SR214: return std::make_optional<const std::string_view>("SR214");
+    case SpecialRegister::SR215: return std::make_optional<const std::string_view>("SR215");
+    case SpecialRegister::SR216: return std::make_optional<const std::string_view>("SR216");
+    case SpecialRegister::SR217: return std::make_optional<const std::string_view>("SR217");
+    case SpecialRegister::SR218: return std::make_optional<const std::string_view>("SR218");
+    case SpecialRegister::SR219: return std::make_optional<const std::string_view>("SR219");
+    case SpecialRegister::SR220: return std::make_optional<const std::string_view>("SR220");
+    case SpecialRegister::SR221: return std::make_optional<const std::string_view>("SR221");
+    case SpecialRegister::SR222: return std::make_optional<const std::string_view>("SR222");
+    case SpecialRegister::SR223: return std::make_optional<const std::string_view>("SR223");
+    case SpecialRegister::SR224: return std::make_optional<const std::string_view>("SR224");
+    case SpecialRegister::SR225: return std::make_optional<const std::string_view>("SR225");
+    case SpecialRegister::SR226: return std::make_optional<const std::string_view>("SR226");
+    case SpecialRegister::SR227: return std::make_optional<const std::string_view>("SR227");
+    case SpecialRegister::SR228: return std::make_optional<const std::string_view>("SR228");
+    case SpecialRegister::SR229: return std::make_optional<const std::string_view>("SR229");
+    case SpecialRegister::SR230: return std::make_optional<const std::string_view>("SR230");
+    case SpecialRegister::SR231: return std::make_optional<const std::string_view>("SR231");
+    case SpecialRegister::SR232: return std::make_optional<const std::string_view>("SR232");
+    case SpecialRegister::SR233: return std::make_optional<const std::string_view>("SR233");
+    case SpecialRegister::SR234: return std::make_optional<const std::string_view>("SR234");
+    case SpecialRegister::SR235: return std::make_optional<const std::string_view>("SR235");
+    case SpecialRegister::SR236: return std::make_optional<const std::string_view>("SR236");
+    case SpecialRegister::SR237: return std::make_optional<const std::string_view>("SR237");
+    case SpecialRegister::SR238: return std::make_optional<const std::string_view>("SR238");
+    case SpecialRegister::SR239: return std::make_optional<const std::string_view>("SR239");
+    case SpecialRegister::SR240: return std::make_optional<const std::string_view>("SR240");
+    case SpecialRegister::SR241: return std::make_optional<const std::string_view>("SR241");
+    case SpecialRegister::SR242: return std::make_optional<const std::string_view>("SR242");
+    case SpecialRegister::SR243: return std::make_optional<const std::string_view>("SR243");
+    case SpecialRegister::SR244: return std::make_optional<const std::string_view>("SR244");
+    case SpecialRegister::SR245: return std::make_optional<const std::string_view>("SR245");
+    case SpecialRegister::SR246: return std::make_optional<const std::string_view>("SR246");
+    case SpecialRegister::SR247: return std::make_optional<const std::string_view>("SR247");
+    case SpecialRegister::SR248: return std::make_optional<const std::string_view>("SR248");
+    case SpecialRegister::SR249: return std::make_optional<const std::string_view>("SR249");
+    case SpecialRegister::SR250: return std::make_optional<const std::string_view>("SR250");
+    case SpecialRegister::SR251: return std::make_optional<const std::string_view>("SR251");
+    case SpecialRegister::SR252: return std::make_optional<const std::string_view>("SR252");
+    case SpecialRegister::SR253: return std::make_optional<const std::string_view>("SR253");
+    case SpecialRegister::SR254: return std::make_optional<const std::string_view>("SR254");
+    case SpecialRegister::SR255: return std::make_optional<const std::string_view>("SR255");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(StoreCacheOp value) {
+  switch (value) {
+    case StoreCacheOp::WB: return std::make_optional<const std::string_view>("WB");
+    case StoreCacheOp::CG: return std::make_optional<const std::string_view>("CG");
+    case StoreCacheOp::CS: return std::make_optional<const std::string_view>("CS");
+    case StoreCacheOp::WT: return std::make_optional<const std::string_view>("WT");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(TEXWmsk2C value) {
+  switch (value) {
+    case TEXWmsk2C::R: return std::make_optional<const std::string_view>("R");
+    case TEXWmsk2C::G: return std::make_optional<const std::string_view>("G");
+    case TEXWmsk2C::B: return std::make_optional<const std::string_view>("B");
+    case TEXWmsk2C::A: return std::make_optional<const std::string_view>("A");
+    case TEXWmsk2C::RG: return std::make_optional<const std::string_view>("RG");
+    case TEXWmsk2C::RA: return std::make_optional<const std::string_view>("RA");
+    case TEXWmsk2C::GA: return std::make_optional<const std::string_view>("GA");
+    case TEXWmsk2C::BA: return std::make_optional<const std::string_view>("BA");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(TEXWmsk34C value) {
+  switch (value) {
+    case TEXWmsk34C::RGB: return std::make_optional<const std::string_view>("RGB");
+    case TEXWmsk34C::RGA: return std::make_optional<const std::string_view>("RGA");
+    case TEXWmsk34C::RBA: return std::make_optional<const std::string_view>("RBA");
+    case TEXWmsk34C::GBA: return std::make_optional<const std::string_view>("GBA");
+    case TEXWmsk34C::RGBA: return std::make_optional<const std::string_view>("RGBA");
+    case TEXWmsk34C::INVALID5: return std::make_optional<const std::string_view>("INVALID5");
+    case TEXWmsk34C::INVALID6: return std::make_optional<const std::string_view>("INVALID6");
+    case TEXWmsk34C::INVALID7: return std::make_optional<const std::string_view>("INVALID7");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(TOFF1 value) {
+  switch (value) {
+    case TOFF1::noTOFF: return std::make_optional<const std::string_view>("noTOFF");
+    case TOFF1::AOFFI: return std::make_optional<const std::string_view>("AOFFI");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(TOFF2 value) {
+  switch (value) {
+    case TOFF2::noTOFF: return std::make_optional<const std::string_view>("noTOFF");
+    case TOFF2::AOFFI: return std::make_optional<const std::string_view>("AOFFI");
+    case TOFF2::PTP: return std::make_optional<const std::string_view>("PTP");
+    case TOFF2::INVALIDBTOFF03: return std::make_optional<const std::string_view>("INVALIDBTOFF03");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(TPhase value) {
+  switch (value) {
+    case TPhase::noPhase: return std::make_optional<const std::string_view>("noPhase");
+    case TPhase::T: return std::make_optional<const std::string_view>("T");
+    case TPhase::P: return std::make_optional<const std::string_view>("P");
+    case TPhase::INVALIDPHASE3: return std::make_optional<const std::string_view>("INVALIDPHASE3");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(TXQMode value) {
+  switch (value) {
+    case TXQMode::TEX_HEADER_DIMENSION: return std::make_optional<const std::string_view>("TEX_HEADER_DIMENSION");
+    case TXQMode::TEX_HEADER_TEXTURE_TYPE: return std::make_optional<const std::string_view>("TEX_HEADER_TEXTURE_TYPE");
+    case TXQMode::TEX_HEADER_SAMPLER_POS: return std::make_optional<const std::string_view>("TEX_HEADER_SAMPLER_POS");
+    case TXQMode::_3: return std::make_optional<const std::string_view>("3");
+    case TXQMode::_4: return std::make_optional<const std::string_view>("4");
+    case TXQMode::_5: return std::make_optional<const std::string_view>("5");
+    case TXQMode::_6: return std::make_optional<const std::string_view>("6");
+    case TXQMode::_7: return std::make_optional<const std::string_view>("7");
+    case TXQMode::TEX_SAMPLER_FILTER: return std::make_optional<const std::string_view>("TEX_SAMPLER_FILTER");
+    case TXQMode::TEX_SAMPLER_LOD: return std::make_optional<const std::string_view>("TEX_SAMPLER_LOD");
+    case TXQMode::TEX_SAMPLER_WRAP: return std::make_optional<const std::string_view>("TEX_SAMPLER_WRAP");
+    case TXQMode::TEX_SAMPLER_BORDER_COLOR: return std::make_optional<const std::string_view>("TEX_SAMPLER_BORDER_COLOR");
+    case TXQMode::_12: return std::make_optional<const std::string_view>("12");
+    case TXQMode::_13: return std::make_optional<const std::string_view>("13");
+    case TXQMode::_14: return std::make_optional<const std::string_view>("14");
+    case TXQMode::_15: return std::make_optional<const std::string_view>("15");
+    case TXQMode::_16: return std::make_optional<const std::string_view>("16");
+    case TXQMode::_17: return std::make_optional<const std::string_view>("17");
+    case TXQMode::_18: return std::make_optional<const std::string_view>("18");
+    case TXQMode::_19: return std::make_optional<const std::string_view>("19");
+    case TXQMode::_20: return std::make_optional<const std::string_view>("20");
+    case TXQMode::_21: return std::make_optional<const std::string_view>("21");
+    case TXQMode::_22: return std::make_optional<const std::string_view>("22");
+    case TXQMode::_23: return std::make_optional<const std::string_view>("23");
+    case TXQMode::_24: return std::make_optional<const std::string_view>("24");
+    case TXQMode::_25: return std::make_optional<const std::string_view>("25");
+    case TXQMode::_26: return std::make_optional<const std::string_view>("26");
+    case TXQMode::_27: return std::make_optional<const std::string_view>("27");
+    case TXQMode::_28: return std::make_optional<const std::string_view>("28");
+    case TXQMode::_29: return std::make_optional<const std::string_view>("29");
+    case TXQMode::_30: return std::make_optional<const std::string_view>("30");
+    case TXQMode::_31: return std::make_optional<const std::string_view>("31");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Test value) {
+  switch (value) {
+    case Test::FALSE: return std::make_optional<const std::string_view>("FALSE");
+    case Test::ZFF: return std::make_optional<const std::string_view>("ZFF");
+    case Test::LEG: return std::make_optional<const std::string_view>("LEG");
+    case Test::U: return std::make_optional<const std::string_view>("U");
+    case Test::ZFT: return std::make_optional<const std::string_view>("ZFT");
+    case Test::TRUE: return std::make_optional<const std::string_view>("TRUE");
+    case Test::NOT_OVERFLOW: return std::make_optional<const std::string_view>("NOT_OVERFLOW");
+    case Test::CFF: return std::make_optional<const std::string_view>("CFF");
+    case Test::ABOVE: return std::make_optional<const std::string_view>("ABOVE");
+    case Test::SIGN: return std::make_optional<const std::string_view>("SIGN");
+    case Test::SF1: return std::make_optional<const std::string_view>("SF1");
+    case Test::CFT: return std::make_optional<const std::string_view>("CFT");
+    case Test::OF1: return std::make_optional<const std::string_view>("OF1");
+    case Test::NOT_SIGN: return std::make_optional<const std::string_view>("NOT_SIGN");
+    case Test::BELOW_OR_EQUAL: return std::make_optional<const std::string_view>("BELOW_OR_EQUAL");
+    case Test::NOT_CARRY: return std::make_optional<const std::string_view>("NOT_CARRY");
+    case Test::_1F: return std::make_optional<const std::string_view>("1F");
+    case Test::LT: return std::make_optional<const std::string_view>("LT");
+    case Test::EQ: return std::make_optional<const std::string_view>("EQ");
+    case Test::LE: return std::make_optional<const std::string_view>("LE");
+    case Test::GT: return std::make_optional<const std::string_view>("GT");
+    case Test::GE: return std::make_optional<const std::string_view>("GE");
+    case Test::LTU: return std::make_optional<const std::string_view>("LTU");
+    case Test::LEU: return std::make_optional<const std::string_view>("LEU");
+    case Test::GTU: return std::make_optional<const std::string_view>("GTU");
+    case Test::NEU: return std::make_optional<const std::string_view>("NEU");
+    case Test::GEU: return std::make_optional<const std::string_view>("GEU");
+    case Test::HI: return std::make_optional<const std::string_view>("HI");
+    case Test::CSM_TA: return std::make_optional<const std::string_view>("CSM_TA");
+    case Test::CSM_TR: return std::make_optional<const std::string_view>("CSM_TR");
+    case Test::CSM_MX: return std::make_optional<const std::string_view>("CSM_MX");
+    case Test::FCSM_TA: return std::make_optional<const std::string_view>("FCSM_TA");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(TexComp value) {
+  switch (value) {
+    case TexComp::R: return std::make_optional<const std::string_view>("R");
+    case TexComp::G: return std::make_optional<const std::string_view>("G");
+    case TexComp::B: return std::make_optional<const std::string_view>("B");
+    case TexComp::A: return std::make_optional<const std::string_view>("A");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(Trig value) {
+  switch (value) {
+    case Trig::TRIG: return std::make_optional<const std::string_view>("TRIG");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(U value) {
+  switch (value) {
+    case U::noU: return std::make_optional<const std::string_view>("noU");
+    case U::U: return std::make_optional<const std::string_view>("U");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(U16 value) {
+  switch (value) {
+    case U16::U16: return std::make_optional<const std::string_view>("U16");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(U32 value) {
+  switch (value) {
+    case U32::U32: return std::make_optional<const std::string_view>("U32");
+    case U32::INVALIDASEL7: return std::make_optional<const std::string_view>("INVALIDASEL7");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(U8 value) {
+  switch (value) {
+    case U8::U8: return std::make_optional<const std::string_view>("U8");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(UInteger value) {
+  switch (value) {
+    case static_cast<UInteger>(UInteger64::U64): return std::make_optional<const std::string_view>("U64");
+    case static_cast<UInteger>(UInteger32::U32): return std::make_optional<const std::string_view>("U32");
+    case static_cast<UInteger>(UInteger16::U16): return std::make_optional<const std::string_view>("U16");
+    case static_cast<UInteger>(UInteger8::U8): return std::make_optional<const std::string_view>("U8");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(UInteger32 value) {
+  switch (value) {
+    case UInteger32::U32: return std::make_optional<const std::string_view>("U32");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(UInteger64 value) {
+  switch (value) {
+    case UInteger64::U64: return std::make_optional<const std::string_view>("U64");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(UInteger_old value) {
+  switch (value) {
+    case static_cast<UInteger_old>(U32::U32): return std::make_optional<const std::string_view>("U32");
+    case static_cast<UInteger_old>(U32::INVALIDASEL7): return std::make_optional<const std::string_view>("INVALIDASEL7");
+    case static_cast<UInteger_old>(U16::U16): return std::make_optional<const std::string_view>("U16");
+    case static_cast<UInteger_old>(U8::U8): return std::make_optional<const std::string_view>("U8");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(USCHED_INFO value) {
+  switch (value) {
+    case USCHED_INFO::YIELD_SB: return std::make_optional<const std::string_view>("YIELD_SB");
+    case USCHED_INFO::W1G: return std::make_optional<const std::string_view>("W1G");
+    case USCHED_INFO::W2G: return std::make_optional<const std::string_view>("W2G");
+    case USCHED_INFO::W3G: return std::make_optional<const std::string_view>("W3G");
+    case USCHED_INFO::W4G: return std::make_optional<const std::string_view>("W4G");
+    case USCHED_INFO::W5G: return std::make_optional<const std::string_view>("W5G");
+    case USCHED_INFO::W6G: return std::make_optional<const std::string_view>("W6G");
+    case USCHED_INFO::W7G: return std::make_optional<const std::string_view>("W7G");
+    case USCHED_INFO::W8G: return std::make_optional<const std::string_view>("W8G");
+    case USCHED_INFO::W9G: return std::make_optional<const std::string_view>("W9G");
+    case USCHED_INFO::W10G: return std::make_optional<const std::string_view>("W10G");
+    case USCHED_INFO::W11G: return std::make_optional<const std::string_view>("W11G");
+    case USCHED_INFO::W12G: return std::make_optional<const std::string_view>("W12G");
+    case USCHED_INFO::W13G: return std::make_optional<const std::string_view>("W13G");
+    case USCHED_INFO::W14G: return std::make_optional<const std::string_view>("W14G");
+    case USCHED_INFO::W15G: return std::make_optional<const std::string_view>("W15G");
+    case USCHED_INFO::W1: return std::make_optional<const std::string_view>("W1");
+    case USCHED_INFO::W2: return std::make_optional<const std::string_view>("W2");
+    case USCHED_INFO::W3: return std::make_optional<const std::string_view>("W3");
+    case USCHED_INFO::W4: return std::make_optional<const std::string_view>("W4");
+    case USCHED_INFO::W5: return std::make_optional<const std::string_view>("W5");
+    case USCHED_INFO::W6: return std::make_optional<const std::string_view>("W6");
+    case USCHED_INFO::W7: return std::make_optional<const std::string_view>("W7");
+    case USCHED_INFO::W8: return std::make_optional<const std::string_view>("W8");
+    case USCHED_INFO::W9: return std::make_optional<const std::string_view>("W9");
+    case USCHED_INFO::W10: return std::make_optional<const std::string_view>("W10");
+    case USCHED_INFO::W11: return std::make_optional<const std::string_view>("W11");
+    case USCHED_INFO::PIXBAR: return std::make_optional<const std::string_view>("PIXBAR");
+    case USCHED_INFO::YLD: return std::make_optional<const std::string_view>("YLD");
+    case USCHED_INFO::YLD8: return std::make_optional<const std::string_view>("YLD8");
+    case USCHED_INFO::floxy2: return std::make_optional<const std::string_view>("floxy2");
+    case USCHED_INFO::OFF_DECK: return std::make_optional<const std::string_view>("OFF_DECK");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(UnaryAbs value) {
+  switch (value) {
+    case UnaryAbs::noABS: return std::make_optional<const std::string_view>("noABS");
+    case UnaryAbs::ABS: return std::make_optional<const std::string_view>("ABS");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(UnaryInv value) {
+  switch (value) {
+    case UnaryInv::noINV: return std::make_optional<const std::string_view>("noINV");
+    case UnaryInv::INV: return std::make_optional<const std::string_view>("INV");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(UnaryNeg value) {
+  switch (value) {
+    case UnaryNeg::noNEG: return std::make_optional<const std::string_view>("noNEG");
+    case UnaryNeg::NEG: return std::make_optional<const std::string_view>("NEG");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(VInteger32 value) {
+  switch (value) {
+    case VInteger32::U32: return std::make_optional<const std::string_view>("U32");
+    case VInteger32::S32: return std::make_optional<const std::string_view>("S32");
+    case VInteger32::INVALIDASEL7: return std::make_optional<const std::string_view>("INVALIDASEL7");
+    case VInteger32::INVALIDASEL6: return std::make_optional<const std::string_view>("INVALIDASEL6");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(VMadScale value) {
+  switch (value) {
+    case VMadScale::PASS: return std::make_optional<const std::string_view>("PASS");
+    case VMadScale::SHR_7: return std::make_optional<const std::string_view>("SHR_7");
+    case VMadScale::SHR_15: return std::make_optional<const std::string_view>("SHR_15");
+    case VMadScale::INVALIDVMADSCALE3: return std::make_optional<const std::string_view>("INVALIDVMADSCALE3");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(VOP value) {
+  switch (value) {
+    case VOP::MRG_16H: return std::make_optional<const std::string_view>("MRG_16H");
+    case VOP::MRG_16L: return std::make_optional<const std::string_view>("MRG_16L");
+    case VOP::MRG_8B0: return std::make_optional<const std::string_view>("MRG_8B0");
+    case VOP::MRG_8B2: return std::make_optional<const std::string_view>("MRG_8B2");
+    case VOP::ACC: return std::make_optional<const std::string_view>("ACC");
+    case VOP::MIN: return std::make_optional<const std::string_view>("MIN");
+    case VOP::MAX: return std::make_optional<const std::string_view>("MAX");
+    case VOP::PASS: return std::make_optional<const std::string_view>("PASS");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(VRed2 value) {
+  switch (value) {
+    case VRed2::SIMD_MRG: return std::make_optional<const std::string_view>("SIMD_MRG");
+    case VRed2::ACC: return std::make_optional<const std::string_view>("ACC");
+    case VRed2::INVALIDRED2: return std::make_optional<const std::string_view>("INVALIDRED2");
+    case VRed2::INVALIDRED3: return std::make_optional<const std::string_view>("INVALIDRED3");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(VTG value) {
+  switch (value) {
+    case VTG::VTG: return std::make_optional<const std::string_view>("VTG");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(VTGMode value) {
+  switch (value) {
+    case VTGMode::R: return std::make_optional<const std::string_view>("R");
+    case VTGMode::A: return std::make_optional<const std::string_view>("A");
+    case VTGMode::RA: return std::make_optional<const std::string_view>("RA");
+    case VTGMode::INVALIDVTGMODE3: return std::make_optional<const std::string_view>("INVALIDVTGMODE3");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(VoteOp value) {
+  switch (value) {
+    case VoteOp::ALL: return std::make_optional<const std::string_view>("ALL");
+    case VoteOp::ANY: return std::make_optional<const std::string_view>("ANY");
+    case VoteOp::EQ: return std::make_optional<const std::string_view>("EQ");
+    case VoteOp::INVALIDVMODE3: return std::make_optional<const std::string_view>("INVALIDVMODE3");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(WR value) {
+  switch (value) {
+    case WR::wr: return std::make_optional<const std::string_view>("wr");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(X value) {
+  switch (value) {
+    case X::noX: return std::make_optional<const std::string_view>("noX");
+    case X::X: return std::make_optional<const std::string_view>("X");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(XMADcop value) {
+  switch (value) {
+    case XMADcop::C32: return std::make_optional<const std::string_view>("C32");
+    case XMADcop::CLO: return std::make_optional<const std::string_view>("CLO");
+    case XMADcop::CHI: return std::make_optional<const std::string_view>("CHI");
+    case XMADcop::CSFU: return std::make_optional<const std::string_view>("CSFU");
+    case XMADcop::CBCC: return std::make_optional<const std::string_view>("CBCC");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(XMADcop2 value) {
+  switch (value) {
+    case XMADcop2::C32: return std::make_optional<const std::string_view>("C32");
+    case XMADcop2::CLO: return std::make_optional<const std::string_view>("CLO");
+    case XMADcop2::CHI: return std::make_optional<const std::string_view>("CHI");
+    case XMADcop2::CSFU: return std::make_optional<const std::string_view>("CSFU");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(XMode value) {
+  switch (value) {
+    case XMode::noX: return std::make_optional<const std::string_view>("noX");
+    case XMode::XLO: return std::make_optional<const std::string_view>("XLO");
+    case XMode::XMED: return std::make_optional<const std::string_view>("XMED");
+    case XMode::XHI: return std::make_optional<const std::string_view>("XHI");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(XXHI value) {
+  switch (value) {
+    case XXHI::noX: return std::make_optional<const std::string_view>("noX");
+    case XXHI::INVALIDSHRXMODE1: return std::make_optional<const std::string_view>("INVALIDSHRXMODE1");
+    case XXHI::X: return std::make_optional<const std::string_view>("X");
+    case XXHI::XHI: return std::make_optional<const std::string_view>("XHI");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(ZeroRegister value) {
+  switch (value) {
+    case ZeroRegister::RZ: return std::make_optional<const std::string_view>("RZ");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(hadd2_32i__Ra value) {
+  switch (value) {
+    case hadd2_32i__Ra::R147: return std::make_optional<const std::string_view>("R147");
+    case hadd2_32i__Ra::R146: return std::make_optional<const std::string_view>("R146");
+    case hadd2_32i__Ra::R145: return std::make_optional<const std::string_view>("R145");
+    case hadd2_32i__Ra::R144: return std::make_optional<const std::string_view>("R144");
+    case hadd2_32i__Ra::R143: return std::make_optional<const std::string_view>("R143");
+    case hadd2_32i__Ra::R142: return std::make_optional<const std::string_view>("R142");
+    case hadd2_32i__Ra::R141: return std::make_optional<const std::string_view>("R141");
+    case hadd2_32i__Ra::R140: return std::make_optional<const std::string_view>("R140");
+    case hadd2_32i__Ra::R254: return std::make_optional<const std::string_view>("R254");
+    case hadd2_32i__Ra::R253: return std::make_optional<const std::string_view>("R253");
+    case hadd2_32i__Ra::R178: return std::make_optional<const std::string_view>("R178");
+    case hadd2_32i__Ra::R149: return std::make_optional<const std::string_view>("R149");
+    case hadd2_32i__Ra::R148: return std::make_optional<const std::string_view>("R148");
+    case hadd2_32i__Ra::R231: return std::make_optional<const std::string_view>("R231");
+    case hadd2_32i__Ra::R179: return std::make_optional<const std::string_view>("R179");
+    case hadd2_32i__Ra::RZ: return std::make_optional<const std::string_view>("RZ");
+    case hadd2_32i__Ra::R183: return std::make_optional<const std::string_view>("R183");
+    case hadd2_32i__Ra::R38: return std::make_optional<const std::string_view>("R38");
+    case hadd2_32i__Ra::R39: return std::make_optional<const std::string_view>("R39");
+    case hadd2_32i__Ra::R34: return std::make_optional<const std::string_view>("R34");
+    case hadd2_32i__Ra::R35: return std::make_optional<const std::string_view>("R35");
+    case hadd2_32i__Ra::R36: return std::make_optional<const std::string_view>("R36");
+    case hadd2_32i__Ra::R37: return std::make_optional<const std::string_view>("R37");
+    case hadd2_32i__Ra::R30: return std::make_optional<const std::string_view>("R30");
+    case hadd2_32i__Ra::R31: return std::make_optional<const std::string_view>("R31");
+    case hadd2_32i__Ra::R32: return std::make_optional<const std::string_view>("R32");
+    case hadd2_32i__Ra::R33: return std::make_optional<const std::string_view>("R33");
+    case hadd2_32i__Ra::R4: return std::make_optional<const std::string_view>("R4");
+    case hadd2_32i__Ra::R5: return std::make_optional<const std::string_view>("R5");
+    case hadd2_32i__Ra::R6: return std::make_optional<const std::string_view>("R6");
+    case hadd2_32i__Ra::R7: return std::make_optional<const std::string_view>("R7");
+    case hadd2_32i__Ra::R0: return std::make_optional<const std::string_view>("R0");
+    case hadd2_32i__Ra::R1: return std::make_optional<const std::string_view>("R1");
+    case hadd2_32i__Ra::R2: return std::make_optional<const std::string_view>("R2");
+    case hadd2_32i__Ra::R3: return std::make_optional<const std::string_view>("R3");
+    case hadd2_32i__Ra::R8: return std::make_optional<const std::string_view>("R8");
+    case hadd2_32i__Ra::R9: return std::make_optional<const std::string_view>("R9");
+    case hadd2_32i__Ra::R182: return std::make_optional<const std::string_view>("R182");
+    case hadd2_32i__Ra::R89: return std::make_optional<const std::string_view>("R89");
+    case hadd2_32i__Ra::R88: return std::make_optional<const std::string_view>("R88");
+    case hadd2_32i__Ra::R170: return std::make_optional<const std::string_view>("R170");
+    case hadd2_32i__Ra::R171: return std::make_optional<const std::string_view>("R171");
+    case hadd2_32i__Ra::R176: return std::make_optional<const std::string_view>("R176");
+    case hadd2_32i__Ra::R177: return std::make_optional<const std::string_view>("R177");
+    case hadd2_32i__Ra::R174: return std::make_optional<const std::string_view>("R174");
+    case hadd2_32i__Ra::R175: return std::make_optional<const std::string_view>("R175");
+    case hadd2_32i__Ra::R81: return std::make_optional<const std::string_view>("R81");
+    case hadd2_32i__Ra::R80: return std::make_optional<const std::string_view>("R80");
+    case hadd2_32i__Ra::R83: return std::make_optional<const std::string_view>("R83");
+    case hadd2_32i__Ra::R82: return std::make_optional<const std::string_view>("R82");
+    case hadd2_32i__Ra::R85: return std::make_optional<const std::string_view>("R85");
+    case hadd2_32i__Ra::R84: return std::make_optional<const std::string_view>("R84");
+    case hadd2_32i__Ra::R87: return std::make_optional<const std::string_view>("R87");
+    case hadd2_32i__Ra::R86: return std::make_optional<const std::string_view>("R86");
+    case hadd2_32i__Ra::R205: return std::make_optional<const std::string_view>("R205");
+    case hadd2_32i__Ra::R248: return std::make_optional<const std::string_view>("R248");
+    case hadd2_32i__Ra::R169: return std::make_optional<const std::string_view>("R169");
+    case hadd2_32i__Ra::R168: return std::make_optional<const std::string_view>("R168");
+    case hadd2_32i__Ra::R98: return std::make_optional<const std::string_view>("R98");
+    case hadd2_32i__Ra::R99: return std::make_optional<const std::string_view>("R99");
+    case hadd2_32i__Ra::R96: return std::make_optional<const std::string_view>("R96");
+    case hadd2_32i__Ra::R97: return std::make_optional<const std::string_view>("R97");
+    case hadd2_32i__Ra::R94: return std::make_optional<const std::string_view>("R94");
+    case hadd2_32i__Ra::R95: return std::make_optional<const std::string_view>("R95");
+    case hadd2_32i__Ra::R92: return std::make_optional<const std::string_view>("R92");
+    case hadd2_32i__Ra::R93: return std::make_optional<const std::string_view>("R93");
+    case hadd2_32i__Ra::R90: return std::make_optional<const std::string_view>("R90");
+    case hadd2_32i__Ra::R91: return std::make_optional<const std::string_view>("R91");
+    case hadd2_32i__Ra::R16: return std::make_optional<const std::string_view>("R16");
+    case hadd2_32i__Ra::R17: return std::make_optional<const std::string_view>("R17");
+    case hadd2_32i__Ra::R14: return std::make_optional<const std::string_view>("R14");
+    case hadd2_32i__Ra::R15: return std::make_optional<const std::string_view>("R15");
+    case hadd2_32i__Ra::R12: return std::make_optional<const std::string_view>("R12");
+    case hadd2_32i__Ra::R13: return std::make_optional<const std::string_view>("R13");
+    case hadd2_32i__Ra::R10: return std::make_optional<const std::string_view>("R10");
+    case hadd2_32i__Ra::R11: return std::make_optional<const std::string_view>("R11");
+    case hadd2_32i__Ra::R181: return std::make_optional<const std::string_view>("R181");
+    case hadd2_32i__Ra::R18: return std::make_optional<const std::string_view>("R18");
+    case hadd2_32i__Ra::R19: return std::make_optional<const std::string_view>("R19");
+    case hadd2_32i__Ra::R180: return std::make_optional<const std::string_view>("R180");
+    case hadd2_32i__Ra::R251: return std::make_optional<const std::string_view>("R251");
+    case hadd2_32i__Ra::R187: return std::make_optional<const std::string_view>("R187");
+    case hadd2_32i__Ra::R250: return std::make_optional<const std::string_view>("R250");
+    case hadd2_32i__Ra::R186: return std::make_optional<const std::string_view>("R186");
+    case hadd2_32i__Ra::R200: return std::make_optional<const std::string_view>("R200");
+    case hadd2_32i__Ra::R201: return std::make_optional<const std::string_view>("R201");
+    case hadd2_32i__Ra::R202: return std::make_optional<const std::string_view>("R202");
+    case hadd2_32i__Ra::R203: return std::make_optional<const std::string_view>("R203");
+    case hadd2_32i__Ra::R204: return std::make_optional<const std::string_view>("R204");
+    case hadd2_32i__Ra::R185: return std::make_optional<const std::string_view>("R185");
+    case hadd2_32i__Ra::R206: return std::make_optional<const std::string_view>("R206");
+    case hadd2_32i__Ra::R207: return std::make_optional<const std::string_view>("R207");
+    case hadd2_32i__Ra::R208: return std::make_optional<const std::string_view>("R208");
+    case hadd2_32i__Ra::R209: return std::make_optional<const std::string_view>("R209");
+    case hadd2_32i__Ra::R184: return std::make_optional<const std::string_view>("R184");
+    case hadd2_32i__Ra::R118: return std::make_optional<const std::string_view>("R118");
+    case hadd2_32i__Ra::R119: return std::make_optional<const std::string_view>("R119");
+    case hadd2_32i__Ra::R110: return std::make_optional<const std::string_view>("R110");
+    case hadd2_32i__Ra::R111: return std::make_optional<const std::string_view>("R111");
+    case hadd2_32i__Ra::R112: return std::make_optional<const std::string_view>("R112");
+    case hadd2_32i__Ra::R113: return std::make_optional<const std::string_view>("R113");
+    case hadd2_32i__Ra::R114: return std::make_optional<const std::string_view>("R114");
+    case hadd2_32i__Ra::R115: return std::make_optional<const std::string_view>("R115");
+    case hadd2_32i__Ra::R116: return std::make_optional<const std::string_view>("R116");
+    case hadd2_32i__Ra::R117: return std::make_optional<const std::string_view>("R117");
+    case hadd2_32i__Ra::R63: return std::make_optional<const std::string_view>("R63");
+    case hadd2_32i__Ra::R62: return std::make_optional<const std::string_view>("R62");
+    case hadd2_32i__Ra::R61: return std::make_optional<const std::string_view>("R61");
+    case hadd2_32i__Ra::R60: return std::make_optional<const std::string_view>("R60");
+    case hadd2_32i__Ra::R67: return std::make_optional<const std::string_view>("R67");
+    case hadd2_32i__Ra::R66: return std::make_optional<const std::string_view>("R66");
+    case hadd2_32i__Ra::R65: return std::make_optional<const std::string_view>("R65");
+    case hadd2_32i__Ra::R64: return std::make_optional<const std::string_view>("R64");
+    case hadd2_32i__Ra::R193: return std::make_optional<const std::string_view>("R193");
+    case hadd2_32i__Ra::R69: return std::make_optional<const std::string_view>("R69");
+    case hadd2_32i__Ra::R68: return std::make_optional<const std::string_view>("R68");
+    case hadd2_32i__Ra::R162: return std::make_optional<const std::string_view>("R162");
+    case hadd2_32i__Ra::R249: return std::make_optional<const std::string_view>("R249");
+    case hadd2_32i__Ra::R213: return std::make_optional<const std::string_view>("R213");
+    case hadd2_32i__Ra::R212: return std::make_optional<const std::string_view>("R212");
+    case hadd2_32i__Ra::R211: return std::make_optional<const std::string_view>("R211");
+    case hadd2_32i__Ra::R210: return std::make_optional<const std::string_view>("R210");
+    case hadd2_32i__Ra::R217: return std::make_optional<const std::string_view>("R217");
+    case hadd2_32i__Ra::R216: return std::make_optional<const std::string_view>("R216");
+    case hadd2_32i__Ra::R215: return std::make_optional<const std::string_view>("R215");
+    case hadd2_32i__Ra::R214: return std::make_optional<const std::string_view>("R214");
+    case hadd2_32i__Ra::R219: return std::make_optional<const std::string_view>("R219");
+    case hadd2_32i__Ra::R218: return std::make_optional<const std::string_view>("R218");
+    case hadd2_32i__Ra::R109: return std::make_optional<const std::string_view>("R109");
+    case hadd2_32i__Ra::R108: return std::make_optional<const std::string_view>("R108");
+    case hadd2_32i__Ra::R194: return std::make_optional<const std::string_view>("R194");
+    case hadd2_32i__Ra::R103: return std::make_optional<const std::string_view>("R103");
+    case hadd2_32i__Ra::R102: return std::make_optional<const std::string_view>("R102");
+    case hadd2_32i__Ra::R101: return std::make_optional<const std::string_view>("R101");
+    case hadd2_32i__Ra::R100: return std::make_optional<const std::string_view>("R100");
+    case hadd2_32i__Ra::R107: return std::make_optional<const std::string_view>("R107");
+    case hadd2_32i__Ra::R106: return std::make_optional<const std::string_view>("R106");
+    case hadd2_32i__Ra::R105: return std::make_optional<const std::string_view>("R105");
+    case hadd2_32i__Ra::R104: return std::make_optional<const std::string_view>("R104");
+    case hadd2_32i__Ra::R190: return std::make_optional<const std::string_view>("R190");
+    case hadd2_32i__Ra::R247: return std::make_optional<const std::string_view>("R247");
+    case hadd2_32i__Ra::R220: return std::make_optional<const std::string_view>("R220");
+    case hadd2_32i__Ra::R191: return std::make_optional<const std::string_view>("R191");
+    case hadd2_32i__Ra::R240: return std::make_optional<const std::string_view>("R240");
+    case hadd2_32i__Ra::R252: return std::make_optional<const std::string_view>("R252");
+    case hadd2_32i__Ra::R192: return std::make_optional<const std::string_view>("R192");
+    case hadd2_32i__Ra::R241: return std::make_optional<const std::string_view>("R241");
+    case hadd2_32i__Ra::R70: return std::make_optional<const std::string_view>("R70");
+    case hadd2_32i__Ra::R71: return std::make_optional<const std::string_view>("R71");
+    case hadd2_32i__Ra::R72: return std::make_optional<const std::string_view>("R72");
+    case hadd2_32i__Ra::R73: return std::make_optional<const std::string_view>("R73");
+    case hadd2_32i__Ra::R74: return std::make_optional<const std::string_view>("R74");
+    case hadd2_32i__Ra::R75: return std::make_optional<const std::string_view>("R75");
+    case hadd2_32i__Ra::R76: return std::make_optional<const std::string_view>("R76");
+    case hadd2_32i__Ra::R77: return std::make_optional<const std::string_view>("R77");
+    case hadd2_32i__Ra::R78: return std::make_optional<const std::string_view>("R78");
+    case hadd2_32i__Ra::R79: return std::make_optional<const std::string_view>("R79");
+    case hadd2_32i__Ra::R195: return std::make_optional<const std::string_view>("R195");
+    case hadd2_32i__Ra::R136: return std::make_optional<const std::string_view>("R136");
+    case hadd2_32i__Ra::R137: return std::make_optional<const std::string_view>("R137");
+    case hadd2_32i__Ra::R134: return std::make_optional<const std::string_view>("R134");
+    case hadd2_32i__Ra::R135: return std::make_optional<const std::string_view>("R135");
+    case hadd2_32i__Ra::R132: return std::make_optional<const std::string_view>("R132");
+    case hadd2_32i__Ra::R133: return std::make_optional<const std::string_view>("R133");
+    case hadd2_32i__Ra::R130: return std::make_optional<const std::string_view>("R130");
+    case hadd2_32i__Ra::R131: return std::make_optional<const std::string_view>("R131");
+    case hadd2_32i__Ra::R226: return std::make_optional<const std::string_view>("R226");
+    case hadd2_32i__Ra::R227: return std::make_optional<const std::string_view>("R227");
+    case hadd2_32i__Ra::R224: return std::make_optional<const std::string_view>("R224");
+    case hadd2_32i__Ra::R197: return std::make_optional<const std::string_view>("R197");
+    case hadd2_32i__Ra::R222: return std::make_optional<const std::string_view>("R222");
+    case hadd2_32i__Ra::R223: return std::make_optional<const std::string_view>("R223");
+    case hadd2_32i__Ra::R138: return std::make_optional<const std::string_view>("R138");
+    case hadd2_32i__Ra::R139: return std::make_optional<const std::string_view>("R139");
+    case hadd2_32i__Ra::R238: return std::make_optional<const std::string_view>("R238");
+    case hadd2_32i__Ra::R198: return std::make_optional<const std::string_view>("R198");
+    case hadd2_32i__Ra::R196: return std::make_optional<const std::string_view>("R196");
+    case hadd2_32i__Ra::R199: return std::make_optional<const std::string_view>("R199");
+    case hadd2_32i__Ra::R45: return std::make_optional<const std::string_view>("R45");
+    case hadd2_32i__Ra::R44: return std::make_optional<const std::string_view>("R44");
+    case hadd2_32i__Ra::R47: return std::make_optional<const std::string_view>("R47");
+    case hadd2_32i__Ra::R46: return std::make_optional<const std::string_view>("R46");
+    case hadd2_32i__Ra::R41: return std::make_optional<const std::string_view>("R41");
+    case hadd2_32i__Ra::R40: return std::make_optional<const std::string_view>("R40");
+    case hadd2_32i__Ra::R43: return std::make_optional<const std::string_view>("R43");
+    case hadd2_32i__Ra::R42: return std::make_optional<const std::string_view>("R42");
+    case hadd2_32i__Ra::R189: return std::make_optional<const std::string_view>("R189");
+    case hadd2_32i__Ra::R188: return std::make_optional<const std::string_view>("R188");
+    case hadd2_32i__Ra::R49: return std::make_optional<const std::string_view>("R49");
+    case hadd2_32i__Ra::R48: return std::make_optional<const std::string_view>("R48");
+    case hadd2_32i__Ra::R121: return std::make_optional<const std::string_view>("R121");
+    case hadd2_32i__Ra::R120: return std::make_optional<const std::string_view>("R120");
+    case hadd2_32i__Ra::R123: return std::make_optional<const std::string_view>("R123");
+    case hadd2_32i__Ra::R122: return std::make_optional<const std::string_view>("R122");
+    case hadd2_32i__Ra::R125: return std::make_optional<const std::string_view>("R125");
+    case hadd2_32i__Ra::R124: return std::make_optional<const std::string_view>("R124");
+    case hadd2_32i__Ra::R127: return std::make_optional<const std::string_view>("R127");
+    case hadd2_32i__Ra::R126: return std::make_optional<const std::string_view>("R126");
+    case hadd2_32i__Ra::R129: return std::make_optional<const std::string_view>("R129");
+    case hadd2_32i__Ra::R128: return std::make_optional<const std::string_view>("R128");
+    case hadd2_32i__Ra::R233: return std::make_optional<const std::string_view>("R233");
+    case hadd2_32i__Ra::R232: return std::make_optional<const std::string_view>("R232");
+    case hadd2_32i__Ra::R235: return std::make_optional<const std::string_view>("R235");
+    case hadd2_32i__Ra::R234: return std::make_optional<const std::string_view>("R234");
+    case hadd2_32i__Ra::R237: return std::make_optional<const std::string_view>("R237");
+    case hadd2_32i__Ra::R236: return std::make_optional<const std::string_view>("R236");
+    case hadd2_32i__Ra::R165: return std::make_optional<const std::string_view>("R165");
+    case hadd2_32i__Ra::R164: return std::make_optional<const std::string_view>("R164");
+    case hadd2_32i__Ra::R239: return std::make_optional<const std::string_view>("R239");
+    case hadd2_32i__Ra::R167: return std::make_optional<const std::string_view>("R167");
+    case hadd2_32i__Ra::R166: return std::make_optional<const std::string_view>("R166");
+    case hadd2_32i__Ra::R228: return std::make_optional<const std::string_view>("R228");
+    case hadd2_32i__Ra::R161: return std::make_optional<const std::string_view>("R161");
+    case hadd2_32i__Ra::R229: return std::make_optional<const std::string_view>("R229");
+    case hadd2_32i__Ra::R160: return std::make_optional<const std::string_view>("R160");
+    case hadd2_32i__Ra::R58: return std::make_optional<const std::string_view>("R58");
+    case hadd2_32i__Ra::R59: return std::make_optional<const std::string_view>("R59");
+    case hadd2_32i__Ra::R163: return std::make_optional<const std::string_view>("R163");
+    case hadd2_32i__Ra::R52: return std::make_optional<const std::string_view>("R52");
+    case hadd2_32i__Ra::R53: return std::make_optional<const std::string_view>("R53");
+    case hadd2_32i__Ra::R50: return std::make_optional<const std::string_view>("R50");
+    case hadd2_32i__Ra::R51: return std::make_optional<const std::string_view>("R51");
+    case hadd2_32i__Ra::R56: return std::make_optional<const std::string_view>("R56");
+    case hadd2_32i__Ra::R57: return std::make_optional<const std::string_view>("R57");
+    case hadd2_32i__Ra::R54: return std::make_optional<const std::string_view>("R54");
+    case hadd2_32i__Ra::R55: return std::make_optional<const std::string_view>("R55");
+    case hadd2_32i__Ra::R225: return std::make_optional<const std::string_view>("R225");
+    case hadd2_32i__Ra::R154: return std::make_optional<const std::string_view>("R154");
+    case hadd2_32i__Ra::R155: return std::make_optional<const std::string_view>("R155");
+    case hadd2_32i__Ra::R156: return std::make_optional<const std::string_view>("R156");
+    case hadd2_32i__Ra::R157: return std::make_optional<const std::string_view>("R157");
+    case hadd2_32i__Ra::R150: return std::make_optional<const std::string_view>("R150");
+    case hadd2_32i__Ra::R151: return std::make_optional<const std::string_view>("R151");
+    case hadd2_32i__Ra::R152: return std::make_optional<const std::string_view>("R152");
+    case hadd2_32i__Ra::R153: return std::make_optional<const std::string_view>("R153");
+    case hadd2_32i__Ra::R244: return std::make_optional<const std::string_view>("R244");
+    case hadd2_32i__Ra::R245: return std::make_optional<const std::string_view>("R245");
+    case hadd2_32i__Ra::R246: return std::make_optional<const std::string_view>("R246");
+    case hadd2_32i__Ra::R221: return std::make_optional<const std::string_view>("R221");
+    case hadd2_32i__Ra::R158: return std::make_optional<const std::string_view>("R158");
+    case hadd2_32i__Ra::R159: return std::make_optional<const std::string_view>("R159");
+    case hadd2_32i__Ra::R242: return std::make_optional<const std::string_view>("R242");
+    case hadd2_32i__Ra::R243: return std::make_optional<const std::string_view>("R243");
+    case hadd2_32i__Ra::R172: return std::make_optional<const std::string_view>("R172");
+    case hadd2_32i__Ra::R230: return std::make_optional<const std::string_view>("R230");
+    case hadd2_32i__Ra::R173: return std::make_optional<const std::string_view>("R173");
+    case hadd2_32i__Ra::R29: return std::make_optional<const std::string_view>("R29");
+    case hadd2_32i__Ra::R28: return std::make_optional<const std::string_view>("R28");
+    case hadd2_32i__Ra::R27: return std::make_optional<const std::string_view>("R27");
+    case hadd2_32i__Ra::R26: return std::make_optional<const std::string_view>("R26");
+    case hadd2_32i__Ra::R25: return std::make_optional<const std::string_view>("R25");
+    case hadd2_32i__Ra::R24: return std::make_optional<const std::string_view>("R24");
+    case hadd2_32i__Ra::R23: return std::make_optional<const std::string_view>("R23");
+    case hadd2_32i__Ra::R22: return std::make_optional<const std::string_view>("R22");
+    case hadd2_32i__Ra::R21: return std::make_optional<const std::string_view>("R21");
+    case hadd2_32i__Ra::R20: return std::make_optional<const std::string_view>("R20");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(hadd2_32i__ftz value) {
+  switch (value) {
+    case hadd2_32i__ftz::noftz: return std::make_optional<const std::string_view>("noftz");
+    case hadd2_32i__ftz::FTZ: return std::make_optional<const std::string_view>("FTZ");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(hadd2_32i__sat value) {
+  switch (value) {
+    case hadd2_32i__sat::nosat: return std::make_optional<const std::string_view>("nosat");
+    case hadd2_32i__sat::SAT: return std::make_optional<const std::string_view>("SAT");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(hfma2__v0_fmz value) {
+  switch (value) {
+    case hfma2__v0_fmz::nofmz: return std::make_optional<const std::string_view>("nofmz");
+    case hfma2__v0_fmz::FTZ: return std::make_optional<const std::string_view>("FTZ");
+    case hfma2__v0_fmz::FMZ: return std::make_optional<const std::string_view>("FMZ");
+    case hfma2__v0_fmz::INVALID: return std::make_optional<const std::string_view>("INVALID");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(hset2__v0_bop value) {
+  switch (value) {
+    case hset2__v0_bop::AND: return std::make_optional<const std::string_view>("AND");
+    case hset2__v0_bop::XOR: return std::make_optional<const std::string_view>("XOR");
+    case hset2__v0_bop::OR: return std::make_optional<const std::string_view>("OR");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(hset2__v0_cmp value) {
+  switch (value) {
+    case hset2__v0_cmp::LE: return std::make_optional<const std::string_view>("LE");
+    case hset2__v0_cmp::GE: return std::make_optional<const std::string_view>("GE");
+    case hset2__v0_cmp::GEU: return std::make_optional<const std::string_view>("GEU");
+    case hset2__v0_cmp::LTU: return std::make_optional<const std::string_view>("LTU");
+    case hset2__v0_cmp::F: return std::make_optional<const std::string_view>("F");
+    case hset2__v0_cmp::EQU: return std::make_optional<const std::string_view>("EQU");
+    case hset2__v0_cmp::NAN: return std::make_optional<const std::string_view>("NAN");
+    case hset2__v0_cmp::NE: return std::make_optional<const std::string_view>("NE");
+    case hset2__v0_cmp::T: return std::make_optional<const std::string_view>("T");
+    case hset2__v0_cmp::LT: return std::make_optional<const std::string_view>("LT");
+    case hset2__v0_cmp::GT: return std::make_optional<const std::string_view>("GT");
+    case hset2__v0_cmp::LEU: return std::make_optional<const std::string_view>("LEU");
+    case hset2__v0_cmp::NUM: return std::make_optional<const std::string_view>("NUM");
+    case hset2__v0_cmp::NEU: return std::make_optional<const std::string_view>("NEU");
+    case hset2__v0_cmp::EQ: return std::make_optional<const std::string_view>("EQ");
+    case hset2__v0_cmp::GTU: return std::make_optional<const std::string_view>("GTU");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(maxShift value) {
+  switch (value) {
+    case maxShift::_32: return std::make_optional<const std::string_view>("32");
+    case maxShift::INVALIDMAXSHIFT3: return std::make_optional<const std::string_view>("INVALIDMAXSHIFT3");
+    case maxShift::U64: return std::make_optional<const std::string_view>("U64");
+    case maxShift::S64: return std::make_optional<const std::string_view>("S64");
+    default: return std::nullopt;
+  }
+}
+
+[[maybe_unused]] static std::optional<const std::string_view> ToString(optCC value) {
+  switch (value) {
+    case optCC::noCC: return std::make_optional<const std::string_view>("noCC");
+    case optCC::CC: return std::make_optional<const std::string_view>("CC");
+    default: return std::nullopt;
+  }
+}
+
 std::string PrintInstruction([[maybe_unused]] const char* opcode, [[maybe_unused]] const Accessor<OpClass::NOP_DEFAULT>& accessor) {
   return "NOP;";
 }
@@ -31055,3537 +34586,6 @@ std::string Print(OpClass opclass, const char* opcode, std::uint64_t inst, std::
       return PrintInstruction(opcode, Accessor<OpClass::NOP_DEFAULT>(inst, sched, pc));
     default:
       UNREACHABLE_DEFAULT_CASE;
-  }
-}
-
-std::optional<const std::string_view> ToString(A value) {
-  switch (value) {
-    case A::A: return std::make_optional<const std::string_view>("A");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(AIO value) {
-  switch (value) {
-    case AIO::I: return std::make_optional<const std::string_view>("I");
-    case AIO::O: return std::make_optional<const std::string_view>("O");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(AInteger value) {
-  switch (value) {
-    case AInteger::_32: return std::make_optional<const std::string_view>("32");
-    case AInteger::_64: return std::make_optional<const std::string_view>("64");
-    case AInteger::_96: return std::make_optional<const std::string_view>("96");
-    case AInteger::_128: return std::make_optional<const std::string_view>("128");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(ALLOnly value) {
-  switch (value) {
-    case ALLOnly::ALL: return std::make_optional<const std::string_view>("ALL");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(ASel4 value) {
-  switch (value) {
-    case ASel4::_0000: return std::make_optional<const std::string_view>("0000");
-    case ASel4::_1111: return std::make_optional<const std::string_view>("1111");
-    case ASel4::_2222: return std::make_optional<const std::string_view>("2222");
-    case ASel4::_3333: return std::make_optional<const std::string_view>("3333");
-    case ASel4::_3210: return std::make_optional<const std::string_view>("3210");
-    case ASel4::_4321: return std::make_optional<const std::string_view>("4321");
-    case ASel4::_5432: return std::make_optional<const std::string_view>("5432");
-    case ASel4::_6543: return std::make_optional<const std::string_view>("6543");
-    case ASel4::_3201: return std::make_optional<const std::string_view>("3201");
-    case ASel4::_3012: return std::make_optional<const std::string_view>("3012");
-    case ASel4::_0213: return std::make_optional<const std::string_view>("0213");
-    case ASel4::_3120: return std::make_optional<const std::string_view>("3120");
-    case ASel4::_1230: return std::make_optional<const std::string_view>("1230");
-    case ASel4::_2310: return std::make_optional<const std::string_view>("2310");
-    case ASel4::ASEL4E: return std::make_optional<const std::string_view>("ASEL4E");
-    case ASel4::ASEL4F: return std::make_optional<const std::string_view>("ASEL4F");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(AdMode value) {
-  switch (value) {
-    case AdMode::IA: return std::make_optional<const std::string_view>("IA");
-    case AdMode::IL: return std::make_optional<const std::string_view>("IL");
-    case AdMode::IS: return std::make_optional<const std::string_view>("IS");
-    case AdMode::ISL: return std::make_optional<const std::string_view>("ISL");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(AtomOp value) {
-  switch (value) {
-    case AtomOp::INVALIDATOMOP0: return std::make_optional<const std::string_view>("INVALIDATOMOP0");
-    case AtomOp::INVALIDATOMOP1: return std::make_optional<const std::string_view>("INVALIDATOMOP1");
-    case AtomOp::INVALIDATOMOP2: return std::make_optional<const std::string_view>("INVALIDATOMOP2");
-    case AtomOp::INVALIDATOMOP3: return std::make_optional<const std::string_view>("INVALIDATOMOP3");
-    case AtomOp::INVALIDATOMOP4: return std::make_optional<const std::string_view>("INVALIDATOMOP4");
-    case AtomOp::INVALIDATOMOP5: return std::make_optional<const std::string_view>("INVALIDATOMOP5");
-    case AtomOp::INVALIDATOMOP6: return std::make_optional<const std::string_view>("INVALIDATOMOP6");
-    case AtomOp::INVALIDATOMOP7: return std::make_optional<const std::string_view>("INVALIDATOMOP7");
-    case AtomOp::INVALIDATOMOP8: return std::make_optional<const std::string_view>("INVALIDATOMOP8");
-    case AtomOp::INVALIDATOMOP9: return std::make_optional<const std::string_view>("INVALIDATOMOP9");
-    case AtomOp::INVALIDATOMOP10: return std::make_optional<const std::string_view>("INVALIDATOMOP10");
-    case AtomOp::INVALIDATOMOP11: return std::make_optional<const std::string_view>("INVALIDATOMOP11");
-    case AtomOp::INVALIDATOMOP12: return std::make_optional<const std::string_view>("INVALIDATOMOP12");
-    case AtomOp::INVALIDATOMOP13: return std::make_optional<const std::string_view>("INVALIDATOMOP13");
-    case AtomOp::INVALIDATOMOP14: return std::make_optional<const std::string_view>("INVALIDATOMOP14");
-    case AtomOp::INVALIDATOMOP15: return std::make_optional<const std::string_view>("INVALIDATOMOP15");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(AtomicInteger value) {
-  switch (value) {
-    case AtomicInteger::_32: return std::make_optional<const std::string_view>("32");
-    case AtomicInteger::_64: return std::make_optional<const std::string_view>("64");
-    case AtomicInteger::F32: return std::make_optional<const std::string_view>("F32");
-    case AtomicInteger::S32: return std::make_optional<const std::string_view>("S32");
-    case AtomicInteger::F16x2_FTZ_RN: return std::make_optional<const std::string_view>("F16x2.FTZ.RN");
-    case AtomicInteger::S64: return std::make_optional<const std::string_view>("S64");
-    case AtomicInteger::SD32: return std::make_optional<const std::string_view>("SD32");
-    case AtomicInteger::SD64: return std::make_optional<const std::string_view>("SD64");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(AtomsOp value) {
-  switch (value) {
-    case AtomsOp::INVALIDATOMSOP0: return std::make_optional<const std::string_view>("INVALIDATOMSOP0");
-    case AtomsOp::INVALIDATOMSOP1: return std::make_optional<const std::string_view>("INVALIDATOMSOP1");
-    case AtomsOp::INVALIDATOMSOP2: return std::make_optional<const std::string_view>("INVALIDATOMSOP2");
-    case AtomsOp::INVALIDATOMSOP3: return std::make_optional<const std::string_view>("INVALIDATOMSOP3");
-    case AtomsOp::INVALIDATOMSOP4: return std::make_optional<const std::string_view>("INVALIDATOMSOP4");
-    case AtomsOp::INVALIDATOMSOP5: return std::make_optional<const std::string_view>("INVALIDATOMSOP5");
-    case AtomsOp::INVALIDATOMSOP6: return std::make_optional<const std::string_view>("INVALIDATOMSOP6");
-    case AtomsOp::INVALIDATOMSOP7: return std::make_optional<const std::string_view>("INVALIDATOMSOP7");
-    case AtomsOp::INVALIDATOMSOP8: return std::make_optional<const std::string_view>("INVALIDATOMSOP8");
-    case AtomsOp::INVALIDATOMSOP9: return std::make_optional<const std::string_view>("INVALIDATOMSOP9");
-    case AtomsOp::INVALIDATOMSOP10: return std::make_optional<const std::string_view>("INVALIDATOMSOP10");
-    case AtomsOp::INVALIDATOMSOP11: return std::make_optional<const std::string_view>("INVALIDATOMSOP11");
-    case AtomsOp::INVALIDATOMSOP12: return std::make_optional<const std::string_view>("INVALIDATOMSOP12");
-    case AtomsOp::INVALIDATOMSOP13: return std::make_optional<const std::string_view>("INVALIDATOMSOP13");
-    case AtomsOp::INVALIDATOMSOP14: return std::make_optional<const std::string_view>("INVALIDATOMSOP14");
-    case AtomsOp::INVALIDATOMSOP15: return std::make_optional<const std::string_view>("INVALIDATOMSOP15");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(AtomsSPIN value) {
-  switch (value) {
-    case AtomsSPIN::noSPIN: return std::make_optional<const std::string_view>("noSPIN");
-    case AtomsSPIN::SPIN: return std::make_optional<const std::string_view>("SPIN");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(AtomsSz value) {
-  switch (value) {
-    case AtomsSz::_32: return std::make_optional<const std::string_view>("32");
-    case AtomsSz::S32: return std::make_optional<const std::string_view>("S32");
-    case AtomsSz::_64: return std::make_optional<const std::string_view>("64");
-    case AtomsSz::S64: return std::make_optional<const std::string_view>("S64");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(B1B0 value) {
-  switch (value) {
-    case B1B0::H0: return std::make_optional<const std::string_view>("H0");
-    case B1B0::H1: return std::make_optional<const std::string_view>("H1");
-    case B1B0::B1: return std::make_optional<const std::string_view>("B1");
-    case B1B0::B3: return std::make_optional<const std::string_view>("B3");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(B3B0 value) {
-  switch (value) {
-    case B3B0::B0: return std::make_optional<const std::string_view>("B0");
-    case B3B0::B1: return std::make_optional<const std::string_view>("B1");
-    case B3B0::B2: return std::make_optional<const std::string_view>("B2");
-    case B3B0::B3: return std::make_optional<const std::string_view>("B3");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BA value) {
-  switch (value) {
-    case BA::noBA: return std::make_optional<const std::string_view>("noBA");
-    case BA::BA: return std::make_optional<const std::string_view>("BA");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BASE value) {
-  switch (value) {
-    case BASE::MAP: return std::make_optional<const std::string_view>("MAP");
-    case BASE::PATCH: return std::make_optional<const std::string_view>("PATCH");
-    case BASE::PRIM: return std::make_optional<const std::string_view>("PRIM");
-    case BASE::ATTR: return std::make_optional<const std::string_view>("ATTR");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BOnly value) {
-  switch (value) {
-    case BOnly::B: return std::make_optional<const std::string_view>("B");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BPTMode value) {
-  switch (value) {
-    case BPTMode::DRAIN_ILLEGAL: return std::make_optional<const std::string_view>("DRAIN_ILLEGAL");
-    case BPTMode::CAL: return std::make_optional<const std::string_view>("CAL");
-    case BPTMode::PAUSE: return std::make_optional<const std::string_view>("PAUSE");
-    case BPTMode::TRAP: return std::make_optional<const std::string_view>("TRAP");
-    case BPTMode::INT: return std::make_optional<const std::string_view>("INT");
-    case BPTMode::DRAIN: return std::make_optional<const std::string_view>("DRAIN");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BREV value) {
-  switch (value) {
-    case BREV::noBREV: return std::make_optional<const std::string_view>("noBREV");
-    case BREV::BREV: return std::make_optional<const std::string_view>("BREV");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BSel4 value) {
-  switch (value) {
-    case BSel4::_4444: return std::make_optional<const std::string_view>("4444");
-    case BSel4::_5555: return std::make_optional<const std::string_view>("5555");
-    case BSel4::_6666: return std::make_optional<const std::string_view>("6666");
-    case BSel4::_7777: return std::make_optional<const std::string_view>("7777");
-    case BSel4::_7654: return std::make_optional<const std::string_view>("7654");
-    case BSel4::_6543: return std::make_optional<const std::string_view>("6543");
-    case BSel4::_5432: return std::make_optional<const std::string_view>("5432");
-    case BSel4::_4321: return std::make_optional<const std::string_view>("4321");
-    case BSel4::_4567: return std::make_optional<const std::string_view>("4567");
-    case BSel4::_6745: return std::make_optional<const std::string_view>("6745");
-    case BSel4::_5476: return std::make_optional<const std::string_view>("5476");
-    case BSel4::BSEL4B: return std::make_optional<const std::string_view>("BSEL4B");
-    case BSel4::BSEL4C: return std::make_optional<const std::string_view>("BSEL4C");
-    case BSel4::BSEL4D: return std::make_optional<const std::string_view>("BSEL4D");
-    case BSel4::BSEL4E: return std::make_optional<const std::string_view>("BSEL4E");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BVal value) {
-  switch (value) {
-    case BVal::BM: return std::make_optional<const std::string_view>("BM");
-    case BVal::BF: return std::make_optional<const std::string_view>("BF");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BarArv value) {
-  switch (value) {
-    case BarArv::ARV: return std::make_optional<const std::string_view>("ARV");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BarRED value) {
-  switch (value) {
-    case BarRED::RED: return std::make_optional<const std::string_view>("RED");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BarSCAN value) {
-  switch (value) {
-    case BarSCAN::SCAN: return std::make_optional<const std::string_view>("SCAN");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BarSYNCALL value) {
-  switch (value) {
-    case BarSYNCALL::SYNCALL: return std::make_optional<const std::string_view>("SYNCALL");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BarSync value) {
-  switch (value) {
-    case BarSync::SYNC: return std::make_optional<const std::string_view>("SYNC");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Barmd value) {
-  switch (value) {
-    case Barmd::BAR: return std::make_optional<const std::string_view>("BAR");
-    case Barmd::RESULT: return std::make_optional<const std::string_view>("RESULT");
-    case Barmd::WARP: return std::make_optional<const std::string_view>("WARP");
-    case Barmd::INVALID: return std::make_optional<const std::string_view>("INVALID");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BarmdBAR value) {
-  switch (value) {
-    case BarmdBAR::BAR: return std::make_optional<const std::string_view>("BAR");
-    case BarmdBAR::INVALID: return std::make_optional<const std::string_view>("INVALID");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BarmdRESULT value) {
-  switch (value) {
-    case BarmdRESULT::RESULT: return std::make_optional<const std::string_view>("RESULT");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(BarmdWARP value) {
-  switch (value) {
-    case BarmdWARP::WARP: return std::make_optional<const std::string_view>("WARP");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Bop value) {
-  switch (value) {
-    case Bop::AND: return std::make_optional<const std::string_view>("AND");
-    case Bop::OR: return std::make_optional<const std::string_view>("OR");
-    case Bop::XOR: return std::make_optional<const std::string_view>("XOR");
-    case Bop::INVALIDBOP03: return std::make_optional<const std::string_view>("INVALIDBOP03");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(C value) {
-  switch (value) {
-    case C::C: return std::make_optional<const std::string_view>("C");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CAS value) {
-  switch (value) {
-    case CAS::CAS: return std::make_optional<const std::string_view>("CAS");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CASInteger value) {
-  switch (value) {
-    case CASInteger::U32: return std::make_optional<const std::string_view>("U32");
-    case CASInteger::U64: return std::make_optional<const std::string_view>("U64");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CAST value) {
-  switch (value) {
-    case CAST::CAST: return std::make_optional<const std::string_view>("CAST");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CC value) {
-  switch (value) {
-    case CC::CC: return std::make_optional<const std::string_view>("CC");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CCPR value) {
-  switch (value) {
-    case CCPR::PR: return std::make_optional<const std::string_view>("PR");
-    case CCPR::CC: return std::make_optional<const std::string_view>("CC");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CCTLLOp2 value) {
-  switch (value) {
-    case CCTLLOp2::IVALL: return std::make_optional<const std::string_view>("IVALL");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CCTLLOp3 value) {
-  switch (value) {
-    case CCTLLOp3::WBALL: return std::make_optional<const std::string_view>("WBALL");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CCTLOp value) {
-  switch (value) {
-    case CCTLOp::PF1: return std::make_optional<const std::string_view>("PF1");
-    case CCTLOp::PF1_5: return std::make_optional<const std::string_view>("PF1.5");
-    case CCTLOp::PF2: return std::make_optional<const std::string_view>("PF2");
-    case CCTLOp::WB: return std::make_optional<const std::string_view>("WB");
-    case CCTLOp::IV: return std::make_optional<const std::string_view>("IV");
-    case CCTLOp::RS: return std::make_optional<const std::string_view>("RS");
-    case CCTLOp::RSLB: return std::make_optional<const std::string_view>("RSLB");
-    case CCTLOp::INVALIDCCTLOP10: return std::make_optional<const std::string_view>("INVALIDCCTLOP10");
-    case CCTLOp::INVALIDCCTLOP11: return std::make_optional<const std::string_view>("INVALIDCCTLOP11");
-    case CCTLOp::INVALIDCCTLOP12: return std::make_optional<const std::string_view>("INVALIDCCTLOP12");
-    case CCTLOp::INVALIDCCTLOP13: return std::make_optional<const std::string_view>("INVALIDCCTLOP13");
-    case CCTLOp::INVALIDCCTLOP14: return std::make_optional<const std::string_view>("INVALIDCCTLOP14");
-    case CCTLOp::INVALIDCCTLOP15: return std::make_optional<const std::string_view>("INVALIDCCTLOP15");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CCTLTOp value) {
-  switch (value) {
-    case CCTLTOp::IVTH: return std::make_optional<const std::string_view>("IVTH");
-    case CCTLTOp::INVALIDCCTLTOP2: return std::make_optional<const std::string_view>("INVALIDCCTLTOP2");
-    case CCTLTOp::INVALIDCCTLTOP3: return std::make_optional<const std::string_view>("INVALIDCCTLTOP3");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CCTLTOpIVALL value) {
-  switch (value) {
-    case CCTLTOpIVALL::IVALL: return std::make_optional<const std::string_view>("IVALL");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CInteger value) {
-  switch (value) {
-    case CInteger::SD: return std::make_optional<const std::string_view>("SD");
-    case CInteger::_16: return std::make_optional<const std::string_view>("16");
-    case CInteger::S8: return std::make_optional<const std::string_view>("S8");
-    case CInteger::S16: return std::make_optional<const std::string_view>("S16");
-    case CInteger::_32: return std::make_optional<const std::string_view>("32");
-    case CInteger::_64: return std::make_optional<const std::string_view>("64");
-    case CInteger::_128: return std::make_optional<const std::string_view>("128");
-    case CInteger::INVALIDSIZE7: return std::make_optional<const std::string_view>("INVALIDSIZE7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CInteger_64 value) {
-  switch (value) {
-    case CInteger_64::_64: return std::make_optional<const std::string_view>("64");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CInteger_n64_n128 value) {
-  switch (value) {
-    case CInteger_n64_n128::SD: return std::make_optional<const std::string_view>("SD");
-    case CInteger_n64_n128::_16: return std::make_optional<const std::string_view>("16");
-    case CInteger_n64_n128::S8: return std::make_optional<const std::string_view>("S8");
-    case CInteger_n64_n128::S16: return std::make_optional<const std::string_view>("S16");
-    case CInteger_n64_n128::_32: return std::make_optional<const std::string_view>("32");
-    case CInteger_n64_n128::INVALIDSIZE6: return std::make_optional<const std::string_view>("INVALIDSIZE6");
-    case CInteger_n64_n128::INVALIDSIZE7: return std::make_optional<const std::string_view>("INVALIDSIZE7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CL value) {
-  switch (value) {
-    case CL::noCL: return std::make_optional<const std::string_view>("noCL");
-    case CL::CL: return std::make_optional<const std::string_view>("CL");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CRSOnly value) {
-  switch (value) {
-    case CRSOnly::CRS: return std::make_optional<const std::string_view>("CRS");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(CWMode value) {
-  switch (value) {
-    case CWMode::C: return std::make_optional<const std::string_view>("C");
-    case CWMode::W: return std::make_optional<const std::string_view>("W");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Cache3 value) {
-  switch (value) {
-    case Cache3::D: return std::make_optional<const std::string_view>("D");
-    case Cache3::U: return std::make_optional<const std::string_view>("U");
-    case Cache3::C: return std::make_optional<const std::string_view>("C");
-    case Cache3::I: return std::make_optional<const std::string_view>("I");
-    case Cache3::CRS: return std::make_optional<const std::string_view>("CRS");
-    case Cache3::INVALIDCCTLCACHEOP5: return std::make_optional<const std::string_view>("INVALIDCCTLCACHEOP5");
-    case Cache3::INVALIDCCTLCACHEOP6: return std::make_optional<const std::string_view>("INVALIDCCTLCACHEOP6");
-    case Cache3::INVALIDCCTLCACHEOP7: return std::make_optional<const std::string_view>("INVALIDCCTLCACHEOP7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Cache3CI value) {
-  switch (value) {
-    case Cache3CI::C: return std::make_optional<const std::string_view>("C");
-    case Cache3CI::I: return std::make_optional<const std::string_view>("I");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Cache3NoCI value) {
-  switch (value) {
-    case Cache3NoCI::D: return std::make_optional<const std::string_view>("D");
-    case Cache3NoCI::U: return std::make_optional<const std::string_view>("U");
-    case Cache3NoCI::CRS: return std::make_optional<const std::string_view>("CRS");
-    case Cache3NoCI::INVALIDCCTLCACHEOP5: return std::make_optional<const std::string_view>("INVALIDCCTLCACHEOP5");
-    case Cache3NoCI::INVALIDCCTLCACHEOP6: return std::make_optional<const std::string_view>("INVALIDCCTLCACHEOP6");
-    case Cache3NoCI::INVALIDCCTLCACHEOP7: return std::make_optional<const std::string_view>("INVALIDCCTLCACHEOP7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(ChkMode value) {
-  switch (value) {
-    case ChkMode::DIVIDE: return std::make_optional<const std::string_view>("DIVIDE");
-    case ChkMode::INVALIDCHKMODE1: return std::make_optional<const std::string_view>("INVALIDCHKMODE1");
-    case ChkMode::INVALIDCHKMODE2: return std::make_optional<const std::string_view>("INVALIDCHKMODE2");
-    case ChkMode::INVALIDCHKMODE3: return std::make_optional<const std::string_view>("INVALIDCHKMODE3");
-    case ChkMode::INVALIDCHKMODE4: return std::make_optional<const std::string_view>("INVALIDCHKMODE4");
-    case ChkMode::INVALIDCHKMODE5: return std::make_optional<const std::string_view>("INVALIDCHKMODE5");
-    case ChkMode::INVALIDCHKMODE6: return std::make_optional<const std::string_view>("INVALIDCHKMODE6");
-    case ChkMode::INVALIDCHKMODE7: return std::make_optional<const std::string_view>("INVALIDCHKMODE7");
-    case ChkMode::INVALIDCHKMODE8: return std::make_optional<const std::string_view>("INVALIDCHKMODE8");
-    case ChkMode::INVALIDCHKMODE9: return std::make_optional<const std::string_view>("INVALIDCHKMODE9");
-    case ChkMode::INVALIDCHKMODE10: return std::make_optional<const std::string_view>("INVALIDCHKMODE10");
-    case ChkMode::INVALIDCHKMODE11: return std::make_optional<const std::string_view>("INVALIDCHKMODE11");
-    case ChkMode::INVALIDCHKMODE12: return std::make_optional<const std::string_view>("INVALIDCHKMODE12");
-    case ChkMode::INVALIDCHKMODE13: return std::make_optional<const std::string_view>("INVALIDCHKMODE13");
-    case ChkMode::INVALIDCHKMODE14: return std::make_optional<const std::string_view>("INVALIDCHKMODE14");
-    case ChkMode::INVALIDCHKMODE15: return std::make_optional<const std::string_view>("INVALIDCHKMODE15");
-    case ChkMode::INVALIDCHKMODE16: return std::make_optional<const std::string_view>("INVALIDCHKMODE16");
-    case ChkMode::INVALIDCHKMODE17: return std::make_optional<const std::string_view>("INVALIDCHKMODE17");
-    case ChkMode::INVALIDCHKMODE18: return std::make_optional<const std::string_view>("INVALIDCHKMODE18");
-    case ChkMode::INVALIDCHKMODE19: return std::make_optional<const std::string_view>("INVALIDCHKMODE19");
-    case ChkMode::INVALIDCHKMODE20: return std::make_optional<const std::string_view>("INVALIDCHKMODE20");
-    case ChkMode::INVALIDCHKMODE21: return std::make_optional<const std::string_view>("INVALIDCHKMODE21");
-    case ChkMode::INVALIDCHKMODE22: return std::make_optional<const std::string_view>("INVALIDCHKMODE22");
-    case ChkMode::INVALIDCHKMODE23: return std::make_optional<const std::string_view>("INVALIDCHKMODE23");
-    case ChkMode::INVALIDCHKMODE24: return std::make_optional<const std::string_view>("INVALIDCHKMODE24");
-    case ChkMode::INVALIDCHKMODE25: return std::make_optional<const std::string_view>("INVALIDCHKMODE25");
-    case ChkMode::INVALIDCHKMODE26: return std::make_optional<const std::string_view>("INVALIDCHKMODE26");
-    case ChkMode::INVALIDCHKMODE27: return std::make_optional<const std::string_view>("INVALIDCHKMODE27");
-    case ChkMode::INVALIDCHKMODE28: return std::make_optional<const std::string_view>("INVALIDCHKMODE28");
-    case ChkMode::INVALIDCHKMODE29: return std::make_optional<const std::string_view>("INVALIDCHKMODE29");
-    case ChkMode::INVALIDCHKMODE30: return std::make_optional<const std::string_view>("INVALIDCHKMODE30");
-    case ChkMode::INVALIDCHKMODE31: return std::make_optional<const std::string_view>("INVALIDCHKMODE31");
-    case ChkMode::INVALIDCHKMODE32: return std::make_optional<const std::string_view>("INVALIDCHKMODE32");
-    case ChkMode::INVALIDCHKMODE33: return std::make_optional<const std::string_view>("INVALIDCHKMODE33");
-    case ChkMode::INVALIDCHKMODE34: return std::make_optional<const std::string_view>("INVALIDCHKMODE34");
-    case ChkMode::INVALIDCHKMODE35: return std::make_optional<const std::string_view>("INVALIDCHKMODE35");
-    case ChkMode::INVALIDCHKMODE36: return std::make_optional<const std::string_view>("INVALIDCHKMODE36");
-    case ChkMode::INVALIDCHKMODE37: return std::make_optional<const std::string_view>("INVALIDCHKMODE37");
-    case ChkMode::INVALIDCHKMODE38: return std::make_optional<const std::string_view>("INVALIDCHKMODE38");
-    case ChkMode::INVALIDCHKMODE39: return std::make_optional<const std::string_view>("INVALIDCHKMODE39");
-    case ChkMode::INVALIDCHKMODE40: return std::make_optional<const std::string_view>("INVALIDCHKMODE40");
-    case ChkMode::INVALIDCHKMODE41: return std::make_optional<const std::string_view>("INVALIDCHKMODE41");
-    case ChkMode::INVALIDCHKMODE42: return std::make_optional<const std::string_view>("INVALIDCHKMODE42");
-    case ChkMode::INVALIDCHKMODE43: return std::make_optional<const std::string_view>("INVALIDCHKMODE43");
-    case ChkMode::INVALIDCHKMODE44: return std::make_optional<const std::string_view>("INVALIDCHKMODE44");
-    case ChkMode::INVALIDCHKMODE45: return std::make_optional<const std::string_view>("INVALIDCHKMODE45");
-    case ChkMode::INVALIDCHKMODE46: return std::make_optional<const std::string_view>("INVALIDCHKMODE46");
-    case ChkMode::INVALIDCHKMODE47: return std::make_optional<const std::string_view>("INVALIDCHKMODE47");
-    case ChkMode::INVALIDCHKMODE48: return std::make_optional<const std::string_view>("INVALIDCHKMODE48");
-    case ChkMode::INVALIDCHKMODE49: return std::make_optional<const std::string_view>("INVALIDCHKMODE49");
-    case ChkMode::INVALIDCHKMODE50: return std::make_optional<const std::string_view>("INVALIDCHKMODE50");
-    case ChkMode::INVALIDCHKMODE51: return std::make_optional<const std::string_view>("INVALIDCHKMODE51");
-    case ChkMode::INVALIDCHKMODE52: return std::make_optional<const std::string_view>("INVALIDCHKMODE52");
-    case ChkMode::INVALIDCHKMODE53: return std::make_optional<const std::string_view>("INVALIDCHKMODE53");
-    case ChkMode::INVALIDCHKMODE54: return std::make_optional<const std::string_view>("INVALIDCHKMODE54");
-    case ChkMode::INVALIDCHKMODE55: return std::make_optional<const std::string_view>("INVALIDCHKMODE55");
-    case ChkMode::INVALIDCHKMODE56: return std::make_optional<const std::string_view>("INVALIDCHKMODE56");
-    case ChkMode::INVALIDCHKMODE57: return std::make_optional<const std::string_view>("INVALIDCHKMODE57");
-    case ChkMode::INVALIDCHKMODE58: return std::make_optional<const std::string_view>("INVALIDCHKMODE58");
-    case ChkMode::INVALIDCHKMODE59: return std::make_optional<const std::string_view>("INVALIDCHKMODE59");
-    case ChkMode::INVALIDCHKMODE60: return std::make_optional<const std::string_view>("INVALIDCHKMODE60");
-    case ChkMode::INVALIDCHKMODE61: return std::make_optional<const std::string_view>("INVALIDCHKMODE61");
-    case ChkMode::INVALIDCHKMODE62: return std::make_optional<const std::string_view>("INVALIDCHKMODE62");
-    case ChkMode::INVALIDCHKMODE63: return std::make_optional<const std::string_view>("INVALIDCHKMODE63");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Clamp1 value) {
-  switch (value) {
-    case Clamp1::IGN: return std::make_optional<const std::string_view>("IGN");
-    case Clamp1::NEAR: return std::make_optional<const std::string_view>("NEAR");
-    case Clamp1::TRAP: return std::make_optional<const std::string_view>("TRAP");
-    case Clamp1::INVALIDSURFACECLAMP3: return std::make_optional<const std::string_view>("INVALIDSURFACECLAMP3");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(DC value) {
-  switch (value) {
-    case DC::noDC: return std::make_optional<const std::string_view>("noDC");
-    case DC::DC: return std::make_optional<const std::string_view>("DC");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(DFormat value) {
-  switch (value) {
-    case DFormat::UD: return std::make_optional<const std::string_view>("UD");
-    case DFormat::SD: return std::make_optional<const std::string_view>("SD");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(DIR value) {
-  switch (value) {
-    case DIR::NS: return std::make_optional<const std::string_view>("NS");
-    case DIR::RS: return std::make_optional<const std::string_view>("RS");
-    case DIR::LS: return std::make_optional<const std::string_view>("LS");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(DOnly value) {
-  switch (value) {
-    case DOnly::D: return std::make_optional<const std::string_view>("D");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Dim1 value) {
-  switch (value) {
-    case Dim1::_1D: return std::make_optional<const std::string_view>("1D");
-    case Dim1::_1D_BUFFER: return std::make_optional<const std::string_view>("1D_BUFFER");
-    case Dim1::_1D_ARRAY: return std::make_optional<const std::string_view>("1D_ARRAY");
-    case Dim1::_2D: return std::make_optional<const std::string_view>("2D");
-    case Dim1::_2D_ARRAY: return std::make_optional<const std::string_view>("2D_ARRAY");
-    case Dim1::_3D: return std::make_optional<const std::string_view>("3D");
-    case Dim1::INVALIDSURFACEDIM6: return std::make_optional<const std::string_view>("INVALIDSURFACEDIM6");
-    case Dim1::INVALIDSURFACEDIM7: return std::make_optional<const std::string_view>("INVALIDSURFACEDIM7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(E value) {
-  switch (value) {
-    case E::noE: return std::make_optional<const std::string_view>("noE");
-    case E::E: return std::make_optional<const std::string_view>("E");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(F2FRound1 value) {
-  switch (value) {
-    case F2FRound1::PASS: return std::make_optional<const std::string_view>("PASS");
-    case F2FRound1::RN: return std::make_optional<const std::string_view>("RN");
-    case F2FRound1::RM: return std::make_optional<const std::string_view>("RM");
-    case F2FRound1::RP: return std::make_optional<const std::string_view>("RP");
-    case F2FRound1::RZ: return std::make_optional<const std::string_view>("RZ");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(F2FRound2 value) {
-  switch (value) {
-    case F2FRound2::PASS: return std::make_optional<const std::string_view>("PASS");
-    case F2FRound2::FLOOR: return std::make_optional<const std::string_view>("FLOOR");
-    case F2FRound2::CEIL: return std::make_optional<const std::string_view>("CEIL");
-    case F2FRound2::TRUNC: return std::make_optional<const std::string_view>("TRUNC");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(F2Ffmts1 value) {
-  switch (value) {
-    case F2Ffmts1::INVALIDFPDEST0_INVALIDFPSRC0: return std::make_optional<const std::string_view>("INVALIDFPDEST0.INVALIDFPSRC0");
-    case F2Ffmts1::F32_F32: return std::make_optional<const std::string_view>("F32.F32");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(F2Ffmts1_16 value) {
-  switch (value) {
-    case F2Ffmts1_16::F16_F16: return std::make_optional<const std::string_view>("F16.F16");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(F2Ffmts1_64 value) {
-  switch (value) {
-    case F2Ffmts1_64::F64_F64: return std::make_optional<const std::string_view>("F64.F64");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(F2Ffmts2 value) {
-  switch (value) {
-    case F2Ffmts2::F16_INVALIDFPSRC0: return std::make_optional<const std::string_view>("F16.INVALIDFPSRC0");
-    case F2Ffmts2::F32_INVALIDFPSRC0: return std::make_optional<const std::string_view>("F32.INVALIDFPSRC0");
-    case F2Ffmts2::F64_INVALIDFPSRC0: return std::make_optional<const std::string_view>("F64.INVALIDFPSRC0");
-    case F2Ffmts2::INVALIDFPDEST0_F32: return std::make_optional<const std::string_view>("INVALIDFPDEST0.F32");
-    case F2Ffmts2::F16_F32: return std::make_optional<const std::string_view>("F16.F32");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(F2Ffmts2_16 value) {
-  switch (value) {
-    case F2Ffmts2_16::INVALIDFPDEST0_F16: return std::make_optional<const std::string_view>("INVALIDFPDEST0.F16");
-    case F2Ffmts2_16::F32_F16: return std::make_optional<const std::string_view>("F32.F16");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(F2Ffmts2_64 value) {
-  switch (value) {
-    case F2Ffmts2_64::INVALIDFPDEST0_F64: return std::make_optional<const std::string_view>("INVALIDFPDEST0.F64");
-    case F2Ffmts2_64::F16_F64: return std::make_optional<const std::string_view>("F16.F64");
-    case F2Ffmts2_64::F32_F64: return std::make_optional<const std::string_view>("F32.F64");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(F2Ffmts2_64_16 value) {
-  switch (value) {
-    case F2Ffmts2_64_16::F64_F16: return std::make_optional<const std::string_view>("F64.F16");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(F2Ffmts2_64_32 value) {
-  switch (value) {
-    case F2Ffmts2_64_32::F64_F32: return std::make_optional<const std::string_view>("F64.F32");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(FMZ value) {
-  switch (value) {
-    case FMZ::noFTZ: return std::make_optional<const std::string_view>("noFTZ");
-    case FMZ::FTZ: return std::make_optional<const std::string_view>("FTZ");
-    case FMZ::FMZ: return std::make_optional<const std::string_view>("FMZ");
-    case FMZ::INVALIDFMZ3: return std::make_optional<const std::string_view>("INVALIDFMZ3");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(FTZ value) {
-  switch (value) {
-    case FTZ::noFTZ: return std::make_optional<const std::string_view>("noFTZ");
-    case FTZ::FTZ: return std::make_optional<const std::string_view>("FTZ");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Float value) {
-  switch (value) {
-    case Float::INVALIDFPDEST0: return std::make_optional<const std::string_view>("INVALIDFPDEST0");
-    case Float::F16: return std::make_optional<const std::string_view>("F16");
-    case Float::F32: return std::make_optional<const std::string_view>("F32");
-    case Float::F64: return std::make_optional<const std::string_view>("F64");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Float16 value) {
-  switch (value) {
-    case Float16::F16: return std::make_optional<const std::string_view>("F16");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Float32 value) {
-  switch (value) {
-    case Float32::INVALIDFPDEST0: return std::make_optional<const std::string_view>("INVALIDFPDEST0");
-    case Float32::F32: return std::make_optional<const std::string_view>("F32");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Float64 value) {
-  switch (value) {
-    case Float64::F64: return std::make_optional<const std::string_view>("F64");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(FloatNo64 value) {
-  switch (value) {
-    case FloatNo64::INVALIDFPDEST0: return std::make_optional<const std::string_view>("INVALIDFPDEST0");
-    case FloatNo64::F16: return std::make_optional<const std::string_view>("F16");
-    case FloatNo64::F32: return std::make_optional<const std::string_view>("F32");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(H1H0 value) {
-  switch (value) {
-    case H1H0::H0: return std::make_optional<const std::string_view>("H0");
-    case H1H0::H1: return std::make_optional<const std::string_view>("H1");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(HILO value) {
-  switch (value) {
-    case HILO::LO: return std::make_optional<const std::string_view>("LO");
-    case HILO::HI: return std::make_optional<const std::string_view>("HI");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(HIOnly value) {
-  switch (value) {
-    case HIOnly::HI: return std::make_optional<const std::string_view>("HI");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(H_AND value) {
-  switch (value) {
-    case H_AND::noH_AND: return std::make_optional<const std::string_view>("noH_AND");
-    case H_AND::H_AND: return std::make_optional<const std::string_view>("H_AND");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(I2XH value) {
-  switch (value) {
-    case I2XH::H0: return std::make_optional<const std::string_view>("H0");
-    case I2XH::INVALIDSIZE1: return std::make_optional<const std::string_view>("INVALIDSIZE1");
-    case I2XH::H1: return std::make_optional<const std::string_view>("H1");
-    case I2XH::INVALIDSIZE3: return std::make_optional<const std::string_view>("INVALIDSIZE3");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(ICmpAll value) {
-  switch (value) {
-    case ICmpAll::F: return std::make_optional<const std::string_view>("F");
-    case ICmpAll::LT: return std::make_optional<const std::string_view>("LT");
-    case ICmpAll::EQ: return std::make_optional<const std::string_view>("EQ");
-    case ICmpAll::LE: return std::make_optional<const std::string_view>("LE");
-    case ICmpAll::GT: return std::make_optional<const std::string_view>("GT");
-    case ICmpAll::NE: return std::make_optional<const std::string_view>("NE");
-    case ICmpAll::GE: return std::make_optional<const std::string_view>("GE");
-    case ICmpAll::T: return std::make_optional<const std::string_view>("T");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(ICmpU value) {
-  switch (value) {
-    case ICmpU::LO: return std::make_optional<const std::string_view>("LO");
-    case ICmpU::LS: return std::make_optional<const std::string_view>("LS");
-    case ICmpU::HI: return std::make_optional<const std::string_view>("HI");
-    case ICmpU::HS: return std::make_optional<const std::string_view>("HS");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(IDEActionDIOnly value) {
-  switch (value) {
-    case IDEActionDIOnly::DI: return std::make_optional<const std::string_view>("DI");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(IDEActionENOnly value) {
-  switch (value) {
-    case IDEActionENOnly::EN: return std::make_optional<const std::string_view>("EN");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(IDXOnly value) {
-  switch (value) {
-    case IDXOnly::IDX: return std::make_optional<const std::string_view>("IDX");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(INC value) {
-  switch (value) {
-    case INC::NOINC: return std::make_optional<const std::string_view>("NOINC");
-    case INC::INC: return std::make_optional<const std::string_view>("INC");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(IPAOp value) {
-  switch (value) {
-    case IPAOp::PASS: return std::make_optional<const std::string_view>("PASS");
-    case IPAOp::MUL: return std::make_optional<const std::string_view>("MUL");
-    case IPAOp::CONSTANT: return std::make_optional<const std::string_view>("CONSTANT");
-    case IPAOp::SC: return std::make_optional<const std::string_view>("SC");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(ISBERDInteger value) {
-  switch (value) {
-    case ISBERDInteger::U8: return std::make_optional<const std::string_view>("U8");
-    case ISBERDInteger::U16: return std::make_optional<const std::string_view>("U16");
-    case ISBERDInteger::_32: return std::make_optional<const std::string_view>("32");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(ISWZ value) {
-  switch (value) {
-    case ISWZ::H1_H0: return std::make_optional<const std::string_view>("H1_H0");
-    case ISWZ::F32: return std::make_optional<const std::string_view>("F32");
-    case ISWZ::H0_H0: return std::make_optional<const std::string_view>("H0_H0");
-    case ISWZ::H1_H1: return std::make_optional<const std::string_view>("H1_H1");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Integer value) {
-  switch (value) {
-    case static_cast<Integer>(Integer64::U64): return std::make_optional<const std::string_view>("U64");
-    case static_cast<Integer>(Integer64::S64): return std::make_optional<const std::string_view>("S64");
-    case static_cast<Integer>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
-    case static_cast<Integer>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
-    case static_cast<Integer>(Integer16::U16): return std::make_optional<const std::string_view>("U16");
-    case static_cast<Integer>(Integer16::S16): return std::make_optional<const std::string_view>("S16");
-    case static_cast<Integer>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
-    case static_cast<Integer>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Integer16 value) {
-  switch (value) {
-    case Integer16::U16: return std::make_optional<const std::string_view>("U16");
-    case Integer16::S16: return std::make_optional<const std::string_view>("S16");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Integer32 value) {
-  switch (value) {
-    case Integer32::U32: return std::make_optional<const std::string_view>("U32");
-    case Integer32::S32: return std::make_optional<const std::string_view>("S32");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Integer64 value) {
-  switch (value) {
-    case Integer64::U64: return std::make_optional<const std::string_view>("U64");
-    case Integer64::S64: return std::make_optional<const std::string_view>("S64");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Integer8 value) {
-  switch (value) {
-    case Integer8::U8: return std::make_optional<const std::string_view>("U8");
-    case Integer8::S8: return std::make_optional<const std::string_view>("S8");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(IntegerInv8No64 value) {
-  switch (value) {
-    case static_cast<IntegerInv8No64>(Invalid8::INVALID0): return std::make_optional<const std::string_view>("INVALID0");
-    case static_cast<IntegerInv8No64>(Invalid8::INVALID1): return std::make_optional<const std::string_view>("INVALID1");
-    case static_cast<IntegerInv8No64>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
-    case static_cast<IntegerInv8No64>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
-    case static_cast<IntegerInv8No64>(Integer16::U16): return std::make_optional<const std::string_view>("U16");
-    case static_cast<IntegerInv8No64>(Integer16::S16): return std::make_optional<const std::string_view>("S16");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(IntegerNo16Inv64 value) {
-  switch (value) {
-    case static_cast<IntegerNo16Inv64>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
-    case static_cast<IntegerNo16Inv64>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
-    case static_cast<IntegerNo16Inv64>(Invalid64::INVALID6): return std::make_optional<const std::string_view>("INVALID6");
-    case static_cast<IntegerNo16Inv64>(Invalid64::INVALID7): return std::make_optional<const std::string_view>("INVALID7");
-    case static_cast<IntegerNo16Inv64>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
-    case static_cast<IntegerNo16Inv64>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(IntegerNo16No64 value) {
-  switch (value) {
-    case static_cast<IntegerNo16No64>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
-    case static_cast<IntegerNo16No64>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
-    case static_cast<IntegerNo16No64>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
-    case static_cast<IntegerNo16No64>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(IntegerNo64 value) {
-  switch (value) {
-    case static_cast<IntegerNo64>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
-    case static_cast<IntegerNo64>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
-    case static_cast<IntegerNo64>(Integer16::U16): return std::make_optional<const std::string_view>("U16");
-    case static_cast<IntegerNo64>(Integer16::S16): return std::make_optional<const std::string_view>("S16");
-    case static_cast<IntegerNo64>(Integer8::U8): return std::make_optional<const std::string_view>("U8");
-    case static_cast<IntegerNo64>(Integer8::S8): return std::make_optional<const std::string_view>("S8");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(IntegerNo8 value) {
-  switch (value) {
-    case static_cast<IntegerNo8>(Integer64::U64): return std::make_optional<const std::string_view>("U64");
-    case static_cast<IntegerNo8>(Integer64::S64): return std::make_optional<const std::string_view>("S64");
-    case static_cast<IntegerNo8>(Invalid8::INVALID0): return std::make_optional<const std::string_view>("INVALID0");
-    case static_cast<IntegerNo8>(Invalid8::INVALID1): return std::make_optional<const std::string_view>("INVALID1");
-    case static_cast<IntegerNo8>(Integer32::U32): return std::make_optional<const std::string_view>("U32");
-    case static_cast<IntegerNo8>(Integer32::S32): return std::make_optional<const std::string_view>("S32");
-    case static_cast<IntegerNo8>(Integer16::U16): return std::make_optional<const std::string_view>("U16");
-    case static_cast<IntegerNo8>(Integer16::S16): return std::make_optional<const std::string_view>("S16");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(IntegerSPA value) {
-  switch (value) {
-    case IntegerSPA::U32: return std::make_optional<const std::string_view>("U32");
-    case IntegerSPA::S32: return std::make_optional<const std::string_view>("S32");
-    case IntegerSPA::U24: return std::make_optional<const std::string_view>("U24");
-    case IntegerSPA::S24: return std::make_optional<const std::string_view>("S24");
-    case IntegerSPA::U16H0: return std::make_optional<const std::string_view>("U16H0");
-    case IntegerSPA::S16H0: return std::make_optional<const std::string_view>("S16H0");
-    case IntegerSPA::U16H1: return std::make_optional<const std::string_view>("U16H1");
-    case IntegerSPA::S16H1: return std::make_optional<const std::string_view>("S16H1");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(IntegerSPB value) {
-  switch (value) {
-    case IntegerSPB::U16H0: return std::make_optional<const std::string_view>("U16H0");
-    case IntegerSPB::S16H0: return std::make_optional<const std::string_view>("S16H0");
-    case IntegerSPB::U24: return std::make_optional<const std::string_view>("U24");
-    case IntegerSPB::S24: return std::make_optional<const std::string_view>("S24");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(IntegerSPC value) {
-  switch (value) {
-    case IntegerSPC::U32: return std::make_optional<const std::string_view>("U32");
-    case IntegerSPC::S32: return std::make_optional<const std::string_view>("S32");
-    case IntegerSPC::U24: return std::make_optional<const std::string_view>("U24");
-    case IntegerSPC::S24: return std::make_optional<const std::string_view>("S24");
-    case IntegerSPC::U16H0: return std::make_optional<const std::string_view>("U16H0");
-    case IntegerSPC::S16H0: return std::make_optional<const std::string_view>("S16H0");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Invalid64 value) {
-  switch (value) {
-    case Invalid64::INVALID6: return std::make_optional<const std::string_view>("INVALID6");
-    case Invalid64::INVALID7: return std::make_optional<const std::string_view>("INVALID7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Invalid8 value) {
-  switch (value) {
-    case Invalid8::INVALID0: return std::make_optional<const std::string_view>("INVALID0");
-    case Invalid8::INVALID1: return std::make_optional<const std::string_view>("INVALID1");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(KeepRefCount value) {
-  switch (value) {
-    case KeepRefCount::noKEEPREFCOUNT: return std::make_optional<const std::string_view>("noKEEPREFCOUNT");
-    case KeepRefCount::KEEPREFCOUNT: return std::make_optional<const std::string_view>("KEEPREFCOUNT");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LC value) {
-  switch (value) {
-    case LC::noLC: return std::make_optional<const std::string_view>("noLC");
-    case LC::LC: return std::make_optional<const std::string_view>("LC");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LCache value) {
-  switch (value) {
-    case LCache::D: return std::make_optional<const std::string_view>("D");
-    case LCache::INVALIDLCACHETYPE2: return std::make_optional<const std::string_view>("INVALIDLCACHETYPE2");
-    case LCache::INVALIDLCACHETYPE3: return std::make_optional<const std::string_view>("INVALIDLCACHETYPE3");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LDInteger value) {
-  switch (value) {
-    case LDInteger::_8: return std::make_optional<const std::string_view>("8");
-    case LDInteger::_16: return std::make_optional<const std::string_view>("16");
-    case LDInteger::S8: return std::make_optional<const std::string_view>("S8");
-    case LDInteger::S16: return std::make_optional<const std::string_view>("S16");
-    case LDInteger::_32: return std::make_optional<const std::string_view>("32");
-    case LDInteger::_64: return std::make_optional<const std::string_view>("64");
-    case LDInteger::_128: return std::make_optional<const std::string_view>("128");
-    case LDInteger::U_128: return std::make_optional<const std::string_view>("U.128");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LDInteger_nU128 value) {
-  switch (value) {
-    case LDInteger_nU128::_8: return std::make_optional<const std::string_view>("8");
-    case LDInteger_nU128::_16: return std::make_optional<const std::string_view>("16");
-    case LDInteger_nU128::S8: return std::make_optional<const std::string_view>("S8");
-    case LDInteger_nU128::S16: return std::make_optional<const std::string_view>("S16");
-    case LDInteger_nU128::_32: return std::make_optional<const std::string_view>("32");
-    case LDInteger_nU128::_64: return std::make_optional<const std::string_view>("64");
-    case LDInteger_nU128::_128: return std::make_optional<const std::string_view>("128");
-    case LDInteger_nU128::INVALIDSIZE7: return std::make_optional<const std::string_view>("INVALIDSIZE7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LDSInteger value) {
-  switch (value) {
-    case LDSInteger::_8: return std::make_optional<const std::string_view>("8");
-    case LDSInteger::U_8: return std::make_optional<const std::string_view>("U.8");
-    case LDSInteger::_16: return std::make_optional<const std::string_view>("16");
-    case LDSInteger::U_16: return std::make_optional<const std::string_view>("U.16");
-    case LDSInteger::S8: return std::make_optional<const std::string_view>("S8");
-    case LDSInteger::U_S8: return std::make_optional<const std::string_view>("U.S8");
-    case LDSInteger::S16: return std::make_optional<const std::string_view>("S16");
-    case LDSInteger::U_S16: return std::make_optional<const std::string_view>("U.S16");
-    case LDSInteger::_32: return std::make_optional<const std::string_view>("32");
-    case LDSInteger::U_32: return std::make_optional<const std::string_view>("U.32");
-    case LDSInteger::_64: return std::make_optional<const std::string_view>("64");
-    case LDSInteger::U_64: return std::make_optional<const std::string_view>("U.64");
-    case LDSInteger::_128: return std::make_optional<const std::string_view>("128");
-    case LDSInteger::U_128: return std::make_optional<const std::string_view>("U.128");
-    case LDSInteger::INVALIDSIZE7: return std::make_optional<const std::string_view>("INVALIDSIZE7");
-    case LDSInteger::U_INVALIDSIZE7: return std::make_optional<const std::string_view>("U.INVALIDSIZE7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LEOnly value) {
-  switch (value) {
-    case LEOnly::LE: return std::make_optional<const std::string_view>("LE");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LLoadCacheOp value) {
-  switch (value) {
-    case LLoadCacheOp::CS: return std::make_optional<const std::string_view>("CS");
-    case LLoadCacheOp::LU: return std::make_optional<const std::string_view>("LU");
-    case LLoadCacheOp::CI: return std::make_optional<const std::string_view>("CI");
-    case LLoadCacheOp::CV: return std::make_optional<const std::string_view>("CV");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LMT value) {
-  switch (value) {
-    case LMT::noLMT: return std::make_optional<const std::string_view>("noLMT");
-    case LMT::LMT: return std::make_optional<const std::string_view>("LMT");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LOD value) {
-  switch (value) {
-    case LOD::noLOD: return std::make_optional<const std::string_view>("noLOD");
-    case LOD::LZ: return std::make_optional<const std::string_view>("LZ");
-    case LOD::LB: return std::make_optional<const std::string_view>("LB");
-    case LOD::LL: return std::make_optional<const std::string_view>("LL");
-    case LOD::INVALIDBLOD4: return std::make_optional<const std::string_view>("INVALIDBLOD4");
-    case LOD::INVALIDBLOD5: return std::make_optional<const std::string_view>("INVALIDBLOD5");
-    case LOD::LBA: return std::make_optional<const std::string_view>("LBA");
-    case LOD::LLA: return std::make_optional<const std::string_view>("LLA");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LOD1 value) {
-  switch (value) {
-    case LOD1::LZ: return std::make_optional<const std::string_view>("LZ");
-    case LOD1::LL: return std::make_optional<const std::string_view>("LL");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LOD2 value) {
-  switch (value) {
-    case LOD2::noLOD: return std::make_optional<const std::string_view>("noLOD");
-    case LOD2::LZ: return std::make_optional<const std::string_view>("LZ");
-    case LOD2::LL: return std::make_optional<const std::string_view>("LL");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LODOnly value) {
-  switch (value) {
-    case LODOnly::LOD: return std::make_optional<const std::string_view>("LOD");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LOOnly value) {
-  switch (value) {
-    case LOOnly::LO: return std::make_optional<const std::string_view>("LO");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LOP value) {
-  switch (value) {
-    case LOP::AND: return std::make_optional<const std::string_view>("AND");
-    case LOP::OR: return std::make_optional<const std::string_view>("OR");
-    case LOP::XOR: return std::make_optional<const std::string_view>("XOR");
-    case LOP::PASS_B: return std::make_optional<const std::string_view>("PASS_B");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LUTOnly value) {
-  switch (value) {
-    case LUTOnly::LUT: return std::make_optional<const std::string_view>("LUT");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LaneMask4 value) {
-  switch (value) {
-    case LaneMask4::X: return std::make_optional<const std::string_view>("X");
-    case LaneMask4::Y: return std::make_optional<const std::string_view>("Y");
-    case LaneMask4::Z: return std::make_optional<const std::string_view>("Z");
-    case LaneMask4::W: return std::make_optional<const std::string_view>("W");
-    case LaneMask4::XW: return std::make_optional<const std::string_view>("XW");
-    case LaneMask4::YW: return std::make_optional<const std::string_view>("YW");
-    case LaneMask4::ZW: return std::make_optional<const std::string_view>("ZW");
-    case LaneMask4::XZ: return std::make_optional<const std::string_view>("XZ");
-    case LaneMask4::YZ: return std::make_optional<const std::string_view>("YZ");
-    case LaneMask4::XY: return std::make_optional<const std::string_view>("XY");
-    case LaneMask4::YZW: return std::make_optional<const std::string_view>("YZW");
-    case LaneMask4::XZW: return std::make_optional<const std::string_view>("XZW");
-    case LaneMask4::XYW: return std::make_optional<const std::string_view>("XYW");
-    case LaneMask4::XYZ: return std::make_optional<const std::string_view>("XYZ");
-    case LaneMask4::XYZW: return std::make_optional<const std::string_view>("XYZW");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(LoadCacheOp value) {
-  switch (value) {
-    case LoadCacheOp::CS: return std::make_optional<const std::string_view>("CS");
-    case LoadCacheOp::LU: return std::make_optional<const std::string_view>("LU");
-    case LoadCacheOp::CI: return std::make_optional<const std::string_view>("CI");
-    case LoadCacheOp::CV: return std::make_optional<const std::string_view>("CV");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(MN value) {
-  switch (value) {
-    case MN::MN: return std::make_optional<const std::string_view>("MN");
-    case MN::MX: return std::make_optional<const std::string_view>("MX");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(MRG value) {
-  switch (value) {
-    case MRG::noMRG: return std::make_optional<const std::string_view>("noMRG");
-    case MRG::MRG: return std::make_optional<const std::string_view>("MRG");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(MS value) {
-  switch (value) {
-    case MS::noMS: return std::make_optional<const std::string_view>("noMS");
-    case MS::MS: return std::make_optional<const std::string_view>("MS");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(MSI value) {
-  switch (value) {
-    case MSI::C: return std::make_optional<const std::string_view>("C");
-    case MSI::INVALIDMSI3: return std::make_optional<const std::string_view>("INVALIDMSI3");
-    case MSI::CENTROID: return std::make_optional<const std::string_view>("CENTROID");
-    case MSI::OFFSET: return std::make_optional<const std::string_view>("OFFSET");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(MemBarIvall value) {
-  switch (value) {
-    case MemBarIvall::NOIVALL: return std::make_optional<const std::string_view>("NOIVALL");
-    case MemBarIvall::IVALLD: return std::make_optional<const std::string_view>("IVALLD");
-    case MemBarIvall::IVALLT: return std::make_optional<const std::string_view>("IVALLT");
-    case MemBarIvall::IVALLTD: return std::make_optional<const std::string_view>("IVALLTD");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(MemBarLevel value) {
-  switch (value) {
-    case MemBarLevel::CTA: return std::make_optional<const std::string_view>("CTA");
-    case MemBarLevel::GL: return std::make_optional<const std::string_view>("GL");
-    case MemBarLevel::SYS: return std::make_optional<const std::string_view>("SYS");
-    case MemBarLevel::VC: return std::make_optional<const std::string_view>("VC");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(MufuOp value) {
-  switch (value) {
-    case MufuOp::COS: return std::make_optional<const std::string_view>("COS");
-    case MufuOp::SIN: return std::make_optional<const std::string_view>("SIN");
-    case MufuOp::EX2: return std::make_optional<const std::string_view>("EX2");
-    case MufuOp::LG2: return std::make_optional<const std::string_view>("LG2");
-    case MufuOp::RCP: return std::make_optional<const std::string_view>("RCP");
-    case MufuOp::RSQ: return std::make_optional<const std::string_view>("RSQ");
-    case MufuOp::RCP64H: return std::make_optional<const std::string_view>("RCP64H");
-    case MufuOp::RSQ64H: return std::make_optional<const std::string_view>("RSQ64H");
-    case MufuOp::SQRT: return std::make_optional<const std::string_view>("SQRT");
-    case MufuOp::INVALIDMUFUOPCODE9: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODE9");
-    case MufuOp::INVALIDMUFUOPCODEA: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODEA");
-    case MufuOp::INVALIDMUFUOPCODEB: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODEB");
-    case MufuOp::INVALIDMUFUOPCODEC: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODEC");
-    case MufuOp::INVALIDMUFUOPCODED: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODED");
-    case MufuOp::INVALIDMUFUOPCODEE: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODEE");
-    case MufuOp::INVALIDMUFUOPCODEF: return std::make_optional<const std::string_view>("INVALIDMUFUOPCODEF");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(NDV value) {
-  switch (value) {
-    case NDV::noNDV: return std::make_optional<const std::string_view>("noNDV");
-    case NDV::NDV: return std::make_optional<const std::string_view>("NDV");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(NODEP value) {
-  switch (value) {
-    case NODEP::noNODEP: return std::make_optional<const std::string_view>("noNODEP");
-    case NODEP::NODEP: return std::make_optional<const std::string_view>("NODEP");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(NonZeroRegister value) {
-  switch (value) {
-    case NonZeroRegister::R00: return std::make_optional<const std::string_view>("R00");
-    case NonZeroRegister::R01: return std::make_optional<const std::string_view>("R01");
-    case NonZeroRegister::R02: return std::make_optional<const std::string_view>("R02");
-    case NonZeroRegister::R03: return std::make_optional<const std::string_view>("R03");
-    case NonZeroRegister::R04: return std::make_optional<const std::string_view>("R04");
-    case NonZeroRegister::R05: return std::make_optional<const std::string_view>("R05");
-    case NonZeroRegister::R06: return std::make_optional<const std::string_view>("R06");
-    case NonZeroRegister::R07: return std::make_optional<const std::string_view>("R07");
-    case NonZeroRegister::R08: return std::make_optional<const std::string_view>("R08");
-    case NonZeroRegister::R09: return std::make_optional<const std::string_view>("R09");
-    case NonZeroRegister::R10: return std::make_optional<const std::string_view>("R10");
-    case NonZeroRegister::R11: return std::make_optional<const std::string_view>("R11");
-    case NonZeroRegister::R12: return std::make_optional<const std::string_view>("R12");
-    case NonZeroRegister::R13: return std::make_optional<const std::string_view>("R13");
-    case NonZeroRegister::R14: return std::make_optional<const std::string_view>("R14");
-    case NonZeroRegister::R15: return std::make_optional<const std::string_view>("R15");
-    case NonZeroRegister::R16: return std::make_optional<const std::string_view>("R16");
-    case NonZeroRegister::R17: return std::make_optional<const std::string_view>("R17");
-    case NonZeroRegister::R18: return std::make_optional<const std::string_view>("R18");
-    case NonZeroRegister::R19: return std::make_optional<const std::string_view>("R19");
-    case NonZeroRegister::R20: return std::make_optional<const std::string_view>("R20");
-    case NonZeroRegister::R21: return std::make_optional<const std::string_view>("R21");
-    case NonZeroRegister::R22: return std::make_optional<const std::string_view>("R22");
-    case NonZeroRegister::R23: return std::make_optional<const std::string_view>("R23");
-    case NonZeroRegister::R24: return std::make_optional<const std::string_view>("R24");
-    case NonZeroRegister::R25: return std::make_optional<const std::string_view>("R25");
-    case NonZeroRegister::R26: return std::make_optional<const std::string_view>("R26");
-    case NonZeroRegister::R27: return std::make_optional<const std::string_view>("R27");
-    case NonZeroRegister::R28: return std::make_optional<const std::string_view>("R28");
-    case NonZeroRegister::R29: return std::make_optional<const std::string_view>("R29");
-    case NonZeroRegister::R30: return std::make_optional<const std::string_view>("R30");
-    case NonZeroRegister::R31: return std::make_optional<const std::string_view>("R31");
-    case NonZeroRegister::R32: return std::make_optional<const std::string_view>("R32");
-    case NonZeroRegister::R33: return std::make_optional<const std::string_view>("R33");
-    case NonZeroRegister::R34: return std::make_optional<const std::string_view>("R34");
-    case NonZeroRegister::R35: return std::make_optional<const std::string_view>("R35");
-    case NonZeroRegister::R36: return std::make_optional<const std::string_view>("R36");
-    case NonZeroRegister::R37: return std::make_optional<const std::string_view>("R37");
-    case NonZeroRegister::R38: return std::make_optional<const std::string_view>("R38");
-    case NonZeroRegister::R39: return std::make_optional<const std::string_view>("R39");
-    case NonZeroRegister::R40: return std::make_optional<const std::string_view>("R40");
-    case NonZeroRegister::R41: return std::make_optional<const std::string_view>("R41");
-    case NonZeroRegister::R42: return std::make_optional<const std::string_view>("R42");
-    case NonZeroRegister::R43: return std::make_optional<const std::string_view>("R43");
-    case NonZeroRegister::R44: return std::make_optional<const std::string_view>("R44");
-    case NonZeroRegister::R45: return std::make_optional<const std::string_view>("R45");
-    case NonZeroRegister::R46: return std::make_optional<const std::string_view>("R46");
-    case NonZeroRegister::R47: return std::make_optional<const std::string_view>("R47");
-    case NonZeroRegister::R48: return std::make_optional<const std::string_view>("R48");
-    case NonZeroRegister::R49: return std::make_optional<const std::string_view>("R49");
-    case NonZeroRegister::R50: return std::make_optional<const std::string_view>("R50");
-    case NonZeroRegister::R51: return std::make_optional<const std::string_view>("R51");
-    case NonZeroRegister::R52: return std::make_optional<const std::string_view>("R52");
-    case NonZeroRegister::R53: return std::make_optional<const std::string_view>("R53");
-    case NonZeroRegister::R54: return std::make_optional<const std::string_view>("R54");
-    case NonZeroRegister::R55: return std::make_optional<const std::string_view>("R55");
-    case NonZeroRegister::R56: return std::make_optional<const std::string_view>("R56");
-    case NonZeroRegister::R57: return std::make_optional<const std::string_view>("R57");
-    case NonZeroRegister::R58: return std::make_optional<const std::string_view>("R58");
-    case NonZeroRegister::R59: return std::make_optional<const std::string_view>("R59");
-    case NonZeroRegister::R60: return std::make_optional<const std::string_view>("R60");
-    case NonZeroRegister::R61: return std::make_optional<const std::string_view>("R61");
-    case NonZeroRegister::R62: return std::make_optional<const std::string_view>("R62");
-    case NonZeroRegister::R63: return std::make_optional<const std::string_view>("R63");
-    case NonZeroRegister::R64: return std::make_optional<const std::string_view>("R64");
-    case NonZeroRegister::R65: return std::make_optional<const std::string_view>("R65");
-    case NonZeroRegister::R66: return std::make_optional<const std::string_view>("R66");
-    case NonZeroRegister::R67: return std::make_optional<const std::string_view>("R67");
-    case NonZeroRegister::R68: return std::make_optional<const std::string_view>("R68");
-    case NonZeroRegister::R69: return std::make_optional<const std::string_view>("R69");
-    case NonZeroRegister::R70: return std::make_optional<const std::string_view>("R70");
-    case NonZeroRegister::R71: return std::make_optional<const std::string_view>("R71");
-    case NonZeroRegister::R72: return std::make_optional<const std::string_view>("R72");
-    case NonZeroRegister::R73: return std::make_optional<const std::string_view>("R73");
-    case NonZeroRegister::R74: return std::make_optional<const std::string_view>("R74");
-    case NonZeroRegister::R75: return std::make_optional<const std::string_view>("R75");
-    case NonZeroRegister::R76: return std::make_optional<const std::string_view>("R76");
-    case NonZeroRegister::R77: return std::make_optional<const std::string_view>("R77");
-    case NonZeroRegister::R78: return std::make_optional<const std::string_view>("R78");
-    case NonZeroRegister::R79: return std::make_optional<const std::string_view>("R79");
-    case NonZeroRegister::R80: return std::make_optional<const std::string_view>("R80");
-    case NonZeroRegister::R81: return std::make_optional<const std::string_view>("R81");
-    case NonZeroRegister::R82: return std::make_optional<const std::string_view>("R82");
-    case NonZeroRegister::R83: return std::make_optional<const std::string_view>("R83");
-    case NonZeroRegister::R84: return std::make_optional<const std::string_view>("R84");
-    case NonZeroRegister::R85: return std::make_optional<const std::string_view>("R85");
-    case NonZeroRegister::R86: return std::make_optional<const std::string_view>("R86");
-    case NonZeroRegister::R87: return std::make_optional<const std::string_view>("R87");
-    case NonZeroRegister::R88: return std::make_optional<const std::string_view>("R88");
-    case NonZeroRegister::R89: return std::make_optional<const std::string_view>("R89");
-    case NonZeroRegister::R90: return std::make_optional<const std::string_view>("R90");
-    case NonZeroRegister::R91: return std::make_optional<const std::string_view>("R91");
-    case NonZeroRegister::R92: return std::make_optional<const std::string_view>("R92");
-    case NonZeroRegister::R93: return std::make_optional<const std::string_view>("R93");
-    case NonZeroRegister::R94: return std::make_optional<const std::string_view>("R94");
-    case NonZeroRegister::R95: return std::make_optional<const std::string_view>("R95");
-    case NonZeroRegister::R96: return std::make_optional<const std::string_view>("R96");
-    case NonZeroRegister::R97: return std::make_optional<const std::string_view>("R97");
-    case NonZeroRegister::R98: return std::make_optional<const std::string_view>("R98");
-    case NonZeroRegister::R99: return std::make_optional<const std::string_view>("R99");
-    case NonZeroRegister::R100: return std::make_optional<const std::string_view>("R100");
-    case NonZeroRegister::R101: return std::make_optional<const std::string_view>("R101");
-    case NonZeroRegister::R102: return std::make_optional<const std::string_view>("R102");
-    case NonZeroRegister::R103: return std::make_optional<const std::string_view>("R103");
-    case NonZeroRegister::R104: return std::make_optional<const std::string_view>("R104");
-    case NonZeroRegister::R105: return std::make_optional<const std::string_view>("R105");
-    case NonZeroRegister::R106: return std::make_optional<const std::string_view>("R106");
-    case NonZeroRegister::R107: return std::make_optional<const std::string_view>("R107");
-    case NonZeroRegister::R108: return std::make_optional<const std::string_view>("R108");
-    case NonZeroRegister::R109: return std::make_optional<const std::string_view>("R109");
-    case NonZeroRegister::R110: return std::make_optional<const std::string_view>("R110");
-    case NonZeroRegister::R111: return std::make_optional<const std::string_view>("R111");
-    case NonZeroRegister::R112: return std::make_optional<const std::string_view>("R112");
-    case NonZeroRegister::R113: return std::make_optional<const std::string_view>("R113");
-    case NonZeroRegister::R114: return std::make_optional<const std::string_view>("R114");
-    case NonZeroRegister::R115: return std::make_optional<const std::string_view>("R115");
-    case NonZeroRegister::R116: return std::make_optional<const std::string_view>("R116");
-    case NonZeroRegister::R117: return std::make_optional<const std::string_view>("R117");
-    case NonZeroRegister::R118: return std::make_optional<const std::string_view>("R118");
-    case NonZeroRegister::R119: return std::make_optional<const std::string_view>("R119");
-    case NonZeroRegister::R120: return std::make_optional<const std::string_view>("R120");
-    case NonZeroRegister::R121: return std::make_optional<const std::string_view>("R121");
-    case NonZeroRegister::R122: return std::make_optional<const std::string_view>("R122");
-    case NonZeroRegister::R123: return std::make_optional<const std::string_view>("R123");
-    case NonZeroRegister::R124: return std::make_optional<const std::string_view>("R124");
-    case NonZeroRegister::R125: return std::make_optional<const std::string_view>("R125");
-    case NonZeroRegister::R126: return std::make_optional<const std::string_view>("R126");
-    case NonZeroRegister::R127: return std::make_optional<const std::string_view>("R127");
-    case NonZeroRegister::R128: return std::make_optional<const std::string_view>("R128");
-    case NonZeroRegister::R129: return std::make_optional<const std::string_view>("R129");
-    case NonZeroRegister::R130: return std::make_optional<const std::string_view>("R130");
-    case NonZeroRegister::R131: return std::make_optional<const std::string_view>("R131");
-    case NonZeroRegister::R132: return std::make_optional<const std::string_view>("R132");
-    case NonZeroRegister::R133: return std::make_optional<const std::string_view>("R133");
-    case NonZeroRegister::R134: return std::make_optional<const std::string_view>("R134");
-    case NonZeroRegister::R135: return std::make_optional<const std::string_view>("R135");
-    case NonZeroRegister::R136: return std::make_optional<const std::string_view>("R136");
-    case NonZeroRegister::R137: return std::make_optional<const std::string_view>("R137");
-    case NonZeroRegister::R138: return std::make_optional<const std::string_view>("R138");
-    case NonZeroRegister::R139: return std::make_optional<const std::string_view>("R139");
-    case NonZeroRegister::R140: return std::make_optional<const std::string_view>("R140");
-    case NonZeroRegister::R141: return std::make_optional<const std::string_view>("R141");
-    case NonZeroRegister::R142: return std::make_optional<const std::string_view>("R142");
-    case NonZeroRegister::R143: return std::make_optional<const std::string_view>("R143");
-    case NonZeroRegister::R144: return std::make_optional<const std::string_view>("R144");
-    case NonZeroRegister::R145: return std::make_optional<const std::string_view>("R145");
-    case NonZeroRegister::R146: return std::make_optional<const std::string_view>("R146");
-    case NonZeroRegister::R147: return std::make_optional<const std::string_view>("R147");
-    case NonZeroRegister::R148: return std::make_optional<const std::string_view>("R148");
-    case NonZeroRegister::R149: return std::make_optional<const std::string_view>("R149");
-    case NonZeroRegister::R150: return std::make_optional<const std::string_view>("R150");
-    case NonZeroRegister::R151: return std::make_optional<const std::string_view>("R151");
-    case NonZeroRegister::R152: return std::make_optional<const std::string_view>("R152");
-    case NonZeroRegister::R153: return std::make_optional<const std::string_view>("R153");
-    case NonZeroRegister::R154: return std::make_optional<const std::string_view>("R154");
-    case NonZeroRegister::R155: return std::make_optional<const std::string_view>("R155");
-    case NonZeroRegister::R156: return std::make_optional<const std::string_view>("R156");
-    case NonZeroRegister::R157: return std::make_optional<const std::string_view>("R157");
-    case NonZeroRegister::R158: return std::make_optional<const std::string_view>("R158");
-    case NonZeroRegister::R159: return std::make_optional<const std::string_view>("R159");
-    case NonZeroRegister::R160: return std::make_optional<const std::string_view>("R160");
-    case NonZeroRegister::R161: return std::make_optional<const std::string_view>("R161");
-    case NonZeroRegister::R162: return std::make_optional<const std::string_view>("R162");
-    case NonZeroRegister::R163: return std::make_optional<const std::string_view>("R163");
-    case NonZeroRegister::R164: return std::make_optional<const std::string_view>("R164");
-    case NonZeroRegister::R165: return std::make_optional<const std::string_view>("R165");
-    case NonZeroRegister::R166: return std::make_optional<const std::string_view>("R166");
-    case NonZeroRegister::R167: return std::make_optional<const std::string_view>("R167");
-    case NonZeroRegister::R168: return std::make_optional<const std::string_view>("R168");
-    case NonZeroRegister::R169: return std::make_optional<const std::string_view>("R169");
-    case NonZeroRegister::R170: return std::make_optional<const std::string_view>("R170");
-    case NonZeroRegister::R171: return std::make_optional<const std::string_view>("R171");
-    case NonZeroRegister::R172: return std::make_optional<const std::string_view>("R172");
-    case NonZeroRegister::R173: return std::make_optional<const std::string_view>("R173");
-    case NonZeroRegister::R174: return std::make_optional<const std::string_view>("R174");
-    case NonZeroRegister::R175: return std::make_optional<const std::string_view>("R175");
-    case NonZeroRegister::R176: return std::make_optional<const std::string_view>("R176");
-    case NonZeroRegister::R177: return std::make_optional<const std::string_view>("R177");
-    case NonZeroRegister::R178: return std::make_optional<const std::string_view>("R178");
-    case NonZeroRegister::R179: return std::make_optional<const std::string_view>("R179");
-    case NonZeroRegister::R180: return std::make_optional<const std::string_view>("R180");
-    case NonZeroRegister::R181: return std::make_optional<const std::string_view>("R181");
-    case NonZeroRegister::R182: return std::make_optional<const std::string_view>("R182");
-    case NonZeroRegister::R183: return std::make_optional<const std::string_view>("R183");
-    case NonZeroRegister::R184: return std::make_optional<const std::string_view>("R184");
-    case NonZeroRegister::R185: return std::make_optional<const std::string_view>("R185");
-    case NonZeroRegister::R186: return std::make_optional<const std::string_view>("R186");
-    case NonZeroRegister::R187: return std::make_optional<const std::string_view>("R187");
-    case NonZeroRegister::R188: return std::make_optional<const std::string_view>("R188");
-    case NonZeroRegister::R189: return std::make_optional<const std::string_view>("R189");
-    case NonZeroRegister::R190: return std::make_optional<const std::string_view>("R190");
-    case NonZeroRegister::R191: return std::make_optional<const std::string_view>("R191");
-    case NonZeroRegister::R192: return std::make_optional<const std::string_view>("R192");
-    case NonZeroRegister::R193: return std::make_optional<const std::string_view>("R193");
-    case NonZeroRegister::R194: return std::make_optional<const std::string_view>("R194");
-    case NonZeroRegister::R195: return std::make_optional<const std::string_view>("R195");
-    case NonZeroRegister::R196: return std::make_optional<const std::string_view>("R196");
-    case NonZeroRegister::R197: return std::make_optional<const std::string_view>("R197");
-    case NonZeroRegister::R198: return std::make_optional<const std::string_view>("R198");
-    case NonZeroRegister::R199: return std::make_optional<const std::string_view>("R199");
-    case NonZeroRegister::R200: return std::make_optional<const std::string_view>("R200");
-    case NonZeroRegister::R201: return std::make_optional<const std::string_view>("R201");
-    case NonZeroRegister::R202: return std::make_optional<const std::string_view>("R202");
-    case NonZeroRegister::R203: return std::make_optional<const std::string_view>("R203");
-    case NonZeroRegister::R204: return std::make_optional<const std::string_view>("R204");
-    case NonZeroRegister::R205: return std::make_optional<const std::string_view>("R205");
-    case NonZeroRegister::R206: return std::make_optional<const std::string_view>("R206");
-    case NonZeroRegister::R207: return std::make_optional<const std::string_view>("R207");
-    case NonZeroRegister::R208: return std::make_optional<const std::string_view>("R208");
-    case NonZeroRegister::R209: return std::make_optional<const std::string_view>("R209");
-    case NonZeroRegister::R210: return std::make_optional<const std::string_view>("R210");
-    case NonZeroRegister::R211: return std::make_optional<const std::string_view>("R211");
-    case NonZeroRegister::R212: return std::make_optional<const std::string_view>("R212");
-    case NonZeroRegister::R213: return std::make_optional<const std::string_view>("R213");
-    case NonZeroRegister::R214: return std::make_optional<const std::string_view>("R214");
-    case NonZeroRegister::R215: return std::make_optional<const std::string_view>("R215");
-    case NonZeroRegister::R216: return std::make_optional<const std::string_view>("R216");
-    case NonZeroRegister::R217: return std::make_optional<const std::string_view>("R217");
-    case NonZeroRegister::R218: return std::make_optional<const std::string_view>("R218");
-    case NonZeroRegister::R219: return std::make_optional<const std::string_view>("R219");
-    case NonZeroRegister::R220: return std::make_optional<const std::string_view>("R220");
-    case NonZeroRegister::R221: return std::make_optional<const std::string_view>("R221");
-    case NonZeroRegister::R222: return std::make_optional<const std::string_view>("R222");
-    case NonZeroRegister::R223: return std::make_optional<const std::string_view>("R223");
-    case NonZeroRegister::R224: return std::make_optional<const std::string_view>("R224");
-    case NonZeroRegister::R225: return std::make_optional<const std::string_view>("R225");
-    case NonZeroRegister::R226: return std::make_optional<const std::string_view>("R226");
-    case NonZeroRegister::R227: return std::make_optional<const std::string_view>("R227");
-    case NonZeroRegister::R228: return std::make_optional<const std::string_view>("R228");
-    case NonZeroRegister::R229: return std::make_optional<const std::string_view>("R229");
-    case NonZeroRegister::R230: return std::make_optional<const std::string_view>("R230");
-    case NonZeroRegister::R231: return std::make_optional<const std::string_view>("R231");
-    case NonZeroRegister::R232: return std::make_optional<const std::string_view>("R232");
-    case NonZeroRegister::R233: return std::make_optional<const std::string_view>("R233");
-    case NonZeroRegister::R234: return std::make_optional<const std::string_view>("R234");
-    case NonZeroRegister::R235: return std::make_optional<const std::string_view>("R235");
-    case NonZeroRegister::R236: return std::make_optional<const std::string_view>("R236");
-    case NonZeroRegister::R237: return std::make_optional<const std::string_view>("R237");
-    case NonZeroRegister::R238: return std::make_optional<const std::string_view>("R238");
-    case NonZeroRegister::R239: return std::make_optional<const std::string_view>("R239");
-    case NonZeroRegister::R240: return std::make_optional<const std::string_view>("R240");
-    case NonZeroRegister::R241: return std::make_optional<const std::string_view>("R241");
-    case NonZeroRegister::R242: return std::make_optional<const std::string_view>("R242");
-    case NonZeroRegister::R243: return std::make_optional<const std::string_view>("R243");
-    case NonZeroRegister::R244: return std::make_optional<const std::string_view>("R244");
-    case NonZeroRegister::R245: return std::make_optional<const std::string_view>("R245");
-    case NonZeroRegister::R246: return std::make_optional<const std::string_view>("R246");
-    case NonZeroRegister::R247: return std::make_optional<const std::string_view>("R247");
-    case NonZeroRegister::R248: return std::make_optional<const std::string_view>("R248");
-    case NonZeroRegister::R249: return std::make_optional<const std::string_view>("R249");
-    case NonZeroRegister::R250: return std::make_optional<const std::string_view>("R250");
-    case NonZeroRegister::R251: return std::make_optional<const std::string_view>("R251");
-    case NonZeroRegister::R252: return std::make_optional<const std::string_view>("R252");
-    case NonZeroRegister::R253: return std::make_optional<const std::string_view>("R253");
-    case NonZeroRegister::R254: return std::make_optional<const std::string_view>("R254");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Ofmt_FP16 value) {
-  switch (value) {
-    case Ofmt_FP16::F16_V2: return std::make_optional<const std::string_view>("F16_V2");
-    case Ofmt_FP16::F32: return std::make_optional<const std::string_view>("F32");
-    case Ofmt_FP16::MRG_H0: return std::make_optional<const std::string_view>("MRG_H0");
-    case Ofmt_FP16::MRG_H1: return std::make_optional<const std::string_view>("MRG_H1");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(OnlyQry value) {
-  switch (value) {
-    case OnlyQry::QRY1: return std::make_optional<const std::string_view>("QRY1");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(OutType value) {
-  switch (value) {
-    case OutType::INVALIDOUTSTYPE0: return std::make_optional<const std::string_view>("INVALIDOUTSTYPE0");
-    case OutType::EMIT: return std::make_optional<const std::string_view>("EMIT");
-    case OutType::CUT: return std::make_optional<const std::string_view>("CUT");
-    case OutType::EMIT_THEN_CUT: return std::make_optional<const std::string_view>("EMIT_THEN_CUT");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(PMode value) {
-  switch (value) {
-    case PMode::IDX: return std::make_optional<const std::string_view>("IDX");
-    case PMode::F4E: return std::make_optional<const std::string_view>("F4E");
-    case PMode::B4E: return std::make_optional<const std::string_view>("B4E");
-    case PMode::RC8: return std::make_optional<const std::string_view>("RC8");
-    case PMode::ECL: return std::make_optional<const std::string_view>("ECL");
-    case PMode::ECR: return std::make_optional<const std::string_view>("ECR");
-    case PMode::RC16: return std::make_optional<const std::string_view>("RC16");
-    case PMode::INVALIDPMODE7: return std::make_optional<const std::string_view>("INVALIDPMODE7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(PNWord value) {
-  switch (value) {
-    case PNWord::PPPPPPPP: return std::make_optional<const std::string_view>("PPPPPPPP");
-    case PNWord::PPPPPPNP: return std::make_optional<const std::string_view>("PPPPPPNP");
-    case PNWord::PPPPPPPN: return std::make_optional<const std::string_view>("PPPPPPPN");
-    case PNWord::PPPPPPZP: return std::make_optional<const std::string_view>("PPPPPPZP");
-    case PNWord::PPPPNPPP: return std::make_optional<const std::string_view>("PPPPNPPP");
-    case PNWord::PPPPNPNP: return std::make_optional<const std::string_view>("PPPPNPNP");
-    case PNWord::PPPPNPPN: return std::make_optional<const std::string_view>("PPPPNPPN");
-    case PNWord::PPPPNPZP: return std::make_optional<const std::string_view>("PPPPNPZP");
-    case PNWord::PPPPPNPP: return std::make_optional<const std::string_view>("PPPPPNPP");
-    case PNWord::PPPPPNNP: return std::make_optional<const std::string_view>("PPPPPNNP");
-    case PNWord::PPPPPNPN: return std::make_optional<const std::string_view>("PPPPPNPN");
-    case PNWord::PPPPPNZP: return std::make_optional<const std::string_view>("PPPPPNZP");
-    case PNWord::PPPPZPPP: return std::make_optional<const std::string_view>("PPPPZPPP");
-    case PNWord::PPPPZPNP: return std::make_optional<const std::string_view>("PPPPZPNP");
-    case PNWord::PPPPZPPN: return std::make_optional<const std::string_view>("PPPPZPPN");
-    case PNWord::PPPPZPZP: return std::make_optional<const std::string_view>("PPPPZPZP");
-    case PNWord::PPNPPPPP: return std::make_optional<const std::string_view>("PPNPPPPP");
-    case PNWord::PPNPPPNP: return std::make_optional<const std::string_view>("PPNPPPNP");
-    case PNWord::PPNPPPPN: return std::make_optional<const std::string_view>("PPNPPPPN");
-    case PNWord::PPNPPPZP: return std::make_optional<const std::string_view>("PPNPPPZP");
-    case PNWord::PPNPNPPP: return std::make_optional<const std::string_view>("PPNPNPPP");
-    case PNWord::PPNPNPNP: return std::make_optional<const std::string_view>("PPNPNPNP");
-    case PNWord::PPNPNPPN: return std::make_optional<const std::string_view>("PPNPNPPN");
-    case PNWord::PPNPNPZP: return std::make_optional<const std::string_view>("PPNPNPZP");
-    case PNWord::PPNPPNPP: return std::make_optional<const std::string_view>("PPNPPNPP");
-    case PNWord::PPNPPNNP: return std::make_optional<const std::string_view>("PPNPPNNP");
-    case PNWord::PPNPPNPN: return std::make_optional<const std::string_view>("PPNPPNPN");
-    case PNWord::PPNPPNZP: return std::make_optional<const std::string_view>("PPNPPNZP");
-    case PNWord::PPNPZPPP: return std::make_optional<const std::string_view>("PPNPZPPP");
-    case PNWord::PPNPZPNP: return std::make_optional<const std::string_view>("PPNPZPNP");
-    case PNWord::PPNPZPPN: return std::make_optional<const std::string_view>("PPNPZPPN");
-    case PNWord::PPNPZPZP: return std::make_optional<const std::string_view>("PPNPZPZP");
-    case PNWord::PPPNPPPP: return std::make_optional<const std::string_view>("PPPNPPPP");
-    case PNWord::PPPNPPNP: return std::make_optional<const std::string_view>("PPPNPPNP");
-    case PNWord::PPPNPPPN: return std::make_optional<const std::string_view>("PPPNPPPN");
-    case PNWord::PPPNPPZP: return std::make_optional<const std::string_view>("PPPNPPZP");
-    case PNWord::PPPNNPPP: return std::make_optional<const std::string_view>("PPPNNPPP");
-    case PNWord::PPPNNPNP: return std::make_optional<const std::string_view>("PPPNNPNP");
-    case PNWord::PPPNNPPN: return std::make_optional<const std::string_view>("PPPNNPPN");
-    case PNWord::PPPNNPZP: return std::make_optional<const std::string_view>("PPPNNPZP");
-    case PNWord::PPPNPNPP: return std::make_optional<const std::string_view>("PPPNPNPP");
-    case PNWord::PPPNPNNP: return std::make_optional<const std::string_view>("PPPNPNNP");
-    case PNWord::PPPNPNPN: return std::make_optional<const std::string_view>("PPPNPNPN");
-    case PNWord::PPPNPNZP: return std::make_optional<const std::string_view>("PPPNPNZP");
-    case PNWord::PPPNZPPP: return std::make_optional<const std::string_view>("PPPNZPPP");
-    case PNWord::PPPNZPNP: return std::make_optional<const std::string_view>("PPPNZPNP");
-    case PNWord::PPPNZPPN: return std::make_optional<const std::string_view>("PPPNZPPN");
-    case PNWord::PPPNZPZP: return std::make_optional<const std::string_view>("PPPNZPZP");
-    case PNWord::PPZPPPPP: return std::make_optional<const std::string_view>("PPZPPPPP");
-    case PNWord::PPZPPPNP: return std::make_optional<const std::string_view>("PPZPPPNP");
-    case PNWord::PPZPPPPN: return std::make_optional<const std::string_view>("PPZPPPPN");
-    case PNWord::PPZPPPZP: return std::make_optional<const std::string_view>("PPZPPPZP");
-    case PNWord::PPZPNPPP: return std::make_optional<const std::string_view>("PPZPNPPP");
-    case PNWord::PPZPNPNP: return std::make_optional<const std::string_view>("PPZPNPNP");
-    case PNWord::PPZPNPPN: return std::make_optional<const std::string_view>("PPZPNPPN");
-    case PNWord::PPZPNPZP: return std::make_optional<const std::string_view>("PPZPNPZP");
-    case PNWord::PPZPPNPP: return std::make_optional<const std::string_view>("PPZPPNPP");
-    case PNWord::PPZPPNNP: return std::make_optional<const std::string_view>("PPZPPNNP");
-    case PNWord::PPZPPNPN: return std::make_optional<const std::string_view>("PPZPPNPN");
-    case PNWord::PPZPPNZP: return std::make_optional<const std::string_view>("PPZPPNZP");
-    case PNWord::PPZPZPPP: return std::make_optional<const std::string_view>("PPZPZPPP");
-    case PNWord::PPZPZPNP: return std::make_optional<const std::string_view>("PPZPZPNP");
-    case PNWord::PPZPZPPN: return std::make_optional<const std::string_view>("PPZPZPPN");
-    case PNWord::PPZPZPZP: return std::make_optional<const std::string_view>("PPZPZPZP");
-    case PNWord::NPPPPPPP: return std::make_optional<const std::string_view>("NPPPPPPP");
-    case PNWord::NPPPPPNP: return std::make_optional<const std::string_view>("NPPPPPNP");
-    case PNWord::NPPPPPPN: return std::make_optional<const std::string_view>("NPPPPPPN");
-    case PNWord::NPPPPPZP: return std::make_optional<const std::string_view>("NPPPPPZP");
-    case PNWord::NPPPNPPP: return std::make_optional<const std::string_view>("NPPPNPPP");
-    case PNWord::NPPPNPNP: return std::make_optional<const std::string_view>("NPPPNPNP");
-    case PNWord::NPPPNPPN: return std::make_optional<const std::string_view>("NPPPNPPN");
-    case PNWord::NPPPNPZP: return std::make_optional<const std::string_view>("NPPPNPZP");
-    case PNWord::NPPPPNPP: return std::make_optional<const std::string_view>("NPPPPNPP");
-    case PNWord::NPPPPNNP: return std::make_optional<const std::string_view>("NPPPPNNP");
-    case PNWord::NPPPPNPN: return std::make_optional<const std::string_view>("NPPPPNPN");
-    case PNWord::NPPPPNZP: return std::make_optional<const std::string_view>("NPPPPNZP");
-    case PNWord::NPPPZPPP: return std::make_optional<const std::string_view>("NPPPZPPP");
-    case PNWord::NPPPZPNP: return std::make_optional<const std::string_view>("NPPPZPNP");
-    case PNWord::NPPPZPPN: return std::make_optional<const std::string_view>("NPPPZPPN");
-    case PNWord::NPPPZPZP: return std::make_optional<const std::string_view>("NPPPZPZP");
-    case PNWord::NPNPPPPP: return std::make_optional<const std::string_view>("NPNPPPPP");
-    case PNWord::NPNPPPNP: return std::make_optional<const std::string_view>("NPNPPPNP");
-    case PNWord::NPNPPPPN: return std::make_optional<const std::string_view>("NPNPPPPN");
-    case PNWord::NPNPPPZP: return std::make_optional<const std::string_view>("NPNPPPZP");
-    case PNWord::NPNPNPPP: return std::make_optional<const std::string_view>("NPNPNPPP");
-    case PNWord::NPNPNPNP: return std::make_optional<const std::string_view>("NPNPNPNP");
-    case PNWord::NPNPNPPN: return std::make_optional<const std::string_view>("NPNPNPPN");
-    case PNWord::NPNPNPZP: return std::make_optional<const std::string_view>("NPNPNPZP");
-    case PNWord::NPNPPNPP: return std::make_optional<const std::string_view>("NPNPPNPP");
-    case PNWord::NPNPPNNP: return std::make_optional<const std::string_view>("NPNPPNNP");
-    case PNWord::NPNPPNPN: return std::make_optional<const std::string_view>("NPNPPNPN");
-    case PNWord::NPNPPNZP: return std::make_optional<const std::string_view>("NPNPPNZP");
-    case PNWord::NPNPZPPP: return std::make_optional<const std::string_view>("NPNPZPPP");
-    case PNWord::NPNPZPNP: return std::make_optional<const std::string_view>("NPNPZPNP");
-    case PNWord::NPNPZPPN: return std::make_optional<const std::string_view>("NPNPZPPN");
-    case PNWord::NPNPZPZP: return std::make_optional<const std::string_view>("NPNPZPZP");
-    case PNWord::NPPNPPPP: return std::make_optional<const std::string_view>("NPPNPPPP");
-    case PNWord::NPPNPPNP: return std::make_optional<const std::string_view>("NPPNPPNP");
-    case PNWord::NPPNPPPN: return std::make_optional<const std::string_view>("NPPNPPPN");
-    case PNWord::NPPNPPZP: return std::make_optional<const std::string_view>("NPPNPPZP");
-    case PNWord::NPPNNPPP: return std::make_optional<const std::string_view>("NPPNNPPP");
-    case PNWord::NPPNNPNP: return std::make_optional<const std::string_view>("NPPNNPNP");
-    case PNWord::NPPNNPPN: return std::make_optional<const std::string_view>("NPPNNPPN");
-    case PNWord::NPPNNPZP: return std::make_optional<const std::string_view>("NPPNNPZP");
-    case PNWord::NPPNPNPP: return std::make_optional<const std::string_view>("NPPNPNPP");
-    case PNWord::NPPNPNNP: return std::make_optional<const std::string_view>("NPPNPNNP");
-    case PNWord::NPPNPNPN: return std::make_optional<const std::string_view>("NPPNPNPN");
-    case PNWord::NPPNPNZP: return std::make_optional<const std::string_view>("NPPNPNZP");
-    case PNWord::NPPNZPPP: return std::make_optional<const std::string_view>("NPPNZPPP");
-    case PNWord::NPPNZPNP: return std::make_optional<const std::string_view>("NPPNZPNP");
-    case PNWord::NPPNZPPN: return std::make_optional<const std::string_view>("NPPNZPPN");
-    case PNWord::NPPNZPZP: return std::make_optional<const std::string_view>("NPPNZPZP");
-    case PNWord::NPZPPPPP: return std::make_optional<const std::string_view>("NPZPPPPP");
-    case PNWord::NPZPPPNP: return std::make_optional<const std::string_view>("NPZPPPNP");
-    case PNWord::NPZPPPPN: return std::make_optional<const std::string_view>("NPZPPPPN");
-    case PNWord::NPZPPPZP: return std::make_optional<const std::string_view>("NPZPPPZP");
-    case PNWord::NPZPNPPP: return std::make_optional<const std::string_view>("NPZPNPPP");
-    case PNWord::NPZPNPNP: return std::make_optional<const std::string_view>("NPZPNPNP");
-    case PNWord::NPZPNPPN: return std::make_optional<const std::string_view>("NPZPNPPN");
-    case PNWord::NPZPNPZP: return std::make_optional<const std::string_view>("NPZPNPZP");
-    case PNWord::NPZPPNPP: return std::make_optional<const std::string_view>("NPZPPNPP");
-    case PNWord::NPZPPNNP: return std::make_optional<const std::string_view>("NPZPPNNP");
-    case PNWord::NPZPPNPN: return std::make_optional<const std::string_view>("NPZPPNPN");
-    case PNWord::NPZPPNZP: return std::make_optional<const std::string_view>("NPZPPNZP");
-    case PNWord::NPZPZPPP: return std::make_optional<const std::string_view>("NPZPZPPP");
-    case PNWord::NPZPZPNP: return std::make_optional<const std::string_view>("NPZPZPNP");
-    case PNWord::NPZPZPPN: return std::make_optional<const std::string_view>("NPZPZPPN");
-    case PNWord::NPZPZPZP: return std::make_optional<const std::string_view>("NPZPZPZP");
-    case PNWord::PNPPPPPP: return std::make_optional<const std::string_view>("PNPPPPPP");
-    case PNWord::PNPPPPNP: return std::make_optional<const std::string_view>("PNPPPPNP");
-    case PNWord::PNPPPPPN: return std::make_optional<const std::string_view>("PNPPPPPN");
-    case PNWord::PNPPPPZP: return std::make_optional<const std::string_view>("PNPPPPZP");
-    case PNWord::PNPPNPPP: return std::make_optional<const std::string_view>("PNPPNPPP");
-    case PNWord::PNPPNPNP: return std::make_optional<const std::string_view>("PNPPNPNP");
-    case PNWord::PNPPNPPN: return std::make_optional<const std::string_view>("PNPPNPPN");
-    case PNWord::PNPPNPZP: return std::make_optional<const std::string_view>("PNPPNPZP");
-    case PNWord::PNPPPNPP: return std::make_optional<const std::string_view>("PNPPPNPP");
-    case PNWord::PNPPPNNP: return std::make_optional<const std::string_view>("PNPPPNNP");
-    case PNWord::PNPPPNPN: return std::make_optional<const std::string_view>("PNPPPNPN");
-    case PNWord::PNPPPNZP: return std::make_optional<const std::string_view>("PNPPPNZP");
-    case PNWord::PNPPZPPP: return std::make_optional<const std::string_view>("PNPPZPPP");
-    case PNWord::PNPPZPNP: return std::make_optional<const std::string_view>("PNPPZPNP");
-    case PNWord::PNPPZPPN: return std::make_optional<const std::string_view>("PNPPZPPN");
-    case PNWord::PNPPZPZP: return std::make_optional<const std::string_view>("PNPPZPZP");
-    case PNWord::PNNPPPPP: return std::make_optional<const std::string_view>("PNNPPPPP");
-    case PNWord::PNNPPPNP: return std::make_optional<const std::string_view>("PNNPPPNP");
-    case PNWord::PNNPPPPN: return std::make_optional<const std::string_view>("PNNPPPPN");
-    case PNWord::PNNPPPZP: return std::make_optional<const std::string_view>("PNNPPPZP");
-    case PNWord::PNNPNPPP: return std::make_optional<const std::string_view>("PNNPNPPP");
-    case PNWord::PNNPNPNP: return std::make_optional<const std::string_view>("PNNPNPNP");
-    case PNWord::PNNPNPPN: return std::make_optional<const std::string_view>("PNNPNPPN");
-    case PNWord::PNNPNPZP: return std::make_optional<const std::string_view>("PNNPNPZP");
-    case PNWord::PNNPPNPP: return std::make_optional<const std::string_view>("PNNPPNPP");
-    case PNWord::PNNPPNNP: return std::make_optional<const std::string_view>("PNNPPNNP");
-    case PNWord::PNNPPNPN: return std::make_optional<const std::string_view>("PNNPPNPN");
-    case PNWord::PNNPPNZP: return std::make_optional<const std::string_view>("PNNPPNZP");
-    case PNWord::PNNPZPPP: return std::make_optional<const std::string_view>("PNNPZPPP");
-    case PNWord::PNNPZPNP: return std::make_optional<const std::string_view>("PNNPZPNP");
-    case PNWord::PNNPZPPN: return std::make_optional<const std::string_view>("PNNPZPPN");
-    case PNWord::PNNPZPZP: return std::make_optional<const std::string_view>("PNNPZPZP");
-    case PNWord::PNPNPPPP: return std::make_optional<const std::string_view>("PNPNPPPP");
-    case PNWord::PNPNPPNP: return std::make_optional<const std::string_view>("PNPNPPNP");
-    case PNWord::PNPNPPPN: return std::make_optional<const std::string_view>("PNPNPPPN");
-    case PNWord::PNPNPPZP: return std::make_optional<const std::string_view>("PNPNPPZP");
-    case PNWord::PNPNNPPP: return std::make_optional<const std::string_view>("PNPNNPPP");
-    case PNWord::PNPNNPNP: return std::make_optional<const std::string_view>("PNPNNPNP");
-    case PNWord::PNPNNPPN: return std::make_optional<const std::string_view>("PNPNNPPN");
-    case PNWord::PNPNNPZP: return std::make_optional<const std::string_view>("PNPNNPZP");
-    case PNWord::PNPNPNPP: return std::make_optional<const std::string_view>("PNPNPNPP");
-    case PNWord::PNPNPNNP: return std::make_optional<const std::string_view>("PNPNPNNP");
-    case PNWord::PNPNPNPN: return std::make_optional<const std::string_view>("PNPNPNPN");
-    case PNWord::PNPNPNZP: return std::make_optional<const std::string_view>("PNPNPNZP");
-    case PNWord::PNPNZPPP: return std::make_optional<const std::string_view>("PNPNZPPP");
-    case PNWord::PNPNZPNP: return std::make_optional<const std::string_view>("PNPNZPNP");
-    case PNWord::PNPNZPPN: return std::make_optional<const std::string_view>("PNPNZPPN");
-    case PNWord::PNPNZPZP: return std::make_optional<const std::string_view>("PNPNZPZP");
-    case PNWord::PNZPPPPP: return std::make_optional<const std::string_view>("PNZPPPPP");
-    case PNWord::PNZPPPNP: return std::make_optional<const std::string_view>("PNZPPPNP");
-    case PNWord::PNZPPPPN: return std::make_optional<const std::string_view>("PNZPPPPN");
-    case PNWord::PNZPPPZP: return std::make_optional<const std::string_view>("PNZPPPZP");
-    case PNWord::PNZPNPPP: return std::make_optional<const std::string_view>("PNZPNPPP");
-    case PNWord::PNZPNPNP: return std::make_optional<const std::string_view>("PNZPNPNP");
-    case PNWord::PNZPNPPN: return std::make_optional<const std::string_view>("PNZPNPPN");
-    case PNWord::PNZPNPZP: return std::make_optional<const std::string_view>("PNZPNPZP");
-    case PNWord::PNZPPNPP: return std::make_optional<const std::string_view>("PNZPPNPP");
-    case PNWord::PNZPPNNP: return std::make_optional<const std::string_view>("PNZPPNNP");
-    case PNWord::PNZPPNPN: return std::make_optional<const std::string_view>("PNZPPNPN");
-    case PNWord::PNZPPNZP: return std::make_optional<const std::string_view>("PNZPPNZP");
-    case PNWord::PNZPZPPP: return std::make_optional<const std::string_view>("PNZPZPPP");
-    case PNWord::PNZPZPNP: return std::make_optional<const std::string_view>("PNZPZPNP");
-    case PNWord::PNZPZPPN: return std::make_optional<const std::string_view>("PNZPZPPN");
-    case PNWord::PNZPZPZP: return std::make_optional<const std::string_view>("PNZPZPZP");
-    case PNWord::ZPPPPPPP: return std::make_optional<const std::string_view>("ZPPPPPPP");
-    case PNWord::ZPPPPPNP: return std::make_optional<const std::string_view>("ZPPPPPNP");
-    case PNWord::ZPPPPPPN: return std::make_optional<const std::string_view>("ZPPPPPPN");
-    case PNWord::ZPPPPPZP: return std::make_optional<const std::string_view>("ZPPPPPZP");
-    case PNWord::ZPPPNPPP: return std::make_optional<const std::string_view>("ZPPPNPPP");
-    case PNWord::ZPPPNPNP: return std::make_optional<const std::string_view>("ZPPPNPNP");
-    case PNWord::ZPPPNPPN: return std::make_optional<const std::string_view>("ZPPPNPPN");
-    case PNWord::ZPPPNPZP: return std::make_optional<const std::string_view>("ZPPPNPZP");
-    case PNWord::ZPPPPNPP: return std::make_optional<const std::string_view>("ZPPPPNPP");
-    case PNWord::ZPPPPNNP: return std::make_optional<const std::string_view>("ZPPPPNNP");
-    case PNWord::ZPPPPNPN: return std::make_optional<const std::string_view>("ZPPPPNPN");
-    case PNWord::ZPPPPNZP: return std::make_optional<const std::string_view>("ZPPPPNZP");
-    case PNWord::ZPPPZPPP: return std::make_optional<const std::string_view>("ZPPPZPPP");
-    case PNWord::ZPPPZPNP: return std::make_optional<const std::string_view>("ZPPPZPNP");
-    case PNWord::ZPPPZPPN: return std::make_optional<const std::string_view>("ZPPPZPPN");
-    case PNWord::ZPPPZPZP: return std::make_optional<const std::string_view>("ZPPPZPZP");
-    case PNWord::ZPNPPPPP: return std::make_optional<const std::string_view>("ZPNPPPPP");
-    case PNWord::ZPNPPPNP: return std::make_optional<const std::string_view>("ZPNPPPNP");
-    case PNWord::ZPNPPPPN: return std::make_optional<const std::string_view>("ZPNPPPPN");
-    case PNWord::ZPNPPPZP: return std::make_optional<const std::string_view>("ZPNPPPZP");
-    case PNWord::ZPNPNPPP: return std::make_optional<const std::string_view>("ZPNPNPPP");
-    case PNWord::ZPNPNPNP: return std::make_optional<const std::string_view>("ZPNPNPNP");
-    case PNWord::ZPNPNPPN: return std::make_optional<const std::string_view>("ZPNPNPPN");
-    case PNWord::ZPNPNPZP: return std::make_optional<const std::string_view>("ZPNPNPZP");
-    case PNWord::ZPNPPNPP: return std::make_optional<const std::string_view>("ZPNPPNPP");
-    case PNWord::ZPNPPNNP: return std::make_optional<const std::string_view>("ZPNPPNNP");
-    case PNWord::ZPNPPNPN: return std::make_optional<const std::string_view>("ZPNPPNPN");
-    case PNWord::ZPNPPNZP: return std::make_optional<const std::string_view>("ZPNPPNZP");
-    case PNWord::ZPNPZPPP: return std::make_optional<const std::string_view>("ZPNPZPPP");
-    case PNWord::ZPNPZPNP: return std::make_optional<const std::string_view>("ZPNPZPNP");
-    case PNWord::ZPNPZPPN: return std::make_optional<const std::string_view>("ZPNPZPPN");
-    case PNWord::ZPNPZPZP: return std::make_optional<const std::string_view>("ZPNPZPZP");
-    case PNWord::ZPPNPPPP: return std::make_optional<const std::string_view>("ZPPNPPPP");
-    case PNWord::ZPPNPPNP: return std::make_optional<const std::string_view>("ZPPNPPNP");
-    case PNWord::ZPPNPPPN: return std::make_optional<const std::string_view>("ZPPNPPPN");
-    case PNWord::ZPPNPPZP: return std::make_optional<const std::string_view>("ZPPNPPZP");
-    case PNWord::ZPPNNPPP: return std::make_optional<const std::string_view>("ZPPNNPPP");
-    case PNWord::ZPPNNPNP: return std::make_optional<const std::string_view>("ZPPNNPNP");
-    case PNWord::ZPPNNPPN: return std::make_optional<const std::string_view>("ZPPNNPPN");
-    case PNWord::ZPPNNPZP: return std::make_optional<const std::string_view>("ZPPNNPZP");
-    case PNWord::ZPPNPNPP: return std::make_optional<const std::string_view>("ZPPNPNPP");
-    case PNWord::ZPPNPNNP: return std::make_optional<const std::string_view>("ZPPNPNNP");
-    case PNWord::ZPPNPNPN: return std::make_optional<const std::string_view>("ZPPNPNPN");
-    case PNWord::ZPPNPNZP: return std::make_optional<const std::string_view>("ZPPNPNZP");
-    case PNWord::ZPPNZPPP: return std::make_optional<const std::string_view>("ZPPNZPPP");
-    case PNWord::ZPPNZPNP: return std::make_optional<const std::string_view>("ZPPNZPNP");
-    case PNWord::ZPPNZPPN: return std::make_optional<const std::string_view>("ZPPNZPPN");
-    case PNWord::ZPPNZPZP: return std::make_optional<const std::string_view>("ZPPNZPZP");
-    case PNWord::ZPZPPPPP: return std::make_optional<const std::string_view>("ZPZPPPPP");
-    case PNWord::ZPZPPPNP: return std::make_optional<const std::string_view>("ZPZPPPNP");
-    case PNWord::ZPZPPPPN: return std::make_optional<const std::string_view>("ZPZPPPPN");
-    case PNWord::ZPZPPPZP: return std::make_optional<const std::string_view>("ZPZPPPZP");
-    case PNWord::ZPZPNPPP: return std::make_optional<const std::string_view>("ZPZPNPPP");
-    case PNWord::ZPZPNPNP: return std::make_optional<const std::string_view>("ZPZPNPNP");
-    case PNWord::ZPZPNPPN: return std::make_optional<const std::string_view>("ZPZPNPPN");
-    case PNWord::ZPZPNPZP: return std::make_optional<const std::string_view>("ZPZPNPZP");
-    case PNWord::ZPZPPNPP: return std::make_optional<const std::string_view>("ZPZPPNPP");
-    case PNWord::ZPZPPNNP: return std::make_optional<const std::string_view>("ZPZPPNNP");
-    case PNWord::ZPZPPNPN: return std::make_optional<const std::string_view>("ZPZPPNPN");
-    case PNWord::ZPZPPNZP: return std::make_optional<const std::string_view>("ZPZPPNZP");
-    case PNWord::ZPZPZPPP: return std::make_optional<const std::string_view>("ZPZPZPPP");
-    case PNWord::ZPZPZPNP: return std::make_optional<const std::string_view>("ZPZPZPNP");
-    case PNWord::ZPZPZPPN: return std::make_optional<const std::string_view>("ZPZPZPPN");
-    case PNWord::ZPZPZPZP: return std::make_optional<const std::string_view>("ZPZPZPZP");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(PO value) {
-  switch (value) {
-    case PO::noPO: return std::make_optional<const std::string_view>("noPO");
-    case PO::PO: return std::make_optional<const std::string_view>("PO");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(POP value) {
-  switch (value) {
-    case POP::F: return std::make_optional<const std::string_view>("F");
-    case POP::T: return std::make_optional<const std::string_view>("T");
-    case POP::Z: return std::make_optional<const std::string_view>("Z");
-    case POP::NZ: return std::make_optional<const std::string_view>("NZ");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(POnly value) {
-  switch (value) {
-    case POnly::P: return std::make_optional<const std::string_view>("P");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(PSL value) {
-  switch (value) {
-    case PSL::noPSL: return std::make_optional<const std::string_view>("noPSL");
-    case PSL::PSL: return std::make_optional<const std::string_view>("PSL");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(ParamA value) {
-  switch (value) {
-    case ParamA::_1D: return std::make_optional<const std::string_view>("_1D");
-    case ParamA::RECT: return std::make_optional<const std::string_view>("RECT");
-    case ParamA::_3D: return std::make_optional<const std::string_view>("_3D");
-    case ParamA::CUBE: return std::make_optional<const std::string_view>("CUBE");
-    case ParamA::ARRAY_1D: return std::make_optional<const std::string_view>("ARRAY_1D");
-    case ParamA::ARRAY_RECT: return std::make_optional<const std::string_view>("ARRAY_RECT");
-    case ParamA::ARRAY_3D: return std::make_optional<const std::string_view>("ARRAY_3D");
-    case ParamA::CUBEARRAY: return std::make_optional<const std::string_view>("CUBEARRAY");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Partsel value) {
-  switch (value) {
-    case Partsel::_32: return std::make_optional<const std::string_view>("32");
-    case Partsel::H0: return std::make_optional<const std::string_view>("H0");
-    case Partsel::H1: return std::make_optional<const std::string_view>("H1");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Phys value) {
-  switch (value) {
-    case Phys::PHYS: return std::make_optional<const std::string_view>("PHYS");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(PixMode value) {
-  switch (value) {
-    case PixMode::MSCOUNT: return std::make_optional<const std::string_view>("MSCOUNT");
-    case PixMode::COVMASK: return std::make_optional<const std::string_view>("COVMASK");
-    case PixMode::COVERED: return std::make_optional<const std::string_view>("COVERED");
-    case PixMode::OFFSET: return std::make_optional<const std::string_view>("OFFSET");
-    case PixMode::CENTROID_OFFSET: return std::make_optional<const std::string_view>("CENTROID_OFFSET");
-    case PixMode::MY_INDEX: return std::make_optional<const std::string_view>("MY_INDEX");
-    case PixMode::INVALIDPIXMODE6: return std::make_optional<const std::string_view>("INVALIDPIXMODE6");
-    case PixMode::INVALIDPIXMODE7: return std::make_optional<const std::string_view>("INVALIDPIXMODE7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Predicate value) {
-  switch (value) {
-    case Predicate::P0: return std::make_optional<const std::string_view>("P0");
-    case Predicate::P1: return std::make_optional<const std::string_view>("P1");
-    case Predicate::P2: return std::make_optional<const std::string_view>("P2");
-    case Predicate::P3: return std::make_optional<const std::string_view>("P3");
-    case Predicate::P4: return std::make_optional<const std::string_view>("P4");
-    case Predicate::P5: return std::make_optional<const std::string_view>("P5");
-    case Predicate::P6: return std::make_optional<const std::string_view>("P6");
-    case Predicate::P7: return std::make_optional<const std::string_view>("P7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(RD value) {
-  switch (value) {
-    case RD::rd: return std::make_optional<const std::string_view>("rd");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(REQ value) {
-  switch (value) {
-    case REQ::req: return std::make_optional<const std::string_view>("req");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(REUSE value) {
-  switch (value) {
-    case REUSE::reuse: return std::make_optional<const std::string_view>("reuse");
-    case REUSE::noreuse: return std::make_optional<const std::string_view>("noreuse");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(RGBA value) {
-  switch (value) {
-    case RGBA::INVALIDRGBAMASK1: return std::make_optional<const std::string_view>("INVALIDRGBAMASK1");
-    case RGBA::INVALIDRGBAMASK2: return std::make_optional<const std::string_view>("INVALIDRGBAMASK2");
-    case RGBA::INVALIDRGBAMASK3: return std::make_optional<const std::string_view>("INVALIDRGBAMASK3");
-    case RGBA::INVALIDRGBAMASK4: return std::make_optional<const std::string_view>("INVALIDRGBAMASK4");
-    case RGBA::INVALIDRGBAMASK5: return std::make_optional<const std::string_view>("INVALIDRGBAMASK5");
-    case RGBA::INVALIDRGBAMASK6: return std::make_optional<const std::string_view>("INVALIDRGBAMASK6");
-    case RGBA::INVALIDRGBAMASK7: return std::make_optional<const std::string_view>("INVALIDRGBAMASK7");
-    case RGBA::INVALIDRGBAMASK8: return std::make_optional<const std::string_view>("INVALIDRGBAMASK8");
-    case RGBA::INVALIDRGBAMASK9: return std::make_optional<const std::string_view>("INVALIDRGBAMASK9");
-    case RGBA::INVALIDRGBAMASK10: return std::make_optional<const std::string_view>("INVALIDRGBAMASK10");
-    case RGBA::INVALIDRGBAMASK11: return std::make_optional<const std::string_view>("INVALIDRGBAMASK11");
-    case RGBA::INVALIDRGBAMASK12: return std::make_optional<const std::string_view>("INVALIDRGBAMASK12");
-    case RGBA::INVALIDRGBAMASK13: return std::make_optional<const std::string_view>("INVALIDRGBAMASK13");
-    case RGBA::INVALIDRGBAMASK14: return std::make_optional<const std::string_view>("INVALIDRGBAMASK14");
-    case RGBA::INVALIDRGBAMASK15: return std::make_optional<const std::string_view>("INVALIDRGBAMASK15");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(RROOp value) {
-  switch (value) {
-    case RROOp::SINCOS: return std::make_optional<const std::string_view>("SINCOS");
-    case RROOp::EX2: return std::make_optional<const std::string_view>("EX2");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(RTTOp value) {
-  switch (value) {
-    case RTTOp::POPCRS: return std::make_optional<const std::string_view>("POPCRS");
-    case RTTOp::TERMINATE: return std::make_optional<const std::string_view>("TERMINATE");
-    case RTTOp::FALLTHROUGH: return std::make_optional<const std::string_view>("FALLTHROUGH");
-    case RTTOp::PREEMPTED: return std::make_optional<const std::string_view>("PREEMPTED");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Red value) {
-  switch (value) {
-    case Red::POPC: return std::make_optional<const std::string_view>("POPC");
-    case Red::AND: return std::make_optional<const std::string_view>("AND");
-    case Red::OR: return std::make_optional<const std::string_view>("OR");
-    case Red::INVALIDBARMODE3: return std::make_optional<const std::string_view>("INVALIDBARMODE3");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(RedOp value) {
-  switch (value) {
-    case RedOp::INVALIDREDOP0: return std::make_optional<const std::string_view>("INVALIDREDOP0");
-    case RedOp::INVALIDREDOP1: return std::make_optional<const std::string_view>("INVALIDREDOP1");
-    case RedOp::INVALIDREDOP2: return std::make_optional<const std::string_view>("INVALIDREDOP2");
-    case RedOp::INVALIDREDOP3: return std::make_optional<const std::string_view>("INVALIDREDOP3");
-    case RedOp::INVALIDREDOP4: return std::make_optional<const std::string_view>("INVALIDREDOP4");
-    case RedOp::INVALIDREDOP5: return std::make_optional<const std::string_view>("INVALIDREDOP5");
-    case RedOp::INVALIDREDOP6: return std::make_optional<const std::string_view>("INVALIDREDOP6");
-    case RedOp::INVALIDREDOP7: return std::make_optional<const std::string_view>("INVALIDREDOP7");
-    case RedOp::INVALIDREDOP8: return std::make_optional<const std::string_view>("INVALIDREDOP8");
-    case RedOp::INVALIDREDOP9: return std::make_optional<const std::string_view>("INVALIDREDOP9");
-    case RedOp::INVALIDREDOP10: return std::make_optional<const std::string_view>("INVALIDREDOP10");
-    case RedOp::INVALIDREDOP11: return std::make_optional<const std::string_view>("INVALIDREDOP11");
-    case RedOp::INVALIDREDOP12: return std::make_optional<const std::string_view>("INVALIDREDOP12");
-    case RedOp::INVALIDREDOP13: return std::make_optional<const std::string_view>("INVALIDREDOP13");
-    case RedOp::INVALIDREDOP14: return std::make_optional<const std::string_view>("INVALIDREDOP14");
-    case RedOp::INVALIDREDOP15: return std::make_optional<const std::string_view>("INVALIDREDOP15");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Register value) {
-  switch (value) {
-    case static_cast<Register>(ZeroRegister::RZ): return std::make_optional<const std::string_view>("RZ");
-    case static_cast<Register>(NonZeroRegister::R00): return std::make_optional<const std::string_view>("R00");
-    case static_cast<Register>(NonZeroRegister::R01): return std::make_optional<const std::string_view>("R01");
-    case static_cast<Register>(NonZeroRegister::R02): return std::make_optional<const std::string_view>("R02");
-    case static_cast<Register>(NonZeroRegister::R03): return std::make_optional<const std::string_view>("R03");
-    case static_cast<Register>(NonZeroRegister::R04): return std::make_optional<const std::string_view>("R04");
-    case static_cast<Register>(NonZeroRegister::R05): return std::make_optional<const std::string_view>("R05");
-    case static_cast<Register>(NonZeroRegister::R06): return std::make_optional<const std::string_view>("R06");
-    case static_cast<Register>(NonZeroRegister::R07): return std::make_optional<const std::string_view>("R07");
-    case static_cast<Register>(NonZeroRegister::R08): return std::make_optional<const std::string_view>("R08");
-    case static_cast<Register>(NonZeroRegister::R09): return std::make_optional<const std::string_view>("R09");
-    case static_cast<Register>(NonZeroRegister::R10): return std::make_optional<const std::string_view>("R10");
-    case static_cast<Register>(NonZeroRegister::R11): return std::make_optional<const std::string_view>("R11");
-    case static_cast<Register>(NonZeroRegister::R12): return std::make_optional<const std::string_view>("R12");
-    case static_cast<Register>(NonZeroRegister::R13): return std::make_optional<const std::string_view>("R13");
-    case static_cast<Register>(NonZeroRegister::R14): return std::make_optional<const std::string_view>("R14");
-    case static_cast<Register>(NonZeroRegister::R15): return std::make_optional<const std::string_view>("R15");
-    case static_cast<Register>(NonZeroRegister::R16): return std::make_optional<const std::string_view>("R16");
-    case static_cast<Register>(NonZeroRegister::R17): return std::make_optional<const std::string_view>("R17");
-    case static_cast<Register>(NonZeroRegister::R18): return std::make_optional<const std::string_view>("R18");
-    case static_cast<Register>(NonZeroRegister::R19): return std::make_optional<const std::string_view>("R19");
-    case static_cast<Register>(NonZeroRegister::R20): return std::make_optional<const std::string_view>("R20");
-    case static_cast<Register>(NonZeroRegister::R21): return std::make_optional<const std::string_view>("R21");
-    case static_cast<Register>(NonZeroRegister::R22): return std::make_optional<const std::string_view>("R22");
-    case static_cast<Register>(NonZeroRegister::R23): return std::make_optional<const std::string_view>("R23");
-    case static_cast<Register>(NonZeroRegister::R24): return std::make_optional<const std::string_view>("R24");
-    case static_cast<Register>(NonZeroRegister::R25): return std::make_optional<const std::string_view>("R25");
-    case static_cast<Register>(NonZeroRegister::R26): return std::make_optional<const std::string_view>("R26");
-    case static_cast<Register>(NonZeroRegister::R27): return std::make_optional<const std::string_view>("R27");
-    case static_cast<Register>(NonZeroRegister::R28): return std::make_optional<const std::string_view>("R28");
-    case static_cast<Register>(NonZeroRegister::R29): return std::make_optional<const std::string_view>("R29");
-    case static_cast<Register>(NonZeroRegister::R30): return std::make_optional<const std::string_view>("R30");
-    case static_cast<Register>(NonZeroRegister::R31): return std::make_optional<const std::string_view>("R31");
-    case static_cast<Register>(NonZeroRegister::R32): return std::make_optional<const std::string_view>("R32");
-    case static_cast<Register>(NonZeroRegister::R33): return std::make_optional<const std::string_view>("R33");
-    case static_cast<Register>(NonZeroRegister::R34): return std::make_optional<const std::string_view>("R34");
-    case static_cast<Register>(NonZeroRegister::R35): return std::make_optional<const std::string_view>("R35");
-    case static_cast<Register>(NonZeroRegister::R36): return std::make_optional<const std::string_view>("R36");
-    case static_cast<Register>(NonZeroRegister::R37): return std::make_optional<const std::string_view>("R37");
-    case static_cast<Register>(NonZeroRegister::R38): return std::make_optional<const std::string_view>("R38");
-    case static_cast<Register>(NonZeroRegister::R39): return std::make_optional<const std::string_view>("R39");
-    case static_cast<Register>(NonZeroRegister::R40): return std::make_optional<const std::string_view>("R40");
-    case static_cast<Register>(NonZeroRegister::R41): return std::make_optional<const std::string_view>("R41");
-    case static_cast<Register>(NonZeroRegister::R42): return std::make_optional<const std::string_view>("R42");
-    case static_cast<Register>(NonZeroRegister::R43): return std::make_optional<const std::string_view>("R43");
-    case static_cast<Register>(NonZeroRegister::R44): return std::make_optional<const std::string_view>("R44");
-    case static_cast<Register>(NonZeroRegister::R45): return std::make_optional<const std::string_view>("R45");
-    case static_cast<Register>(NonZeroRegister::R46): return std::make_optional<const std::string_view>("R46");
-    case static_cast<Register>(NonZeroRegister::R47): return std::make_optional<const std::string_view>("R47");
-    case static_cast<Register>(NonZeroRegister::R48): return std::make_optional<const std::string_view>("R48");
-    case static_cast<Register>(NonZeroRegister::R49): return std::make_optional<const std::string_view>("R49");
-    case static_cast<Register>(NonZeroRegister::R50): return std::make_optional<const std::string_view>("R50");
-    case static_cast<Register>(NonZeroRegister::R51): return std::make_optional<const std::string_view>("R51");
-    case static_cast<Register>(NonZeroRegister::R52): return std::make_optional<const std::string_view>("R52");
-    case static_cast<Register>(NonZeroRegister::R53): return std::make_optional<const std::string_view>("R53");
-    case static_cast<Register>(NonZeroRegister::R54): return std::make_optional<const std::string_view>("R54");
-    case static_cast<Register>(NonZeroRegister::R55): return std::make_optional<const std::string_view>("R55");
-    case static_cast<Register>(NonZeroRegister::R56): return std::make_optional<const std::string_view>("R56");
-    case static_cast<Register>(NonZeroRegister::R57): return std::make_optional<const std::string_view>("R57");
-    case static_cast<Register>(NonZeroRegister::R58): return std::make_optional<const std::string_view>("R58");
-    case static_cast<Register>(NonZeroRegister::R59): return std::make_optional<const std::string_view>("R59");
-    case static_cast<Register>(NonZeroRegister::R60): return std::make_optional<const std::string_view>("R60");
-    case static_cast<Register>(NonZeroRegister::R61): return std::make_optional<const std::string_view>("R61");
-    case static_cast<Register>(NonZeroRegister::R62): return std::make_optional<const std::string_view>("R62");
-    case static_cast<Register>(NonZeroRegister::R63): return std::make_optional<const std::string_view>("R63");
-    case static_cast<Register>(NonZeroRegister::R64): return std::make_optional<const std::string_view>("R64");
-    case static_cast<Register>(NonZeroRegister::R65): return std::make_optional<const std::string_view>("R65");
-    case static_cast<Register>(NonZeroRegister::R66): return std::make_optional<const std::string_view>("R66");
-    case static_cast<Register>(NonZeroRegister::R67): return std::make_optional<const std::string_view>("R67");
-    case static_cast<Register>(NonZeroRegister::R68): return std::make_optional<const std::string_view>("R68");
-    case static_cast<Register>(NonZeroRegister::R69): return std::make_optional<const std::string_view>("R69");
-    case static_cast<Register>(NonZeroRegister::R70): return std::make_optional<const std::string_view>("R70");
-    case static_cast<Register>(NonZeroRegister::R71): return std::make_optional<const std::string_view>("R71");
-    case static_cast<Register>(NonZeroRegister::R72): return std::make_optional<const std::string_view>("R72");
-    case static_cast<Register>(NonZeroRegister::R73): return std::make_optional<const std::string_view>("R73");
-    case static_cast<Register>(NonZeroRegister::R74): return std::make_optional<const std::string_view>("R74");
-    case static_cast<Register>(NonZeroRegister::R75): return std::make_optional<const std::string_view>("R75");
-    case static_cast<Register>(NonZeroRegister::R76): return std::make_optional<const std::string_view>("R76");
-    case static_cast<Register>(NonZeroRegister::R77): return std::make_optional<const std::string_view>("R77");
-    case static_cast<Register>(NonZeroRegister::R78): return std::make_optional<const std::string_view>("R78");
-    case static_cast<Register>(NonZeroRegister::R79): return std::make_optional<const std::string_view>("R79");
-    case static_cast<Register>(NonZeroRegister::R80): return std::make_optional<const std::string_view>("R80");
-    case static_cast<Register>(NonZeroRegister::R81): return std::make_optional<const std::string_view>("R81");
-    case static_cast<Register>(NonZeroRegister::R82): return std::make_optional<const std::string_view>("R82");
-    case static_cast<Register>(NonZeroRegister::R83): return std::make_optional<const std::string_view>("R83");
-    case static_cast<Register>(NonZeroRegister::R84): return std::make_optional<const std::string_view>("R84");
-    case static_cast<Register>(NonZeroRegister::R85): return std::make_optional<const std::string_view>("R85");
-    case static_cast<Register>(NonZeroRegister::R86): return std::make_optional<const std::string_view>("R86");
-    case static_cast<Register>(NonZeroRegister::R87): return std::make_optional<const std::string_view>("R87");
-    case static_cast<Register>(NonZeroRegister::R88): return std::make_optional<const std::string_view>("R88");
-    case static_cast<Register>(NonZeroRegister::R89): return std::make_optional<const std::string_view>("R89");
-    case static_cast<Register>(NonZeroRegister::R90): return std::make_optional<const std::string_view>("R90");
-    case static_cast<Register>(NonZeroRegister::R91): return std::make_optional<const std::string_view>("R91");
-    case static_cast<Register>(NonZeroRegister::R92): return std::make_optional<const std::string_view>("R92");
-    case static_cast<Register>(NonZeroRegister::R93): return std::make_optional<const std::string_view>("R93");
-    case static_cast<Register>(NonZeroRegister::R94): return std::make_optional<const std::string_view>("R94");
-    case static_cast<Register>(NonZeroRegister::R95): return std::make_optional<const std::string_view>("R95");
-    case static_cast<Register>(NonZeroRegister::R96): return std::make_optional<const std::string_view>("R96");
-    case static_cast<Register>(NonZeroRegister::R97): return std::make_optional<const std::string_view>("R97");
-    case static_cast<Register>(NonZeroRegister::R98): return std::make_optional<const std::string_view>("R98");
-    case static_cast<Register>(NonZeroRegister::R99): return std::make_optional<const std::string_view>("R99");
-    case static_cast<Register>(NonZeroRegister::R100): return std::make_optional<const std::string_view>("R100");
-    case static_cast<Register>(NonZeroRegister::R101): return std::make_optional<const std::string_view>("R101");
-    case static_cast<Register>(NonZeroRegister::R102): return std::make_optional<const std::string_view>("R102");
-    case static_cast<Register>(NonZeroRegister::R103): return std::make_optional<const std::string_view>("R103");
-    case static_cast<Register>(NonZeroRegister::R104): return std::make_optional<const std::string_view>("R104");
-    case static_cast<Register>(NonZeroRegister::R105): return std::make_optional<const std::string_view>("R105");
-    case static_cast<Register>(NonZeroRegister::R106): return std::make_optional<const std::string_view>("R106");
-    case static_cast<Register>(NonZeroRegister::R107): return std::make_optional<const std::string_view>("R107");
-    case static_cast<Register>(NonZeroRegister::R108): return std::make_optional<const std::string_view>("R108");
-    case static_cast<Register>(NonZeroRegister::R109): return std::make_optional<const std::string_view>("R109");
-    case static_cast<Register>(NonZeroRegister::R110): return std::make_optional<const std::string_view>("R110");
-    case static_cast<Register>(NonZeroRegister::R111): return std::make_optional<const std::string_view>("R111");
-    case static_cast<Register>(NonZeroRegister::R112): return std::make_optional<const std::string_view>("R112");
-    case static_cast<Register>(NonZeroRegister::R113): return std::make_optional<const std::string_view>("R113");
-    case static_cast<Register>(NonZeroRegister::R114): return std::make_optional<const std::string_view>("R114");
-    case static_cast<Register>(NonZeroRegister::R115): return std::make_optional<const std::string_view>("R115");
-    case static_cast<Register>(NonZeroRegister::R116): return std::make_optional<const std::string_view>("R116");
-    case static_cast<Register>(NonZeroRegister::R117): return std::make_optional<const std::string_view>("R117");
-    case static_cast<Register>(NonZeroRegister::R118): return std::make_optional<const std::string_view>("R118");
-    case static_cast<Register>(NonZeroRegister::R119): return std::make_optional<const std::string_view>("R119");
-    case static_cast<Register>(NonZeroRegister::R120): return std::make_optional<const std::string_view>("R120");
-    case static_cast<Register>(NonZeroRegister::R121): return std::make_optional<const std::string_view>("R121");
-    case static_cast<Register>(NonZeroRegister::R122): return std::make_optional<const std::string_view>("R122");
-    case static_cast<Register>(NonZeroRegister::R123): return std::make_optional<const std::string_view>("R123");
-    case static_cast<Register>(NonZeroRegister::R124): return std::make_optional<const std::string_view>("R124");
-    case static_cast<Register>(NonZeroRegister::R125): return std::make_optional<const std::string_view>("R125");
-    case static_cast<Register>(NonZeroRegister::R126): return std::make_optional<const std::string_view>("R126");
-    case static_cast<Register>(NonZeroRegister::R127): return std::make_optional<const std::string_view>("R127");
-    case static_cast<Register>(NonZeroRegister::R128): return std::make_optional<const std::string_view>("R128");
-    case static_cast<Register>(NonZeroRegister::R129): return std::make_optional<const std::string_view>("R129");
-    case static_cast<Register>(NonZeroRegister::R130): return std::make_optional<const std::string_view>("R130");
-    case static_cast<Register>(NonZeroRegister::R131): return std::make_optional<const std::string_view>("R131");
-    case static_cast<Register>(NonZeroRegister::R132): return std::make_optional<const std::string_view>("R132");
-    case static_cast<Register>(NonZeroRegister::R133): return std::make_optional<const std::string_view>("R133");
-    case static_cast<Register>(NonZeroRegister::R134): return std::make_optional<const std::string_view>("R134");
-    case static_cast<Register>(NonZeroRegister::R135): return std::make_optional<const std::string_view>("R135");
-    case static_cast<Register>(NonZeroRegister::R136): return std::make_optional<const std::string_view>("R136");
-    case static_cast<Register>(NonZeroRegister::R137): return std::make_optional<const std::string_view>("R137");
-    case static_cast<Register>(NonZeroRegister::R138): return std::make_optional<const std::string_view>("R138");
-    case static_cast<Register>(NonZeroRegister::R139): return std::make_optional<const std::string_view>("R139");
-    case static_cast<Register>(NonZeroRegister::R140): return std::make_optional<const std::string_view>("R140");
-    case static_cast<Register>(NonZeroRegister::R141): return std::make_optional<const std::string_view>("R141");
-    case static_cast<Register>(NonZeroRegister::R142): return std::make_optional<const std::string_view>("R142");
-    case static_cast<Register>(NonZeroRegister::R143): return std::make_optional<const std::string_view>("R143");
-    case static_cast<Register>(NonZeroRegister::R144): return std::make_optional<const std::string_view>("R144");
-    case static_cast<Register>(NonZeroRegister::R145): return std::make_optional<const std::string_view>("R145");
-    case static_cast<Register>(NonZeroRegister::R146): return std::make_optional<const std::string_view>("R146");
-    case static_cast<Register>(NonZeroRegister::R147): return std::make_optional<const std::string_view>("R147");
-    case static_cast<Register>(NonZeroRegister::R148): return std::make_optional<const std::string_view>("R148");
-    case static_cast<Register>(NonZeroRegister::R149): return std::make_optional<const std::string_view>("R149");
-    case static_cast<Register>(NonZeroRegister::R150): return std::make_optional<const std::string_view>("R150");
-    case static_cast<Register>(NonZeroRegister::R151): return std::make_optional<const std::string_view>("R151");
-    case static_cast<Register>(NonZeroRegister::R152): return std::make_optional<const std::string_view>("R152");
-    case static_cast<Register>(NonZeroRegister::R153): return std::make_optional<const std::string_view>("R153");
-    case static_cast<Register>(NonZeroRegister::R154): return std::make_optional<const std::string_view>("R154");
-    case static_cast<Register>(NonZeroRegister::R155): return std::make_optional<const std::string_view>("R155");
-    case static_cast<Register>(NonZeroRegister::R156): return std::make_optional<const std::string_view>("R156");
-    case static_cast<Register>(NonZeroRegister::R157): return std::make_optional<const std::string_view>("R157");
-    case static_cast<Register>(NonZeroRegister::R158): return std::make_optional<const std::string_view>("R158");
-    case static_cast<Register>(NonZeroRegister::R159): return std::make_optional<const std::string_view>("R159");
-    case static_cast<Register>(NonZeroRegister::R160): return std::make_optional<const std::string_view>("R160");
-    case static_cast<Register>(NonZeroRegister::R161): return std::make_optional<const std::string_view>("R161");
-    case static_cast<Register>(NonZeroRegister::R162): return std::make_optional<const std::string_view>("R162");
-    case static_cast<Register>(NonZeroRegister::R163): return std::make_optional<const std::string_view>("R163");
-    case static_cast<Register>(NonZeroRegister::R164): return std::make_optional<const std::string_view>("R164");
-    case static_cast<Register>(NonZeroRegister::R165): return std::make_optional<const std::string_view>("R165");
-    case static_cast<Register>(NonZeroRegister::R166): return std::make_optional<const std::string_view>("R166");
-    case static_cast<Register>(NonZeroRegister::R167): return std::make_optional<const std::string_view>("R167");
-    case static_cast<Register>(NonZeroRegister::R168): return std::make_optional<const std::string_view>("R168");
-    case static_cast<Register>(NonZeroRegister::R169): return std::make_optional<const std::string_view>("R169");
-    case static_cast<Register>(NonZeroRegister::R170): return std::make_optional<const std::string_view>("R170");
-    case static_cast<Register>(NonZeroRegister::R171): return std::make_optional<const std::string_view>("R171");
-    case static_cast<Register>(NonZeroRegister::R172): return std::make_optional<const std::string_view>("R172");
-    case static_cast<Register>(NonZeroRegister::R173): return std::make_optional<const std::string_view>("R173");
-    case static_cast<Register>(NonZeroRegister::R174): return std::make_optional<const std::string_view>("R174");
-    case static_cast<Register>(NonZeroRegister::R175): return std::make_optional<const std::string_view>("R175");
-    case static_cast<Register>(NonZeroRegister::R176): return std::make_optional<const std::string_view>("R176");
-    case static_cast<Register>(NonZeroRegister::R177): return std::make_optional<const std::string_view>("R177");
-    case static_cast<Register>(NonZeroRegister::R178): return std::make_optional<const std::string_view>("R178");
-    case static_cast<Register>(NonZeroRegister::R179): return std::make_optional<const std::string_view>("R179");
-    case static_cast<Register>(NonZeroRegister::R180): return std::make_optional<const std::string_view>("R180");
-    case static_cast<Register>(NonZeroRegister::R181): return std::make_optional<const std::string_view>("R181");
-    case static_cast<Register>(NonZeroRegister::R182): return std::make_optional<const std::string_view>("R182");
-    case static_cast<Register>(NonZeroRegister::R183): return std::make_optional<const std::string_view>("R183");
-    case static_cast<Register>(NonZeroRegister::R184): return std::make_optional<const std::string_view>("R184");
-    case static_cast<Register>(NonZeroRegister::R185): return std::make_optional<const std::string_view>("R185");
-    case static_cast<Register>(NonZeroRegister::R186): return std::make_optional<const std::string_view>("R186");
-    case static_cast<Register>(NonZeroRegister::R187): return std::make_optional<const std::string_view>("R187");
-    case static_cast<Register>(NonZeroRegister::R188): return std::make_optional<const std::string_view>("R188");
-    case static_cast<Register>(NonZeroRegister::R189): return std::make_optional<const std::string_view>("R189");
-    case static_cast<Register>(NonZeroRegister::R190): return std::make_optional<const std::string_view>("R190");
-    case static_cast<Register>(NonZeroRegister::R191): return std::make_optional<const std::string_view>("R191");
-    case static_cast<Register>(NonZeroRegister::R192): return std::make_optional<const std::string_view>("R192");
-    case static_cast<Register>(NonZeroRegister::R193): return std::make_optional<const std::string_view>("R193");
-    case static_cast<Register>(NonZeroRegister::R194): return std::make_optional<const std::string_view>("R194");
-    case static_cast<Register>(NonZeroRegister::R195): return std::make_optional<const std::string_view>("R195");
-    case static_cast<Register>(NonZeroRegister::R196): return std::make_optional<const std::string_view>("R196");
-    case static_cast<Register>(NonZeroRegister::R197): return std::make_optional<const std::string_view>("R197");
-    case static_cast<Register>(NonZeroRegister::R198): return std::make_optional<const std::string_view>("R198");
-    case static_cast<Register>(NonZeroRegister::R199): return std::make_optional<const std::string_view>("R199");
-    case static_cast<Register>(NonZeroRegister::R200): return std::make_optional<const std::string_view>("R200");
-    case static_cast<Register>(NonZeroRegister::R201): return std::make_optional<const std::string_view>("R201");
-    case static_cast<Register>(NonZeroRegister::R202): return std::make_optional<const std::string_view>("R202");
-    case static_cast<Register>(NonZeroRegister::R203): return std::make_optional<const std::string_view>("R203");
-    case static_cast<Register>(NonZeroRegister::R204): return std::make_optional<const std::string_view>("R204");
-    case static_cast<Register>(NonZeroRegister::R205): return std::make_optional<const std::string_view>("R205");
-    case static_cast<Register>(NonZeroRegister::R206): return std::make_optional<const std::string_view>("R206");
-    case static_cast<Register>(NonZeroRegister::R207): return std::make_optional<const std::string_view>("R207");
-    case static_cast<Register>(NonZeroRegister::R208): return std::make_optional<const std::string_view>("R208");
-    case static_cast<Register>(NonZeroRegister::R209): return std::make_optional<const std::string_view>("R209");
-    case static_cast<Register>(NonZeroRegister::R210): return std::make_optional<const std::string_view>("R210");
-    case static_cast<Register>(NonZeroRegister::R211): return std::make_optional<const std::string_view>("R211");
-    case static_cast<Register>(NonZeroRegister::R212): return std::make_optional<const std::string_view>("R212");
-    case static_cast<Register>(NonZeroRegister::R213): return std::make_optional<const std::string_view>("R213");
-    case static_cast<Register>(NonZeroRegister::R214): return std::make_optional<const std::string_view>("R214");
-    case static_cast<Register>(NonZeroRegister::R215): return std::make_optional<const std::string_view>("R215");
-    case static_cast<Register>(NonZeroRegister::R216): return std::make_optional<const std::string_view>("R216");
-    case static_cast<Register>(NonZeroRegister::R217): return std::make_optional<const std::string_view>("R217");
-    case static_cast<Register>(NonZeroRegister::R218): return std::make_optional<const std::string_view>("R218");
-    case static_cast<Register>(NonZeroRegister::R219): return std::make_optional<const std::string_view>("R219");
-    case static_cast<Register>(NonZeroRegister::R220): return std::make_optional<const std::string_view>("R220");
-    case static_cast<Register>(NonZeroRegister::R221): return std::make_optional<const std::string_view>("R221");
-    case static_cast<Register>(NonZeroRegister::R222): return std::make_optional<const std::string_view>("R222");
-    case static_cast<Register>(NonZeroRegister::R223): return std::make_optional<const std::string_view>("R223");
-    case static_cast<Register>(NonZeroRegister::R224): return std::make_optional<const std::string_view>("R224");
-    case static_cast<Register>(NonZeroRegister::R225): return std::make_optional<const std::string_view>("R225");
-    case static_cast<Register>(NonZeroRegister::R226): return std::make_optional<const std::string_view>("R226");
-    case static_cast<Register>(NonZeroRegister::R227): return std::make_optional<const std::string_view>("R227");
-    case static_cast<Register>(NonZeroRegister::R228): return std::make_optional<const std::string_view>("R228");
-    case static_cast<Register>(NonZeroRegister::R229): return std::make_optional<const std::string_view>("R229");
-    case static_cast<Register>(NonZeroRegister::R230): return std::make_optional<const std::string_view>("R230");
-    case static_cast<Register>(NonZeroRegister::R231): return std::make_optional<const std::string_view>("R231");
-    case static_cast<Register>(NonZeroRegister::R232): return std::make_optional<const std::string_view>("R232");
-    case static_cast<Register>(NonZeroRegister::R233): return std::make_optional<const std::string_view>("R233");
-    case static_cast<Register>(NonZeroRegister::R234): return std::make_optional<const std::string_view>("R234");
-    case static_cast<Register>(NonZeroRegister::R235): return std::make_optional<const std::string_view>("R235");
-    case static_cast<Register>(NonZeroRegister::R236): return std::make_optional<const std::string_view>("R236");
-    case static_cast<Register>(NonZeroRegister::R237): return std::make_optional<const std::string_view>("R237");
-    case static_cast<Register>(NonZeroRegister::R238): return std::make_optional<const std::string_view>("R238");
-    case static_cast<Register>(NonZeroRegister::R239): return std::make_optional<const std::string_view>("R239");
-    case static_cast<Register>(NonZeroRegister::R240): return std::make_optional<const std::string_view>("R240");
-    case static_cast<Register>(NonZeroRegister::R241): return std::make_optional<const std::string_view>("R241");
-    case static_cast<Register>(NonZeroRegister::R242): return std::make_optional<const std::string_view>("R242");
-    case static_cast<Register>(NonZeroRegister::R243): return std::make_optional<const std::string_view>("R243");
-    case static_cast<Register>(NonZeroRegister::R244): return std::make_optional<const std::string_view>("R244");
-    case static_cast<Register>(NonZeroRegister::R245): return std::make_optional<const std::string_view>("R245");
-    case static_cast<Register>(NonZeroRegister::R246): return std::make_optional<const std::string_view>("R246");
-    case static_cast<Register>(NonZeroRegister::R247): return std::make_optional<const std::string_view>("R247");
-    case static_cast<Register>(NonZeroRegister::R248): return std::make_optional<const std::string_view>("R248");
-    case static_cast<Register>(NonZeroRegister::R249): return std::make_optional<const std::string_view>("R249");
-    case static_cast<Register>(NonZeroRegister::R250): return std::make_optional<const std::string_view>("R250");
-    case static_cast<Register>(NonZeroRegister::R251): return std::make_optional<const std::string_view>("R251");
-    case static_cast<Register>(NonZeroRegister::R252): return std::make_optional<const std::string_view>("R252");
-    case static_cast<Register>(NonZeroRegister::R253): return std::make_optional<const std::string_view>("R253");
-    case static_cast<Register>(NonZeroRegister::R254): return std::make_optional<const std::string_view>("R254");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Round1 value) {
-  switch (value) {
-    case Round1::RN: return std::make_optional<const std::string_view>("RN");
-    case Round1::RM: return std::make_optional<const std::string_view>("RM");
-    case Round1::RP: return std::make_optional<const std::string_view>("RP");
-    case Round1::RZ: return std::make_optional<const std::string_view>("RZ");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Round3 value) {
-  switch (value) {
-    case Round3::ROUND: return std::make_optional<const std::string_view>("ROUND");
-    case Round3::FLOOR: return std::make_optional<const std::string_view>("FLOOR");
-    case Round3::CEIL: return std::make_optional<const std::string_view>("CEIL");
-    case Round3::TRUNC: return std::make_optional<const std::string_view>("TRUNC");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(S16 value) {
-  switch (value) {
-    case S16::S16: return std::make_optional<const std::string_view>("S16");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(SAT value) {
-  switch (value) {
-    case SAT::noSAT: return std::make_optional<const std::string_view>("noSAT");
-    case SAT::SAT: return std::make_optional<const std::string_view>("SAT");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(SH value) {
-  switch (value) {
-    case SH::noSH: return std::make_optional<const std::string_view>("noSH");
-    case SH::SH: return std::make_optional<const std::string_view>("SH");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(SHFXMode value) {
-  switch (value) {
-    case SHFXMode::NONE: return std::make_optional<const std::string_view>("NONE");
-    case SHFXMode::HI: return std::make_optional<const std::string_view>("HI");
-    case SHFXMode::X: return std::make_optional<const std::string_view>("X");
-    case SHFXMode::XHI: return std::make_optional<const std::string_view>("XHI");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(SHF_L value) {
-  switch (value) {
-    case SHF_L::L: return std::make_optional<const std::string_view>("L");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(SHF_R value) {
-  switch (value) {
-    case SHF_R::R: return std::make_optional<const std::string_view>("R");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(SInteger value) {
-  switch (value) {
-    case static_cast<SInteger>(SInteger64::S64): return std::make_optional<const std::string_view>("S64");
-    case static_cast<SInteger>(SInteger32::S32): return std::make_optional<const std::string_view>("S32");
-    case static_cast<SInteger>(SInteger16::S16): return std::make_optional<const std::string_view>("S16");
-    case static_cast<SInteger>(SInteger8::S8): return std::make_optional<const std::string_view>("S8");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(SInteger32 value) {
-  switch (value) {
-    case SInteger32::S32: return std::make_optional<const std::string_view>("S32");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(SInteger64 value) {
-  switch (value) {
-    case SInteger64::S64: return std::make_optional<const std::string_view>("S64");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(SInteger8 value) {
-  switch (value) {
-    case SInteger8::S8: return std::make_optional<const std::string_view>("S8");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(SKEW value) {
-  switch (value) {
-    case SKEW::noSKEW: return std::make_optional<const std::string_view>("noSKEW");
-    case SKEW::SKEW: return std::make_optional<const std::string_view>("SKEW");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(SQInteger value) {
-  switch (value) {
-    case SQInteger::U8: return std::make_optional<const std::string_view>("U8");
-    case SQInteger::_32: return std::make_optional<const std::string_view>("32");
-    case SQInteger::_64: return std::make_optional<const std::string_view>("64");
-    case SQInteger::F32: return std::make_optional<const std::string_view>("F32");
-    case SQInteger::F16x2_FTZ_RN: return std::make_optional<const std::string_view>("F16x2.FTZ.RN");
-    case SQInteger::S32: return std::make_optional<const std::string_view>("S32");
-    case SQInteger::S64: return std::make_optional<const std::string_view>("S64");
-    case SQInteger::INVALIDATOMICSIZE6: return std::make_optional<const std::string_view>("INVALIDATOMICSIZE6");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(STPMode value) {
-  switch (value) {
-    case STPMode::noWAIT: return std::make_optional<const std::string_view>("noWAIT");
-    case STPMode::WAIT: return std::make_optional<const std::string_view>("WAIT");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Scale value) {
-  switch (value) {
-    case Scale::NONE: return std::make_optional<const std::string_view>("NONE");
-    case Scale::D2: return std::make_optional<const std::string_view>("D2");
-    case Scale::D4: return std::make_optional<const std::string_view>("D4");
-    case Scale::D8: return std::make_optional<const std::string_view>("D8");
-    case Scale::M8: return std::make_optional<const std::string_view>("M8");
-    case Scale::M4: return std::make_optional<const std::string_view>("M4");
-    case Scale::M2: return std::make_optional<const std::string_view>("M2");
-    case Scale::INVALIDSCALE37: return std::make_optional<const std::string_view>("INVALIDSCALE37");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Scoreboard value) {
-  switch (value) {
-    case Scoreboard::SB0: return std::make_optional<const std::string_view>("SB0");
-    case Scoreboard::SB1: return std::make_optional<const std::string_view>("SB1");
-    case Scoreboard::SB2: return std::make_optional<const std::string_view>("SB2");
-    case Scoreboard::SB3: return std::make_optional<const std::string_view>("SB3");
-    case Scoreboard::SB4: return std::make_optional<const std::string_view>("SB4");
-    case Scoreboard::SB5: return std::make_optional<const std::string_view>("SB5");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Shflmd value) {
-  switch (value) {
-    case Shflmd::IDX: return std::make_optional<const std::string_view>("IDX");
-    case Shflmd::UP: return std::make_optional<const std::string_view>("UP");
-    case Shflmd::DOWN: return std::make_optional<const std::string_view>("DOWN");
-    case Shflmd::BFLY: return std::make_optional<const std::string_view>("BFLY");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(SpecialRegister value) {
-  switch (value) {
-    case SpecialRegister::SR0: return std::make_optional<const std::string_view>("SR0");
-    case SpecialRegister::SR1: return std::make_optional<const std::string_view>("SR1");
-    case SpecialRegister::SR2: return std::make_optional<const std::string_view>("SR2");
-    case SpecialRegister::SR3: return std::make_optional<const std::string_view>("SR3");
-    case SpecialRegister::SR4: return std::make_optional<const std::string_view>("SR4");
-    case SpecialRegister::SR5: return std::make_optional<const std::string_view>("SR5");
-    case SpecialRegister::SR6: return std::make_optional<const std::string_view>("SR6");
-    case SpecialRegister::SR7: return std::make_optional<const std::string_view>("SR7");
-    case SpecialRegister::SR8: return std::make_optional<const std::string_view>("SR8");
-    case SpecialRegister::SR9: return std::make_optional<const std::string_view>("SR9");
-    case SpecialRegister::SR10: return std::make_optional<const std::string_view>("SR10");
-    case SpecialRegister::SR11: return std::make_optional<const std::string_view>("SR11");
-    case SpecialRegister::SR12: return std::make_optional<const std::string_view>("SR12");
-    case SpecialRegister::SR13: return std::make_optional<const std::string_view>("SR13");
-    case SpecialRegister::SR14: return std::make_optional<const std::string_view>("SR14");
-    case SpecialRegister::SR15: return std::make_optional<const std::string_view>("SR15");
-    case SpecialRegister::SR16: return std::make_optional<const std::string_view>("SR16");
-    case SpecialRegister::SR17: return std::make_optional<const std::string_view>("SR17");
-    case SpecialRegister::SR18: return std::make_optional<const std::string_view>("SR18");
-    case SpecialRegister::SR19: return std::make_optional<const std::string_view>("SR19");
-    case SpecialRegister::SR20: return std::make_optional<const std::string_view>("SR20");
-    case SpecialRegister::SR21: return std::make_optional<const std::string_view>("SR21");
-    case SpecialRegister::SR22: return std::make_optional<const std::string_view>("SR22");
-    case SpecialRegister::SR23: return std::make_optional<const std::string_view>("SR23");
-    case SpecialRegister::SR24: return std::make_optional<const std::string_view>("SR24");
-    case SpecialRegister::SR25: return std::make_optional<const std::string_view>("SR25");
-    case SpecialRegister::SR26: return std::make_optional<const std::string_view>("SR26");
-    case SpecialRegister::SR27: return std::make_optional<const std::string_view>("SR27");
-    case SpecialRegister::SR28: return std::make_optional<const std::string_view>("SR28");
-    case SpecialRegister::SR29: return std::make_optional<const std::string_view>("SR29");
-    case SpecialRegister::SR30: return std::make_optional<const std::string_view>("SR30");
-    case SpecialRegister::SR31: return std::make_optional<const std::string_view>("SR31");
-    case SpecialRegister::SR32: return std::make_optional<const std::string_view>("SR32");
-    case SpecialRegister::SR33: return std::make_optional<const std::string_view>("SR33");
-    case SpecialRegister::SR34: return std::make_optional<const std::string_view>("SR34");
-    case SpecialRegister::SR35: return std::make_optional<const std::string_view>("SR35");
-    case SpecialRegister::SR36: return std::make_optional<const std::string_view>("SR36");
-    case SpecialRegister::SR37: return std::make_optional<const std::string_view>("SR37");
-    case SpecialRegister::SR38: return std::make_optional<const std::string_view>("SR38");
-    case SpecialRegister::SR39: return std::make_optional<const std::string_view>("SR39");
-    case SpecialRegister::SR40: return std::make_optional<const std::string_view>("SR40");
-    case SpecialRegister::SR41: return std::make_optional<const std::string_view>("SR41");
-    case SpecialRegister::SR42: return std::make_optional<const std::string_view>("SR42");
-    case SpecialRegister::SR43: return std::make_optional<const std::string_view>("SR43");
-    case SpecialRegister::SR44: return std::make_optional<const std::string_view>("SR44");
-    case SpecialRegister::SR45: return std::make_optional<const std::string_view>("SR45");
-    case SpecialRegister::SR46: return std::make_optional<const std::string_view>("SR46");
-    case SpecialRegister::SR47: return std::make_optional<const std::string_view>("SR47");
-    case SpecialRegister::SR48: return std::make_optional<const std::string_view>("SR48");
-    case SpecialRegister::SR49: return std::make_optional<const std::string_view>("SR49");
-    case SpecialRegister::SR50: return std::make_optional<const std::string_view>("SR50");
-    case SpecialRegister::SR51: return std::make_optional<const std::string_view>("SR51");
-    case SpecialRegister::SR52: return std::make_optional<const std::string_view>("SR52");
-    case SpecialRegister::SR53: return std::make_optional<const std::string_view>("SR53");
-    case SpecialRegister::SR54: return std::make_optional<const std::string_view>("SR54");
-    case SpecialRegister::SR55: return std::make_optional<const std::string_view>("SR55");
-    case SpecialRegister::SR56: return std::make_optional<const std::string_view>("SR56");
-    case SpecialRegister::SR57: return std::make_optional<const std::string_view>("SR57");
-    case SpecialRegister::SR58: return std::make_optional<const std::string_view>("SR58");
-    case SpecialRegister::SR59: return std::make_optional<const std::string_view>("SR59");
-    case SpecialRegister::SR60: return std::make_optional<const std::string_view>("SR60");
-    case SpecialRegister::SR61: return std::make_optional<const std::string_view>("SR61");
-    case SpecialRegister::SR62: return std::make_optional<const std::string_view>("SR62");
-    case SpecialRegister::SR63: return std::make_optional<const std::string_view>("SR63");
-    case SpecialRegister::SR64: return std::make_optional<const std::string_view>("SR64");
-    case SpecialRegister::SR65: return std::make_optional<const std::string_view>("SR65");
-    case SpecialRegister::SR66: return std::make_optional<const std::string_view>("SR66");
-    case SpecialRegister::SR67: return std::make_optional<const std::string_view>("SR67");
-    case SpecialRegister::SR68: return std::make_optional<const std::string_view>("SR68");
-    case SpecialRegister::SR69: return std::make_optional<const std::string_view>("SR69");
-    case SpecialRegister::SR70: return std::make_optional<const std::string_view>("SR70");
-    case SpecialRegister::SR71: return std::make_optional<const std::string_view>("SR71");
-    case SpecialRegister::SR72: return std::make_optional<const std::string_view>("SR72");
-    case SpecialRegister::SR73: return std::make_optional<const std::string_view>("SR73");
-    case SpecialRegister::SR74: return std::make_optional<const std::string_view>("SR74");
-    case SpecialRegister::SR75: return std::make_optional<const std::string_view>("SR75");
-    case SpecialRegister::SR76: return std::make_optional<const std::string_view>("SR76");
-    case SpecialRegister::SR77: return std::make_optional<const std::string_view>("SR77");
-    case SpecialRegister::SR78: return std::make_optional<const std::string_view>("SR78");
-    case SpecialRegister::SR79: return std::make_optional<const std::string_view>("SR79");
-    case SpecialRegister::SR80: return std::make_optional<const std::string_view>("SR80");
-    case SpecialRegister::SR81: return std::make_optional<const std::string_view>("SR81");
-    case SpecialRegister::SR82: return std::make_optional<const std::string_view>("SR82");
-    case SpecialRegister::SR83: return std::make_optional<const std::string_view>("SR83");
-    case SpecialRegister::SR84: return std::make_optional<const std::string_view>("SR84");
-    case SpecialRegister::SR85: return std::make_optional<const std::string_view>("SR85");
-    case SpecialRegister::SR86: return std::make_optional<const std::string_view>("SR86");
-    case SpecialRegister::SR87: return std::make_optional<const std::string_view>("SR87");
-    case SpecialRegister::SR88: return std::make_optional<const std::string_view>("SR88");
-    case SpecialRegister::SR89: return std::make_optional<const std::string_view>("SR89");
-    case SpecialRegister::SR90: return std::make_optional<const std::string_view>("SR90");
-    case SpecialRegister::SR91: return std::make_optional<const std::string_view>("SR91");
-    case SpecialRegister::SR92: return std::make_optional<const std::string_view>("SR92");
-    case SpecialRegister::SR93: return std::make_optional<const std::string_view>("SR93");
-    case SpecialRegister::SR94: return std::make_optional<const std::string_view>("SR94");
-    case SpecialRegister::SR95: return std::make_optional<const std::string_view>("SR95");
-    case SpecialRegister::SR96: return std::make_optional<const std::string_view>("SR96");
-    case SpecialRegister::SR97: return std::make_optional<const std::string_view>("SR97");
-    case SpecialRegister::SR98: return std::make_optional<const std::string_view>("SR98");
-    case SpecialRegister::SR99: return std::make_optional<const std::string_view>("SR99");
-    case SpecialRegister::SR100: return std::make_optional<const std::string_view>("SR100");
-    case SpecialRegister::SR101: return std::make_optional<const std::string_view>("SR101");
-    case SpecialRegister::SR102: return std::make_optional<const std::string_view>("SR102");
-    case SpecialRegister::SR103: return std::make_optional<const std::string_view>("SR103");
-    case SpecialRegister::SR104: return std::make_optional<const std::string_view>("SR104");
-    case SpecialRegister::SR105: return std::make_optional<const std::string_view>("SR105");
-    case SpecialRegister::SR106: return std::make_optional<const std::string_view>("SR106");
-    case SpecialRegister::SR107: return std::make_optional<const std::string_view>("SR107");
-    case SpecialRegister::SR108: return std::make_optional<const std::string_view>("SR108");
-    case SpecialRegister::SR109: return std::make_optional<const std::string_view>("SR109");
-    case SpecialRegister::SR110: return std::make_optional<const std::string_view>("SR110");
-    case SpecialRegister::SR111: return std::make_optional<const std::string_view>("SR111");
-    case SpecialRegister::SR112: return std::make_optional<const std::string_view>("SR112");
-    case SpecialRegister::SR113: return std::make_optional<const std::string_view>("SR113");
-    case SpecialRegister::SR114: return std::make_optional<const std::string_view>("SR114");
-    case SpecialRegister::SR115: return std::make_optional<const std::string_view>("SR115");
-    case SpecialRegister::SR116: return std::make_optional<const std::string_view>("SR116");
-    case SpecialRegister::SR117: return std::make_optional<const std::string_view>("SR117");
-    case SpecialRegister::SR118: return std::make_optional<const std::string_view>("SR118");
-    case SpecialRegister::SR119: return std::make_optional<const std::string_view>("SR119");
-    case SpecialRegister::SR120: return std::make_optional<const std::string_view>("SR120");
-    case SpecialRegister::SR121: return std::make_optional<const std::string_view>("SR121");
-    case SpecialRegister::SR122: return std::make_optional<const std::string_view>("SR122");
-    case SpecialRegister::SR123: return std::make_optional<const std::string_view>("SR123");
-    case SpecialRegister::SR124: return std::make_optional<const std::string_view>("SR124");
-    case SpecialRegister::SR125: return std::make_optional<const std::string_view>("SR125");
-    case SpecialRegister::SR126: return std::make_optional<const std::string_view>("SR126");
-    case SpecialRegister::SR127: return std::make_optional<const std::string_view>("SR127");
-    case SpecialRegister::SR128: return std::make_optional<const std::string_view>("SR128");
-    case SpecialRegister::SR129: return std::make_optional<const std::string_view>("SR129");
-    case SpecialRegister::SR130: return std::make_optional<const std::string_view>("SR130");
-    case SpecialRegister::SR131: return std::make_optional<const std::string_view>("SR131");
-    case SpecialRegister::SR132: return std::make_optional<const std::string_view>("SR132");
-    case SpecialRegister::SR133: return std::make_optional<const std::string_view>("SR133");
-    case SpecialRegister::SR134: return std::make_optional<const std::string_view>("SR134");
-    case SpecialRegister::SR135: return std::make_optional<const std::string_view>("SR135");
-    case SpecialRegister::SR136: return std::make_optional<const std::string_view>("SR136");
-    case SpecialRegister::SR137: return std::make_optional<const std::string_view>("SR137");
-    case SpecialRegister::SR138: return std::make_optional<const std::string_view>("SR138");
-    case SpecialRegister::SR139: return std::make_optional<const std::string_view>("SR139");
-    case SpecialRegister::SR140: return std::make_optional<const std::string_view>("SR140");
-    case SpecialRegister::SR141: return std::make_optional<const std::string_view>("SR141");
-    case SpecialRegister::SR142: return std::make_optional<const std::string_view>("SR142");
-    case SpecialRegister::SR143: return std::make_optional<const std::string_view>("SR143");
-    case SpecialRegister::SR144: return std::make_optional<const std::string_view>("SR144");
-    case SpecialRegister::SR145: return std::make_optional<const std::string_view>("SR145");
-    case SpecialRegister::SR146: return std::make_optional<const std::string_view>("SR146");
-    case SpecialRegister::SR147: return std::make_optional<const std::string_view>("SR147");
-    case SpecialRegister::SR148: return std::make_optional<const std::string_view>("SR148");
-    case SpecialRegister::SR149: return std::make_optional<const std::string_view>("SR149");
-    case SpecialRegister::SR150: return std::make_optional<const std::string_view>("SR150");
-    case SpecialRegister::SR151: return std::make_optional<const std::string_view>("SR151");
-    case SpecialRegister::SR152: return std::make_optional<const std::string_view>("SR152");
-    case SpecialRegister::SR153: return std::make_optional<const std::string_view>("SR153");
-    case SpecialRegister::SR154: return std::make_optional<const std::string_view>("SR154");
-    case SpecialRegister::SR155: return std::make_optional<const std::string_view>("SR155");
-    case SpecialRegister::SR156: return std::make_optional<const std::string_view>("SR156");
-    case SpecialRegister::SR157: return std::make_optional<const std::string_view>("SR157");
-    case SpecialRegister::SR158: return std::make_optional<const std::string_view>("SR158");
-    case SpecialRegister::SR159: return std::make_optional<const std::string_view>("SR159");
-    case SpecialRegister::SR160: return std::make_optional<const std::string_view>("SR160");
-    case SpecialRegister::SR161: return std::make_optional<const std::string_view>("SR161");
-    case SpecialRegister::SR162: return std::make_optional<const std::string_view>("SR162");
-    case SpecialRegister::SR163: return std::make_optional<const std::string_view>("SR163");
-    case SpecialRegister::SR164: return std::make_optional<const std::string_view>("SR164");
-    case SpecialRegister::SR165: return std::make_optional<const std::string_view>("SR165");
-    case SpecialRegister::SR166: return std::make_optional<const std::string_view>("SR166");
-    case SpecialRegister::SR167: return std::make_optional<const std::string_view>("SR167");
-    case SpecialRegister::SR168: return std::make_optional<const std::string_view>("SR168");
-    case SpecialRegister::SR169: return std::make_optional<const std::string_view>("SR169");
-    case SpecialRegister::SR170: return std::make_optional<const std::string_view>("SR170");
-    case SpecialRegister::SR171: return std::make_optional<const std::string_view>("SR171");
-    case SpecialRegister::SR172: return std::make_optional<const std::string_view>("SR172");
-    case SpecialRegister::SR173: return std::make_optional<const std::string_view>("SR173");
-    case SpecialRegister::SR174: return std::make_optional<const std::string_view>("SR174");
-    case SpecialRegister::SR175: return std::make_optional<const std::string_view>("SR175");
-    case SpecialRegister::SR176: return std::make_optional<const std::string_view>("SR176");
-    case SpecialRegister::SR177: return std::make_optional<const std::string_view>("SR177");
-    case SpecialRegister::SR178: return std::make_optional<const std::string_view>("SR178");
-    case SpecialRegister::SR179: return std::make_optional<const std::string_view>("SR179");
-    case SpecialRegister::SR180: return std::make_optional<const std::string_view>("SR180");
-    case SpecialRegister::SR181: return std::make_optional<const std::string_view>("SR181");
-    case SpecialRegister::SR182: return std::make_optional<const std::string_view>("SR182");
-    case SpecialRegister::SR183: return std::make_optional<const std::string_view>("SR183");
-    case SpecialRegister::SR184: return std::make_optional<const std::string_view>("SR184");
-    case SpecialRegister::SR185: return std::make_optional<const std::string_view>("SR185");
-    case SpecialRegister::SR186: return std::make_optional<const std::string_view>("SR186");
-    case SpecialRegister::SR187: return std::make_optional<const std::string_view>("SR187");
-    case SpecialRegister::SR188: return std::make_optional<const std::string_view>("SR188");
-    case SpecialRegister::SR189: return std::make_optional<const std::string_view>("SR189");
-    case SpecialRegister::SR190: return std::make_optional<const std::string_view>("SR190");
-    case SpecialRegister::SR191: return std::make_optional<const std::string_view>("SR191");
-    case SpecialRegister::SR192: return std::make_optional<const std::string_view>("SR192");
-    case SpecialRegister::SR193: return std::make_optional<const std::string_view>("SR193");
-    case SpecialRegister::SR194: return std::make_optional<const std::string_view>("SR194");
-    case SpecialRegister::SR195: return std::make_optional<const std::string_view>("SR195");
-    case SpecialRegister::SR196: return std::make_optional<const std::string_view>("SR196");
-    case SpecialRegister::SR197: return std::make_optional<const std::string_view>("SR197");
-    case SpecialRegister::SR198: return std::make_optional<const std::string_view>("SR198");
-    case SpecialRegister::SR199: return std::make_optional<const std::string_view>("SR199");
-    case SpecialRegister::SR200: return std::make_optional<const std::string_view>("SR200");
-    case SpecialRegister::SR201: return std::make_optional<const std::string_view>("SR201");
-    case SpecialRegister::SR202: return std::make_optional<const std::string_view>("SR202");
-    case SpecialRegister::SR203: return std::make_optional<const std::string_view>("SR203");
-    case SpecialRegister::SR204: return std::make_optional<const std::string_view>("SR204");
-    case SpecialRegister::SR205: return std::make_optional<const std::string_view>("SR205");
-    case SpecialRegister::SR206: return std::make_optional<const std::string_view>("SR206");
-    case SpecialRegister::SR207: return std::make_optional<const std::string_view>("SR207");
-    case SpecialRegister::SR208: return std::make_optional<const std::string_view>("SR208");
-    case SpecialRegister::SR209: return std::make_optional<const std::string_view>("SR209");
-    case SpecialRegister::SR210: return std::make_optional<const std::string_view>("SR210");
-    case SpecialRegister::SR211: return std::make_optional<const std::string_view>("SR211");
-    case SpecialRegister::SR212: return std::make_optional<const std::string_view>("SR212");
-    case SpecialRegister::SR213: return std::make_optional<const std::string_view>("SR213");
-    case SpecialRegister::SR214: return std::make_optional<const std::string_view>("SR214");
-    case SpecialRegister::SR215: return std::make_optional<const std::string_view>("SR215");
-    case SpecialRegister::SR216: return std::make_optional<const std::string_view>("SR216");
-    case SpecialRegister::SR217: return std::make_optional<const std::string_view>("SR217");
-    case SpecialRegister::SR218: return std::make_optional<const std::string_view>("SR218");
-    case SpecialRegister::SR219: return std::make_optional<const std::string_view>("SR219");
-    case SpecialRegister::SR220: return std::make_optional<const std::string_view>("SR220");
-    case SpecialRegister::SR221: return std::make_optional<const std::string_view>("SR221");
-    case SpecialRegister::SR222: return std::make_optional<const std::string_view>("SR222");
-    case SpecialRegister::SR223: return std::make_optional<const std::string_view>("SR223");
-    case SpecialRegister::SR224: return std::make_optional<const std::string_view>("SR224");
-    case SpecialRegister::SR225: return std::make_optional<const std::string_view>("SR225");
-    case SpecialRegister::SR226: return std::make_optional<const std::string_view>("SR226");
-    case SpecialRegister::SR227: return std::make_optional<const std::string_view>("SR227");
-    case SpecialRegister::SR228: return std::make_optional<const std::string_view>("SR228");
-    case SpecialRegister::SR229: return std::make_optional<const std::string_view>("SR229");
-    case SpecialRegister::SR230: return std::make_optional<const std::string_view>("SR230");
-    case SpecialRegister::SR231: return std::make_optional<const std::string_view>("SR231");
-    case SpecialRegister::SR232: return std::make_optional<const std::string_view>("SR232");
-    case SpecialRegister::SR233: return std::make_optional<const std::string_view>("SR233");
-    case SpecialRegister::SR234: return std::make_optional<const std::string_view>("SR234");
-    case SpecialRegister::SR235: return std::make_optional<const std::string_view>("SR235");
-    case SpecialRegister::SR236: return std::make_optional<const std::string_view>("SR236");
-    case SpecialRegister::SR237: return std::make_optional<const std::string_view>("SR237");
-    case SpecialRegister::SR238: return std::make_optional<const std::string_view>("SR238");
-    case SpecialRegister::SR239: return std::make_optional<const std::string_view>("SR239");
-    case SpecialRegister::SR240: return std::make_optional<const std::string_view>("SR240");
-    case SpecialRegister::SR241: return std::make_optional<const std::string_view>("SR241");
-    case SpecialRegister::SR242: return std::make_optional<const std::string_view>("SR242");
-    case SpecialRegister::SR243: return std::make_optional<const std::string_view>("SR243");
-    case SpecialRegister::SR244: return std::make_optional<const std::string_view>("SR244");
-    case SpecialRegister::SR245: return std::make_optional<const std::string_view>("SR245");
-    case SpecialRegister::SR246: return std::make_optional<const std::string_view>("SR246");
-    case SpecialRegister::SR247: return std::make_optional<const std::string_view>("SR247");
-    case SpecialRegister::SR248: return std::make_optional<const std::string_view>("SR248");
-    case SpecialRegister::SR249: return std::make_optional<const std::string_view>("SR249");
-    case SpecialRegister::SR250: return std::make_optional<const std::string_view>("SR250");
-    case SpecialRegister::SR251: return std::make_optional<const std::string_view>("SR251");
-    case SpecialRegister::SR252: return std::make_optional<const std::string_view>("SR252");
-    case SpecialRegister::SR253: return std::make_optional<const std::string_view>("SR253");
-    case SpecialRegister::SR254: return std::make_optional<const std::string_view>("SR254");
-    case SpecialRegister::SR255: return std::make_optional<const std::string_view>("SR255");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(StoreCacheOp value) {
-  switch (value) {
-    case StoreCacheOp::WB: return std::make_optional<const std::string_view>("WB");
-    case StoreCacheOp::CG: return std::make_optional<const std::string_view>("CG");
-    case StoreCacheOp::CS: return std::make_optional<const std::string_view>("CS");
-    case StoreCacheOp::WT: return std::make_optional<const std::string_view>("WT");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(TEXWmsk2C value) {
-  switch (value) {
-    case TEXWmsk2C::R: return std::make_optional<const std::string_view>("R");
-    case TEXWmsk2C::G: return std::make_optional<const std::string_view>("G");
-    case TEXWmsk2C::B: return std::make_optional<const std::string_view>("B");
-    case TEXWmsk2C::A: return std::make_optional<const std::string_view>("A");
-    case TEXWmsk2C::RG: return std::make_optional<const std::string_view>("RG");
-    case TEXWmsk2C::RA: return std::make_optional<const std::string_view>("RA");
-    case TEXWmsk2C::GA: return std::make_optional<const std::string_view>("GA");
-    case TEXWmsk2C::BA: return std::make_optional<const std::string_view>("BA");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(TEXWmsk34C value) {
-  switch (value) {
-    case TEXWmsk34C::RGB: return std::make_optional<const std::string_view>("RGB");
-    case TEXWmsk34C::RGA: return std::make_optional<const std::string_view>("RGA");
-    case TEXWmsk34C::RBA: return std::make_optional<const std::string_view>("RBA");
-    case TEXWmsk34C::GBA: return std::make_optional<const std::string_view>("GBA");
-    case TEXWmsk34C::RGBA: return std::make_optional<const std::string_view>("RGBA");
-    case TEXWmsk34C::INVALID5: return std::make_optional<const std::string_view>("INVALID5");
-    case TEXWmsk34C::INVALID6: return std::make_optional<const std::string_view>("INVALID6");
-    case TEXWmsk34C::INVALID7: return std::make_optional<const std::string_view>("INVALID7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(TOFF1 value) {
-  switch (value) {
-    case TOFF1::noTOFF: return std::make_optional<const std::string_view>("noTOFF");
-    case TOFF1::AOFFI: return std::make_optional<const std::string_view>("AOFFI");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(TOFF2 value) {
-  switch (value) {
-    case TOFF2::noTOFF: return std::make_optional<const std::string_view>("noTOFF");
-    case TOFF2::AOFFI: return std::make_optional<const std::string_view>("AOFFI");
-    case TOFF2::PTP: return std::make_optional<const std::string_view>("PTP");
-    case TOFF2::INVALIDBTOFF03: return std::make_optional<const std::string_view>("INVALIDBTOFF03");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(TPhase value) {
-  switch (value) {
-    case TPhase::noPhase: return std::make_optional<const std::string_view>("noPhase");
-    case TPhase::T: return std::make_optional<const std::string_view>("T");
-    case TPhase::P: return std::make_optional<const std::string_view>("P");
-    case TPhase::INVALIDPHASE3: return std::make_optional<const std::string_view>("INVALIDPHASE3");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(TXQMode value) {
-  switch (value) {
-    case TXQMode::TEX_HEADER_DIMENSION: return std::make_optional<const std::string_view>("TEX_HEADER_DIMENSION");
-    case TXQMode::TEX_HEADER_TEXTURE_TYPE: return std::make_optional<const std::string_view>("TEX_HEADER_TEXTURE_TYPE");
-    case TXQMode::TEX_HEADER_SAMPLER_POS: return std::make_optional<const std::string_view>("TEX_HEADER_SAMPLER_POS");
-    case TXQMode::_3: return std::make_optional<const std::string_view>("3");
-    case TXQMode::_4: return std::make_optional<const std::string_view>("4");
-    case TXQMode::_5: return std::make_optional<const std::string_view>("5");
-    case TXQMode::_6: return std::make_optional<const std::string_view>("6");
-    case TXQMode::_7: return std::make_optional<const std::string_view>("7");
-    case TXQMode::TEX_SAMPLER_FILTER: return std::make_optional<const std::string_view>("TEX_SAMPLER_FILTER");
-    case TXQMode::TEX_SAMPLER_LOD: return std::make_optional<const std::string_view>("TEX_SAMPLER_LOD");
-    case TXQMode::TEX_SAMPLER_WRAP: return std::make_optional<const std::string_view>("TEX_SAMPLER_WRAP");
-    case TXQMode::TEX_SAMPLER_BORDER_COLOR: return std::make_optional<const std::string_view>("TEX_SAMPLER_BORDER_COLOR");
-    case TXQMode::_12: return std::make_optional<const std::string_view>("12");
-    case TXQMode::_13: return std::make_optional<const std::string_view>("13");
-    case TXQMode::_14: return std::make_optional<const std::string_view>("14");
-    case TXQMode::_15: return std::make_optional<const std::string_view>("15");
-    case TXQMode::_16: return std::make_optional<const std::string_view>("16");
-    case TXQMode::_17: return std::make_optional<const std::string_view>("17");
-    case TXQMode::_18: return std::make_optional<const std::string_view>("18");
-    case TXQMode::_19: return std::make_optional<const std::string_view>("19");
-    case TXQMode::_20: return std::make_optional<const std::string_view>("20");
-    case TXQMode::_21: return std::make_optional<const std::string_view>("21");
-    case TXQMode::_22: return std::make_optional<const std::string_view>("22");
-    case TXQMode::_23: return std::make_optional<const std::string_view>("23");
-    case TXQMode::_24: return std::make_optional<const std::string_view>("24");
-    case TXQMode::_25: return std::make_optional<const std::string_view>("25");
-    case TXQMode::_26: return std::make_optional<const std::string_view>("26");
-    case TXQMode::_27: return std::make_optional<const std::string_view>("27");
-    case TXQMode::_28: return std::make_optional<const std::string_view>("28");
-    case TXQMode::_29: return std::make_optional<const std::string_view>("29");
-    case TXQMode::_30: return std::make_optional<const std::string_view>("30");
-    case TXQMode::_31: return std::make_optional<const std::string_view>("31");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Test value) {
-  switch (value) {
-    case Test::FALSE: return std::make_optional<const std::string_view>("FALSE");
-    case Test::ZFF: return std::make_optional<const std::string_view>("ZFF");
-    case Test::LEG: return std::make_optional<const std::string_view>("LEG");
-    case Test::U: return std::make_optional<const std::string_view>("U");
-    case Test::ZFT: return std::make_optional<const std::string_view>("ZFT");
-    case Test::TRUE: return std::make_optional<const std::string_view>("TRUE");
-    case Test::NOT_OVERFLOW: return std::make_optional<const std::string_view>("NOT_OVERFLOW");
-    case Test::CFF: return std::make_optional<const std::string_view>("CFF");
-    case Test::ABOVE: return std::make_optional<const std::string_view>("ABOVE");
-    case Test::SIGN: return std::make_optional<const std::string_view>("SIGN");
-    case Test::SF1: return std::make_optional<const std::string_view>("SF1");
-    case Test::CFT: return std::make_optional<const std::string_view>("CFT");
-    case Test::OF1: return std::make_optional<const std::string_view>("OF1");
-    case Test::NOT_SIGN: return std::make_optional<const std::string_view>("NOT_SIGN");
-    case Test::BELOW_OR_EQUAL: return std::make_optional<const std::string_view>("BELOW_OR_EQUAL");
-    case Test::NOT_CARRY: return std::make_optional<const std::string_view>("NOT_CARRY");
-    case Test::_1F: return std::make_optional<const std::string_view>("1F");
-    case Test::LT: return std::make_optional<const std::string_view>("LT");
-    case Test::EQ: return std::make_optional<const std::string_view>("EQ");
-    case Test::LE: return std::make_optional<const std::string_view>("LE");
-    case Test::GT: return std::make_optional<const std::string_view>("GT");
-    case Test::GE: return std::make_optional<const std::string_view>("GE");
-    case Test::LTU: return std::make_optional<const std::string_view>("LTU");
-    case Test::LEU: return std::make_optional<const std::string_view>("LEU");
-    case Test::GTU: return std::make_optional<const std::string_view>("GTU");
-    case Test::NEU: return std::make_optional<const std::string_view>("NEU");
-    case Test::GEU: return std::make_optional<const std::string_view>("GEU");
-    case Test::HI: return std::make_optional<const std::string_view>("HI");
-    case Test::CSM_TA: return std::make_optional<const std::string_view>("CSM_TA");
-    case Test::CSM_TR: return std::make_optional<const std::string_view>("CSM_TR");
-    case Test::CSM_MX: return std::make_optional<const std::string_view>("CSM_MX");
-    case Test::FCSM_TA: return std::make_optional<const std::string_view>("FCSM_TA");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(TexComp value) {
-  switch (value) {
-    case TexComp::R: return std::make_optional<const std::string_view>("R");
-    case TexComp::G: return std::make_optional<const std::string_view>("G");
-    case TexComp::B: return std::make_optional<const std::string_view>("B");
-    case TexComp::A: return std::make_optional<const std::string_view>("A");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(Trig value) {
-  switch (value) {
-    case Trig::TRIG: return std::make_optional<const std::string_view>("TRIG");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(U value) {
-  switch (value) {
-    case U::noU: return std::make_optional<const std::string_view>("noU");
-    case U::U: return std::make_optional<const std::string_view>("U");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(U16 value) {
-  switch (value) {
-    case U16::U16: return std::make_optional<const std::string_view>("U16");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(U32 value) {
-  switch (value) {
-    case U32::U32: return std::make_optional<const std::string_view>("U32");
-    case U32::INVALIDASEL7: return std::make_optional<const std::string_view>("INVALIDASEL7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(U8 value) {
-  switch (value) {
-    case U8::U8: return std::make_optional<const std::string_view>("U8");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(UInteger value) {
-  switch (value) {
-    case static_cast<UInteger>(UInteger16::U16): return std::make_optional<const std::string_view>("U16");
-    case static_cast<UInteger>(UInteger64::U64): return std::make_optional<const std::string_view>("U64");
-    case static_cast<UInteger>(UInteger8::U8): return std::make_optional<const std::string_view>("U8");
-    case static_cast<UInteger>(UInteger32::U32): return std::make_optional<const std::string_view>("U32");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(UInteger32 value) {
-  switch (value) {
-    case UInteger32::U32: return std::make_optional<const std::string_view>("U32");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(UInteger64 value) {
-  switch (value) {
-    case UInteger64::U64: return std::make_optional<const std::string_view>("U64");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(UInteger_old value) {
-  switch (value) {
-    case static_cast<UInteger_old>(U16::U16): return std::make_optional<const std::string_view>("U16");
-    case static_cast<UInteger_old>(U8::U8): return std::make_optional<const std::string_view>("U8");
-    case static_cast<UInteger_old>(U32::U32): return std::make_optional<const std::string_view>("U32");
-    case static_cast<UInteger_old>(U32::INVALIDASEL7): return std::make_optional<const std::string_view>("INVALIDASEL7");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(USCHED_INFO value) {
-  switch (value) {
-    case USCHED_INFO::YIELD_SB: return std::make_optional<const std::string_view>("YIELD_SB");
-    case USCHED_INFO::W1G: return std::make_optional<const std::string_view>("W1G");
-    case USCHED_INFO::W2G: return std::make_optional<const std::string_view>("W2G");
-    case USCHED_INFO::W3G: return std::make_optional<const std::string_view>("W3G");
-    case USCHED_INFO::W4G: return std::make_optional<const std::string_view>("W4G");
-    case USCHED_INFO::W5G: return std::make_optional<const std::string_view>("W5G");
-    case USCHED_INFO::W6G: return std::make_optional<const std::string_view>("W6G");
-    case USCHED_INFO::W7G: return std::make_optional<const std::string_view>("W7G");
-    case USCHED_INFO::W8G: return std::make_optional<const std::string_view>("W8G");
-    case USCHED_INFO::W9G: return std::make_optional<const std::string_view>("W9G");
-    case USCHED_INFO::W10G: return std::make_optional<const std::string_view>("W10G");
-    case USCHED_INFO::W11G: return std::make_optional<const std::string_view>("W11G");
-    case USCHED_INFO::W12G: return std::make_optional<const std::string_view>("W12G");
-    case USCHED_INFO::W13G: return std::make_optional<const std::string_view>("W13G");
-    case USCHED_INFO::W14G: return std::make_optional<const std::string_view>("W14G");
-    case USCHED_INFO::W15G: return std::make_optional<const std::string_view>("W15G");
-    case USCHED_INFO::W1: return std::make_optional<const std::string_view>("W1");
-    case USCHED_INFO::W2: return std::make_optional<const std::string_view>("W2");
-    case USCHED_INFO::W3: return std::make_optional<const std::string_view>("W3");
-    case USCHED_INFO::W4: return std::make_optional<const std::string_view>("W4");
-    case USCHED_INFO::W5: return std::make_optional<const std::string_view>("W5");
-    case USCHED_INFO::W6: return std::make_optional<const std::string_view>("W6");
-    case USCHED_INFO::W7: return std::make_optional<const std::string_view>("W7");
-    case USCHED_INFO::W8: return std::make_optional<const std::string_view>("W8");
-    case USCHED_INFO::W9: return std::make_optional<const std::string_view>("W9");
-    case USCHED_INFO::W10: return std::make_optional<const std::string_view>("W10");
-    case USCHED_INFO::W11: return std::make_optional<const std::string_view>("W11");
-    case USCHED_INFO::PIXBAR: return std::make_optional<const std::string_view>("PIXBAR");
-    case USCHED_INFO::YLD: return std::make_optional<const std::string_view>("YLD");
-    case USCHED_INFO::YLD8: return std::make_optional<const std::string_view>("YLD8");
-    case USCHED_INFO::floxy2: return std::make_optional<const std::string_view>("floxy2");
-    case USCHED_INFO::OFF_DECK: return std::make_optional<const std::string_view>("OFF_DECK");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(UnaryAbs value) {
-  switch (value) {
-    case UnaryAbs::noABS: return std::make_optional<const std::string_view>("noABS");
-    case UnaryAbs::ABS: return std::make_optional<const std::string_view>("ABS");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(UnaryInv value) {
-  switch (value) {
-    case UnaryInv::noINV: return std::make_optional<const std::string_view>("noINV");
-    case UnaryInv::INV: return std::make_optional<const std::string_view>("INV");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(UnaryNeg value) {
-  switch (value) {
-    case UnaryNeg::noNEG: return std::make_optional<const std::string_view>("noNEG");
-    case UnaryNeg::NEG: return std::make_optional<const std::string_view>("NEG");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(VInteger32 value) {
-  switch (value) {
-    case VInteger32::U32: return std::make_optional<const std::string_view>("U32");
-    case VInteger32::S32: return std::make_optional<const std::string_view>("S32");
-    case VInteger32::INVALIDASEL7: return std::make_optional<const std::string_view>("INVALIDASEL7");
-    case VInteger32::INVALIDASEL6: return std::make_optional<const std::string_view>("INVALIDASEL6");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(VMadScale value) {
-  switch (value) {
-    case VMadScale::PASS: return std::make_optional<const std::string_view>("PASS");
-    case VMadScale::SHR_7: return std::make_optional<const std::string_view>("SHR_7");
-    case VMadScale::SHR_15: return std::make_optional<const std::string_view>("SHR_15");
-    case VMadScale::INVALIDVMADSCALE3: return std::make_optional<const std::string_view>("INVALIDVMADSCALE3");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(VOP value) {
-  switch (value) {
-    case VOP::MRG_16H: return std::make_optional<const std::string_view>("MRG_16H");
-    case VOP::MRG_16L: return std::make_optional<const std::string_view>("MRG_16L");
-    case VOP::MRG_8B0: return std::make_optional<const std::string_view>("MRG_8B0");
-    case VOP::MRG_8B2: return std::make_optional<const std::string_view>("MRG_8B2");
-    case VOP::ACC: return std::make_optional<const std::string_view>("ACC");
-    case VOP::MIN: return std::make_optional<const std::string_view>("MIN");
-    case VOP::MAX: return std::make_optional<const std::string_view>("MAX");
-    case VOP::PASS: return std::make_optional<const std::string_view>("PASS");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(VRed2 value) {
-  switch (value) {
-    case VRed2::SIMD_MRG: return std::make_optional<const std::string_view>("SIMD_MRG");
-    case VRed2::ACC: return std::make_optional<const std::string_view>("ACC");
-    case VRed2::INVALIDRED2: return std::make_optional<const std::string_view>("INVALIDRED2");
-    case VRed2::INVALIDRED3: return std::make_optional<const std::string_view>("INVALIDRED3");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(VTG value) {
-  switch (value) {
-    case VTG::VTG: return std::make_optional<const std::string_view>("VTG");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(VTGMode value) {
-  switch (value) {
-    case VTGMode::R: return std::make_optional<const std::string_view>("R");
-    case VTGMode::A: return std::make_optional<const std::string_view>("A");
-    case VTGMode::RA: return std::make_optional<const std::string_view>("RA");
-    case VTGMode::INVALIDVTGMODE3: return std::make_optional<const std::string_view>("INVALIDVTGMODE3");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(VoteOp value) {
-  switch (value) {
-    case VoteOp::ALL: return std::make_optional<const std::string_view>("ALL");
-    case VoteOp::ANY: return std::make_optional<const std::string_view>("ANY");
-    case VoteOp::EQ: return std::make_optional<const std::string_view>("EQ");
-    case VoteOp::INVALIDVMODE3: return std::make_optional<const std::string_view>("INVALIDVMODE3");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(WR value) {
-  switch (value) {
-    case WR::wr: return std::make_optional<const std::string_view>("wr");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(X value) {
-  switch (value) {
-    case X::noX: return std::make_optional<const std::string_view>("noX");
-    case X::X: return std::make_optional<const std::string_view>("X");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(XMADcop value) {
-  switch (value) {
-    case XMADcop::C32: return std::make_optional<const std::string_view>("C32");
-    case XMADcop::CLO: return std::make_optional<const std::string_view>("CLO");
-    case XMADcop::CHI: return std::make_optional<const std::string_view>("CHI");
-    case XMADcop::CSFU: return std::make_optional<const std::string_view>("CSFU");
-    case XMADcop::CBCC: return std::make_optional<const std::string_view>("CBCC");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(XMADcop2 value) {
-  switch (value) {
-    case XMADcop2::C32: return std::make_optional<const std::string_view>("C32");
-    case XMADcop2::CLO: return std::make_optional<const std::string_view>("CLO");
-    case XMADcop2::CHI: return std::make_optional<const std::string_view>("CHI");
-    case XMADcop2::CSFU: return std::make_optional<const std::string_view>("CSFU");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(XMode value) {
-  switch (value) {
-    case XMode::noX: return std::make_optional<const std::string_view>("noX");
-    case XMode::XLO: return std::make_optional<const std::string_view>("XLO");
-    case XMode::XMED: return std::make_optional<const std::string_view>("XMED");
-    case XMode::XHI: return std::make_optional<const std::string_view>("XHI");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(XXHI value) {
-  switch (value) {
-    case XXHI::noX: return std::make_optional<const std::string_view>("noX");
-    case XXHI::INVALIDSHRXMODE1: return std::make_optional<const std::string_view>("INVALIDSHRXMODE1");
-    case XXHI::X: return std::make_optional<const std::string_view>("X");
-    case XXHI::XHI: return std::make_optional<const std::string_view>("XHI");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(ZeroRegister value) {
-  switch (value) {
-    case ZeroRegister::RZ: return std::make_optional<const std::string_view>("RZ");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(hadd2_32i__Ra value) {
-  switch (value) {
-    case hadd2_32i__Ra::R147: return std::make_optional<const std::string_view>("R147");
-    case hadd2_32i__Ra::R146: return std::make_optional<const std::string_view>("R146");
-    case hadd2_32i__Ra::R145: return std::make_optional<const std::string_view>("R145");
-    case hadd2_32i__Ra::R144: return std::make_optional<const std::string_view>("R144");
-    case hadd2_32i__Ra::R143: return std::make_optional<const std::string_view>("R143");
-    case hadd2_32i__Ra::R142: return std::make_optional<const std::string_view>("R142");
-    case hadd2_32i__Ra::R141: return std::make_optional<const std::string_view>("R141");
-    case hadd2_32i__Ra::R140: return std::make_optional<const std::string_view>("R140");
-    case hadd2_32i__Ra::R254: return std::make_optional<const std::string_view>("R254");
-    case hadd2_32i__Ra::R253: return std::make_optional<const std::string_view>("R253");
-    case hadd2_32i__Ra::R178: return std::make_optional<const std::string_view>("R178");
-    case hadd2_32i__Ra::R149: return std::make_optional<const std::string_view>("R149");
-    case hadd2_32i__Ra::R148: return std::make_optional<const std::string_view>("R148");
-    case hadd2_32i__Ra::R231: return std::make_optional<const std::string_view>("R231");
-    case hadd2_32i__Ra::R179: return std::make_optional<const std::string_view>("R179");
-    case hadd2_32i__Ra::RZ: return std::make_optional<const std::string_view>("RZ");
-    case hadd2_32i__Ra::R183: return std::make_optional<const std::string_view>("R183");
-    case hadd2_32i__Ra::R38: return std::make_optional<const std::string_view>("R38");
-    case hadd2_32i__Ra::R39: return std::make_optional<const std::string_view>("R39");
-    case hadd2_32i__Ra::R34: return std::make_optional<const std::string_view>("R34");
-    case hadd2_32i__Ra::R35: return std::make_optional<const std::string_view>("R35");
-    case hadd2_32i__Ra::R36: return std::make_optional<const std::string_view>("R36");
-    case hadd2_32i__Ra::R37: return std::make_optional<const std::string_view>("R37");
-    case hadd2_32i__Ra::R30: return std::make_optional<const std::string_view>("R30");
-    case hadd2_32i__Ra::R31: return std::make_optional<const std::string_view>("R31");
-    case hadd2_32i__Ra::R32: return std::make_optional<const std::string_view>("R32");
-    case hadd2_32i__Ra::R33: return std::make_optional<const std::string_view>("R33");
-    case hadd2_32i__Ra::R4: return std::make_optional<const std::string_view>("R4");
-    case hadd2_32i__Ra::R5: return std::make_optional<const std::string_view>("R5");
-    case hadd2_32i__Ra::R6: return std::make_optional<const std::string_view>("R6");
-    case hadd2_32i__Ra::R7: return std::make_optional<const std::string_view>("R7");
-    case hadd2_32i__Ra::R0: return std::make_optional<const std::string_view>("R0");
-    case hadd2_32i__Ra::R1: return std::make_optional<const std::string_view>("R1");
-    case hadd2_32i__Ra::R2: return std::make_optional<const std::string_view>("R2");
-    case hadd2_32i__Ra::R3: return std::make_optional<const std::string_view>("R3");
-    case hadd2_32i__Ra::R8: return std::make_optional<const std::string_view>("R8");
-    case hadd2_32i__Ra::R9: return std::make_optional<const std::string_view>("R9");
-    case hadd2_32i__Ra::R182: return std::make_optional<const std::string_view>("R182");
-    case hadd2_32i__Ra::R89: return std::make_optional<const std::string_view>("R89");
-    case hadd2_32i__Ra::R88: return std::make_optional<const std::string_view>("R88");
-    case hadd2_32i__Ra::R170: return std::make_optional<const std::string_view>("R170");
-    case hadd2_32i__Ra::R171: return std::make_optional<const std::string_view>("R171");
-    case hadd2_32i__Ra::R176: return std::make_optional<const std::string_view>("R176");
-    case hadd2_32i__Ra::R177: return std::make_optional<const std::string_view>("R177");
-    case hadd2_32i__Ra::R174: return std::make_optional<const std::string_view>("R174");
-    case hadd2_32i__Ra::R175: return std::make_optional<const std::string_view>("R175");
-    case hadd2_32i__Ra::R81: return std::make_optional<const std::string_view>("R81");
-    case hadd2_32i__Ra::R80: return std::make_optional<const std::string_view>("R80");
-    case hadd2_32i__Ra::R83: return std::make_optional<const std::string_view>("R83");
-    case hadd2_32i__Ra::R82: return std::make_optional<const std::string_view>("R82");
-    case hadd2_32i__Ra::R85: return std::make_optional<const std::string_view>("R85");
-    case hadd2_32i__Ra::R84: return std::make_optional<const std::string_view>("R84");
-    case hadd2_32i__Ra::R87: return std::make_optional<const std::string_view>("R87");
-    case hadd2_32i__Ra::R86: return std::make_optional<const std::string_view>("R86");
-    case hadd2_32i__Ra::R205: return std::make_optional<const std::string_view>("R205");
-    case hadd2_32i__Ra::R248: return std::make_optional<const std::string_view>("R248");
-    case hadd2_32i__Ra::R169: return std::make_optional<const std::string_view>("R169");
-    case hadd2_32i__Ra::R168: return std::make_optional<const std::string_view>("R168");
-    case hadd2_32i__Ra::R98: return std::make_optional<const std::string_view>("R98");
-    case hadd2_32i__Ra::R99: return std::make_optional<const std::string_view>("R99");
-    case hadd2_32i__Ra::R96: return std::make_optional<const std::string_view>("R96");
-    case hadd2_32i__Ra::R97: return std::make_optional<const std::string_view>("R97");
-    case hadd2_32i__Ra::R94: return std::make_optional<const std::string_view>("R94");
-    case hadd2_32i__Ra::R95: return std::make_optional<const std::string_view>("R95");
-    case hadd2_32i__Ra::R92: return std::make_optional<const std::string_view>("R92");
-    case hadd2_32i__Ra::R93: return std::make_optional<const std::string_view>("R93");
-    case hadd2_32i__Ra::R90: return std::make_optional<const std::string_view>("R90");
-    case hadd2_32i__Ra::R91: return std::make_optional<const std::string_view>("R91");
-    case hadd2_32i__Ra::R16: return std::make_optional<const std::string_view>("R16");
-    case hadd2_32i__Ra::R17: return std::make_optional<const std::string_view>("R17");
-    case hadd2_32i__Ra::R14: return std::make_optional<const std::string_view>("R14");
-    case hadd2_32i__Ra::R15: return std::make_optional<const std::string_view>("R15");
-    case hadd2_32i__Ra::R12: return std::make_optional<const std::string_view>("R12");
-    case hadd2_32i__Ra::R13: return std::make_optional<const std::string_view>("R13");
-    case hadd2_32i__Ra::R10: return std::make_optional<const std::string_view>("R10");
-    case hadd2_32i__Ra::R11: return std::make_optional<const std::string_view>("R11");
-    case hadd2_32i__Ra::R181: return std::make_optional<const std::string_view>("R181");
-    case hadd2_32i__Ra::R18: return std::make_optional<const std::string_view>("R18");
-    case hadd2_32i__Ra::R19: return std::make_optional<const std::string_view>("R19");
-    case hadd2_32i__Ra::R180: return std::make_optional<const std::string_view>("R180");
-    case hadd2_32i__Ra::R251: return std::make_optional<const std::string_view>("R251");
-    case hadd2_32i__Ra::R187: return std::make_optional<const std::string_view>("R187");
-    case hadd2_32i__Ra::R250: return std::make_optional<const std::string_view>("R250");
-    case hadd2_32i__Ra::R186: return std::make_optional<const std::string_view>("R186");
-    case hadd2_32i__Ra::R200: return std::make_optional<const std::string_view>("R200");
-    case hadd2_32i__Ra::R201: return std::make_optional<const std::string_view>("R201");
-    case hadd2_32i__Ra::R202: return std::make_optional<const std::string_view>("R202");
-    case hadd2_32i__Ra::R203: return std::make_optional<const std::string_view>("R203");
-    case hadd2_32i__Ra::R204: return std::make_optional<const std::string_view>("R204");
-    case hadd2_32i__Ra::R185: return std::make_optional<const std::string_view>("R185");
-    case hadd2_32i__Ra::R206: return std::make_optional<const std::string_view>("R206");
-    case hadd2_32i__Ra::R207: return std::make_optional<const std::string_view>("R207");
-    case hadd2_32i__Ra::R208: return std::make_optional<const std::string_view>("R208");
-    case hadd2_32i__Ra::R209: return std::make_optional<const std::string_view>("R209");
-    case hadd2_32i__Ra::R184: return std::make_optional<const std::string_view>("R184");
-    case hadd2_32i__Ra::R118: return std::make_optional<const std::string_view>("R118");
-    case hadd2_32i__Ra::R119: return std::make_optional<const std::string_view>("R119");
-    case hadd2_32i__Ra::R110: return std::make_optional<const std::string_view>("R110");
-    case hadd2_32i__Ra::R111: return std::make_optional<const std::string_view>("R111");
-    case hadd2_32i__Ra::R112: return std::make_optional<const std::string_view>("R112");
-    case hadd2_32i__Ra::R113: return std::make_optional<const std::string_view>("R113");
-    case hadd2_32i__Ra::R114: return std::make_optional<const std::string_view>("R114");
-    case hadd2_32i__Ra::R115: return std::make_optional<const std::string_view>("R115");
-    case hadd2_32i__Ra::R116: return std::make_optional<const std::string_view>("R116");
-    case hadd2_32i__Ra::R117: return std::make_optional<const std::string_view>("R117");
-    case hadd2_32i__Ra::R63: return std::make_optional<const std::string_view>("R63");
-    case hadd2_32i__Ra::R62: return std::make_optional<const std::string_view>("R62");
-    case hadd2_32i__Ra::R61: return std::make_optional<const std::string_view>("R61");
-    case hadd2_32i__Ra::R60: return std::make_optional<const std::string_view>("R60");
-    case hadd2_32i__Ra::R67: return std::make_optional<const std::string_view>("R67");
-    case hadd2_32i__Ra::R66: return std::make_optional<const std::string_view>("R66");
-    case hadd2_32i__Ra::R65: return std::make_optional<const std::string_view>("R65");
-    case hadd2_32i__Ra::R64: return std::make_optional<const std::string_view>("R64");
-    case hadd2_32i__Ra::R193: return std::make_optional<const std::string_view>("R193");
-    case hadd2_32i__Ra::R69: return std::make_optional<const std::string_view>("R69");
-    case hadd2_32i__Ra::R68: return std::make_optional<const std::string_view>("R68");
-    case hadd2_32i__Ra::R162: return std::make_optional<const std::string_view>("R162");
-    case hadd2_32i__Ra::R249: return std::make_optional<const std::string_view>("R249");
-    case hadd2_32i__Ra::R213: return std::make_optional<const std::string_view>("R213");
-    case hadd2_32i__Ra::R212: return std::make_optional<const std::string_view>("R212");
-    case hadd2_32i__Ra::R211: return std::make_optional<const std::string_view>("R211");
-    case hadd2_32i__Ra::R210: return std::make_optional<const std::string_view>("R210");
-    case hadd2_32i__Ra::R217: return std::make_optional<const std::string_view>("R217");
-    case hadd2_32i__Ra::R216: return std::make_optional<const std::string_view>("R216");
-    case hadd2_32i__Ra::R215: return std::make_optional<const std::string_view>("R215");
-    case hadd2_32i__Ra::R214: return std::make_optional<const std::string_view>("R214");
-    case hadd2_32i__Ra::R219: return std::make_optional<const std::string_view>("R219");
-    case hadd2_32i__Ra::R218: return std::make_optional<const std::string_view>("R218");
-    case hadd2_32i__Ra::R109: return std::make_optional<const std::string_view>("R109");
-    case hadd2_32i__Ra::R108: return std::make_optional<const std::string_view>("R108");
-    case hadd2_32i__Ra::R194: return std::make_optional<const std::string_view>("R194");
-    case hadd2_32i__Ra::R103: return std::make_optional<const std::string_view>("R103");
-    case hadd2_32i__Ra::R102: return std::make_optional<const std::string_view>("R102");
-    case hadd2_32i__Ra::R101: return std::make_optional<const std::string_view>("R101");
-    case hadd2_32i__Ra::R100: return std::make_optional<const std::string_view>("R100");
-    case hadd2_32i__Ra::R107: return std::make_optional<const std::string_view>("R107");
-    case hadd2_32i__Ra::R106: return std::make_optional<const std::string_view>("R106");
-    case hadd2_32i__Ra::R105: return std::make_optional<const std::string_view>("R105");
-    case hadd2_32i__Ra::R104: return std::make_optional<const std::string_view>("R104");
-    case hadd2_32i__Ra::R190: return std::make_optional<const std::string_view>("R190");
-    case hadd2_32i__Ra::R247: return std::make_optional<const std::string_view>("R247");
-    case hadd2_32i__Ra::R220: return std::make_optional<const std::string_view>("R220");
-    case hadd2_32i__Ra::R191: return std::make_optional<const std::string_view>("R191");
-    case hadd2_32i__Ra::R240: return std::make_optional<const std::string_view>("R240");
-    case hadd2_32i__Ra::R252: return std::make_optional<const std::string_view>("R252");
-    case hadd2_32i__Ra::R192: return std::make_optional<const std::string_view>("R192");
-    case hadd2_32i__Ra::R241: return std::make_optional<const std::string_view>("R241");
-    case hadd2_32i__Ra::R70: return std::make_optional<const std::string_view>("R70");
-    case hadd2_32i__Ra::R71: return std::make_optional<const std::string_view>("R71");
-    case hadd2_32i__Ra::R72: return std::make_optional<const std::string_view>("R72");
-    case hadd2_32i__Ra::R73: return std::make_optional<const std::string_view>("R73");
-    case hadd2_32i__Ra::R74: return std::make_optional<const std::string_view>("R74");
-    case hadd2_32i__Ra::R75: return std::make_optional<const std::string_view>("R75");
-    case hadd2_32i__Ra::R76: return std::make_optional<const std::string_view>("R76");
-    case hadd2_32i__Ra::R77: return std::make_optional<const std::string_view>("R77");
-    case hadd2_32i__Ra::R78: return std::make_optional<const std::string_view>("R78");
-    case hadd2_32i__Ra::R79: return std::make_optional<const std::string_view>("R79");
-    case hadd2_32i__Ra::R195: return std::make_optional<const std::string_view>("R195");
-    case hadd2_32i__Ra::R136: return std::make_optional<const std::string_view>("R136");
-    case hadd2_32i__Ra::R137: return std::make_optional<const std::string_view>("R137");
-    case hadd2_32i__Ra::R134: return std::make_optional<const std::string_view>("R134");
-    case hadd2_32i__Ra::R135: return std::make_optional<const std::string_view>("R135");
-    case hadd2_32i__Ra::R132: return std::make_optional<const std::string_view>("R132");
-    case hadd2_32i__Ra::R133: return std::make_optional<const std::string_view>("R133");
-    case hadd2_32i__Ra::R130: return std::make_optional<const std::string_view>("R130");
-    case hadd2_32i__Ra::R131: return std::make_optional<const std::string_view>("R131");
-    case hadd2_32i__Ra::R226: return std::make_optional<const std::string_view>("R226");
-    case hadd2_32i__Ra::R227: return std::make_optional<const std::string_view>("R227");
-    case hadd2_32i__Ra::R224: return std::make_optional<const std::string_view>("R224");
-    case hadd2_32i__Ra::R197: return std::make_optional<const std::string_view>("R197");
-    case hadd2_32i__Ra::R222: return std::make_optional<const std::string_view>("R222");
-    case hadd2_32i__Ra::R223: return std::make_optional<const std::string_view>("R223");
-    case hadd2_32i__Ra::R138: return std::make_optional<const std::string_view>("R138");
-    case hadd2_32i__Ra::R139: return std::make_optional<const std::string_view>("R139");
-    case hadd2_32i__Ra::R238: return std::make_optional<const std::string_view>("R238");
-    case hadd2_32i__Ra::R198: return std::make_optional<const std::string_view>("R198");
-    case hadd2_32i__Ra::R196: return std::make_optional<const std::string_view>("R196");
-    case hadd2_32i__Ra::R199: return std::make_optional<const std::string_view>("R199");
-    case hadd2_32i__Ra::R45: return std::make_optional<const std::string_view>("R45");
-    case hadd2_32i__Ra::R44: return std::make_optional<const std::string_view>("R44");
-    case hadd2_32i__Ra::R47: return std::make_optional<const std::string_view>("R47");
-    case hadd2_32i__Ra::R46: return std::make_optional<const std::string_view>("R46");
-    case hadd2_32i__Ra::R41: return std::make_optional<const std::string_view>("R41");
-    case hadd2_32i__Ra::R40: return std::make_optional<const std::string_view>("R40");
-    case hadd2_32i__Ra::R43: return std::make_optional<const std::string_view>("R43");
-    case hadd2_32i__Ra::R42: return std::make_optional<const std::string_view>("R42");
-    case hadd2_32i__Ra::R189: return std::make_optional<const std::string_view>("R189");
-    case hadd2_32i__Ra::R188: return std::make_optional<const std::string_view>("R188");
-    case hadd2_32i__Ra::R49: return std::make_optional<const std::string_view>("R49");
-    case hadd2_32i__Ra::R48: return std::make_optional<const std::string_view>("R48");
-    case hadd2_32i__Ra::R121: return std::make_optional<const std::string_view>("R121");
-    case hadd2_32i__Ra::R120: return std::make_optional<const std::string_view>("R120");
-    case hadd2_32i__Ra::R123: return std::make_optional<const std::string_view>("R123");
-    case hadd2_32i__Ra::R122: return std::make_optional<const std::string_view>("R122");
-    case hadd2_32i__Ra::R125: return std::make_optional<const std::string_view>("R125");
-    case hadd2_32i__Ra::R124: return std::make_optional<const std::string_view>("R124");
-    case hadd2_32i__Ra::R127: return std::make_optional<const std::string_view>("R127");
-    case hadd2_32i__Ra::R126: return std::make_optional<const std::string_view>("R126");
-    case hadd2_32i__Ra::R129: return std::make_optional<const std::string_view>("R129");
-    case hadd2_32i__Ra::R128: return std::make_optional<const std::string_view>("R128");
-    case hadd2_32i__Ra::R233: return std::make_optional<const std::string_view>("R233");
-    case hadd2_32i__Ra::R232: return std::make_optional<const std::string_view>("R232");
-    case hadd2_32i__Ra::R235: return std::make_optional<const std::string_view>("R235");
-    case hadd2_32i__Ra::R234: return std::make_optional<const std::string_view>("R234");
-    case hadd2_32i__Ra::R237: return std::make_optional<const std::string_view>("R237");
-    case hadd2_32i__Ra::R236: return std::make_optional<const std::string_view>("R236");
-    case hadd2_32i__Ra::R165: return std::make_optional<const std::string_view>("R165");
-    case hadd2_32i__Ra::R164: return std::make_optional<const std::string_view>("R164");
-    case hadd2_32i__Ra::R239: return std::make_optional<const std::string_view>("R239");
-    case hadd2_32i__Ra::R167: return std::make_optional<const std::string_view>("R167");
-    case hadd2_32i__Ra::R166: return std::make_optional<const std::string_view>("R166");
-    case hadd2_32i__Ra::R228: return std::make_optional<const std::string_view>("R228");
-    case hadd2_32i__Ra::R161: return std::make_optional<const std::string_view>("R161");
-    case hadd2_32i__Ra::R229: return std::make_optional<const std::string_view>("R229");
-    case hadd2_32i__Ra::R160: return std::make_optional<const std::string_view>("R160");
-    case hadd2_32i__Ra::R58: return std::make_optional<const std::string_view>("R58");
-    case hadd2_32i__Ra::R59: return std::make_optional<const std::string_view>("R59");
-    case hadd2_32i__Ra::R163: return std::make_optional<const std::string_view>("R163");
-    case hadd2_32i__Ra::R52: return std::make_optional<const std::string_view>("R52");
-    case hadd2_32i__Ra::R53: return std::make_optional<const std::string_view>("R53");
-    case hadd2_32i__Ra::R50: return std::make_optional<const std::string_view>("R50");
-    case hadd2_32i__Ra::R51: return std::make_optional<const std::string_view>("R51");
-    case hadd2_32i__Ra::R56: return std::make_optional<const std::string_view>("R56");
-    case hadd2_32i__Ra::R57: return std::make_optional<const std::string_view>("R57");
-    case hadd2_32i__Ra::R54: return std::make_optional<const std::string_view>("R54");
-    case hadd2_32i__Ra::R55: return std::make_optional<const std::string_view>("R55");
-    case hadd2_32i__Ra::R225: return std::make_optional<const std::string_view>("R225");
-    case hadd2_32i__Ra::R154: return std::make_optional<const std::string_view>("R154");
-    case hadd2_32i__Ra::R155: return std::make_optional<const std::string_view>("R155");
-    case hadd2_32i__Ra::R156: return std::make_optional<const std::string_view>("R156");
-    case hadd2_32i__Ra::R157: return std::make_optional<const std::string_view>("R157");
-    case hadd2_32i__Ra::R150: return std::make_optional<const std::string_view>("R150");
-    case hadd2_32i__Ra::R151: return std::make_optional<const std::string_view>("R151");
-    case hadd2_32i__Ra::R152: return std::make_optional<const std::string_view>("R152");
-    case hadd2_32i__Ra::R153: return std::make_optional<const std::string_view>("R153");
-    case hadd2_32i__Ra::R244: return std::make_optional<const std::string_view>("R244");
-    case hadd2_32i__Ra::R245: return std::make_optional<const std::string_view>("R245");
-    case hadd2_32i__Ra::R246: return std::make_optional<const std::string_view>("R246");
-    case hadd2_32i__Ra::R221: return std::make_optional<const std::string_view>("R221");
-    case hadd2_32i__Ra::R158: return std::make_optional<const std::string_view>("R158");
-    case hadd2_32i__Ra::R159: return std::make_optional<const std::string_view>("R159");
-    case hadd2_32i__Ra::R242: return std::make_optional<const std::string_view>("R242");
-    case hadd2_32i__Ra::R243: return std::make_optional<const std::string_view>("R243");
-    case hadd2_32i__Ra::R172: return std::make_optional<const std::string_view>("R172");
-    case hadd2_32i__Ra::R230: return std::make_optional<const std::string_view>("R230");
-    case hadd2_32i__Ra::R173: return std::make_optional<const std::string_view>("R173");
-    case hadd2_32i__Ra::R29: return std::make_optional<const std::string_view>("R29");
-    case hadd2_32i__Ra::R28: return std::make_optional<const std::string_view>("R28");
-    case hadd2_32i__Ra::R27: return std::make_optional<const std::string_view>("R27");
-    case hadd2_32i__Ra::R26: return std::make_optional<const std::string_view>("R26");
-    case hadd2_32i__Ra::R25: return std::make_optional<const std::string_view>("R25");
-    case hadd2_32i__Ra::R24: return std::make_optional<const std::string_view>("R24");
-    case hadd2_32i__Ra::R23: return std::make_optional<const std::string_view>("R23");
-    case hadd2_32i__Ra::R22: return std::make_optional<const std::string_view>("R22");
-    case hadd2_32i__Ra::R21: return std::make_optional<const std::string_view>("R21");
-    case hadd2_32i__Ra::R20: return std::make_optional<const std::string_view>("R20");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(hadd2_32i__ftz value) {
-  switch (value) {
-    case hadd2_32i__ftz::noftz: return std::make_optional<const std::string_view>("noftz");
-    case hadd2_32i__ftz::FTZ: return std::make_optional<const std::string_view>("FTZ");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(hadd2_32i__sat value) {
-  switch (value) {
-    case hadd2_32i__sat::nosat: return std::make_optional<const std::string_view>("nosat");
-    case hadd2_32i__sat::SAT: return std::make_optional<const std::string_view>("SAT");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(hfma2__v0_fmz value) {
-  switch (value) {
-    case hfma2__v0_fmz::nofmz: return std::make_optional<const std::string_view>("nofmz");
-    case hfma2__v0_fmz::FTZ: return std::make_optional<const std::string_view>("FTZ");
-    case hfma2__v0_fmz::FMZ: return std::make_optional<const std::string_view>("FMZ");
-    case hfma2__v0_fmz::INVALID: return std::make_optional<const std::string_view>("INVALID");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(hset2__v0_bop value) {
-  switch (value) {
-    case hset2__v0_bop::AND: return std::make_optional<const std::string_view>("AND");
-    case hset2__v0_bop::XOR: return std::make_optional<const std::string_view>("XOR");
-    case hset2__v0_bop::OR: return std::make_optional<const std::string_view>("OR");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(hset2__v0_cmp value) {
-  switch (value) {
-    case hset2__v0_cmp::LE: return std::make_optional<const std::string_view>("LE");
-    case hset2__v0_cmp::GE: return std::make_optional<const std::string_view>("GE");
-    case hset2__v0_cmp::GEU: return std::make_optional<const std::string_view>("GEU");
-    case hset2__v0_cmp::LTU: return std::make_optional<const std::string_view>("LTU");
-    case hset2__v0_cmp::F: return std::make_optional<const std::string_view>("F");
-    case hset2__v0_cmp::EQU: return std::make_optional<const std::string_view>("EQU");
-    case hset2__v0_cmp::NAN: return std::make_optional<const std::string_view>("NAN");
-    case hset2__v0_cmp::NE: return std::make_optional<const std::string_view>("NE");
-    case hset2__v0_cmp::T: return std::make_optional<const std::string_view>("T");
-    case hset2__v0_cmp::LT: return std::make_optional<const std::string_view>("LT");
-    case hset2__v0_cmp::GT: return std::make_optional<const std::string_view>("GT");
-    case hset2__v0_cmp::LEU: return std::make_optional<const std::string_view>("LEU");
-    case hset2__v0_cmp::NUM: return std::make_optional<const std::string_view>("NUM");
-    case hset2__v0_cmp::NEU: return std::make_optional<const std::string_view>("NEU");
-    case hset2__v0_cmp::EQ: return std::make_optional<const std::string_view>("EQ");
-    case hset2__v0_cmp::GTU: return std::make_optional<const std::string_view>("GTU");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(maxShift value) {
-  switch (value) {
-    case maxShift::_32: return std::make_optional<const std::string_view>("32");
-    case maxShift::INVALIDMAXSHIFT3: return std::make_optional<const std::string_view>("INVALIDMAXSHIFT3");
-    case maxShift::U64: return std::make_optional<const std::string_view>("U64");
-    case maxShift::S64: return std::make_optional<const std::string_view>("S64");
-    default: return std::nullopt;
-  }
-}
-
-std::optional<const std::string_view> ToString(optCC value) {
-  switch (value) {
-    case optCC::noCC: return std::make_optional<const std::string_view>("noCC");
-    case optCC::CC: return std::make_optional<const std::string_view>("CC");
-    default: return std::nullopt;
   }
 }
 
