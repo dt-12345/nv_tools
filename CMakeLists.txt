@@ -20,25 +20,25 @@ if (MINGW)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 endif()
 
-
 add_executable(
     disassemble
     
-    src/include/utility.hpp
+    src/utility.hpp
 
-    src/include/Maxwell.hpp
-    src/include/MaxwellAccessor.hpp
-    src/include/MaxwellPrint.hpp
-    src/Maxwell.cpp
-    src/MaxwellPrint.cpp
+    src/maxwell/maxwell.hpp
+    src/maxwell/accessor.hpp
+    src/maxwell/print.hpp
+    src/maxwell/maxwell.cpp
+    src/maxwell/print.cpp
 
     src/main.cpp
 )
 
-target_include_directories(disassemble PRIVATE src/include)
+target_include_directories(disassemble PRIVATE lib/SPIRV-Headers/include)
+target_include_directories(disassemble PRIVATE src)
 
 if (MSVC)
     target_compile_options(disassemble PRIVATE /W4 /wd4244 /wd4127 /Zc:__cplusplus)
 else()
-    target_compile_options(disassemble PRIVATE -Wall -Wextra -fno-plt)
+    target_compile_options(disassemble PRIVATE -Wall -Wextra -Werror -fno-plt)
 endif()

@@ -1,10 +1,10 @@
-#include "Maxwell.hpp"
+#include "maxwell/maxwell.hpp"
 
 #include <algorithm>
 #include <array>
 #include <utility>
 
-namespace Maxwell {
+namespace maxwell {
 
 struct ValueRange {
   std::uint32_t min;
@@ -11847,4 +11847,4 @@ static constexpr const std::array<std::pair<std::uint64_t, std::tuple<std::uint6
   std::pair{ 1ull, std::tuple<std::uint64_t, std::uint64_t>{ 0ull, 1ull } },
 };
 TABLE_LOOKUP(hmul2__v2_nAB, std::uint64_t, std::uint64_t)
-} // namespace Maxwell
+} // namespace maxwell

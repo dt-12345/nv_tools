@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <variant>
 
-namespace Maxwell {
+namespace maxwell {
 
 enum class OpClass : std::uint32_t {
   FFMA                      =   0x0, // FFMA
@@ -4247,4 +4247,4 @@ std::optional<std::tuple<std::uint64_t, std::uint64_t>> hfma2__v2_nAB(std::uint6
 std::optional<std::tuple<std::uint64_t, std::uint64_t>> hmul2__v0_nAB(std::uint64_t value);
 std::optional<std::tuple<std::uint64_t, std::uint64_t>> hmul2__v2_nAB(std::uint64_t value);
 
-} // namespace Maxwell
+} // namespace maxwell

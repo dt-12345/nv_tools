@@ -1198,7 +1198,7 @@ def fix_name(name: str) -> str:
         name = f"_{name}"
     return name.replace(".", "_").replace(" ", "_")
 
-def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
+def write_file(source_path: str, arch: Architecture) -> None:
     decoding_info: list[DecodingInfo] = [
         e for opclass in arch.funit.op_classes for e in arch.get_opclass_decoding_info(arch.funit.op_classes[opclass])
     ]
@@ -1208,7 +1208,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
     nop: DecodingMask = arch.get_encoding_mask(arch.funit.encodings[arch.funit.nop_encoding[0].encoding], arch.funit.nop_encoding[0].value)
 
     seen_registers: dict[tuple[RegisterComparator, ...], str] = {}
-    with open(os.path.join(include_path, f"{arch.name}.hpp"), "w", encoding="utf-8") as header:
+    with open(os.path.join(source_path, arch.name.lower(), f"{arch.name.lower()}.hpp"), "w", encoding="utf-8") as header:
         header.write("#pragma once\n\n")
         header.write("#include \"utility.hpp\"\n\n")
         header.write("#include <cstdint>\n")
@@ -1216,7 +1216,7 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
         header.write("#include <tuple>\n")
         header.write("#include <type_traits>\n")
         header.write("#include <variant>\n\n")
-        header.write(f"namespace {arch.name} {{\n\n")
+        header.write(f"namespace {arch.name.lower()} {{\n\n")
         header.write("enum class OpClass : std::uint32_t {\n")
         for i, opclass in enumerate(arch.funit.op_classes):
             header.write(f"  {fix_name(opclass):<25} = {i:>#5x}, // {opclass}\n")
@@ -1311,14 +1311,14 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
                 header.write("  return slot > MAX_CONST_BANK ? std::nullopt : std::make_optional<std::tuple<std::uint64_t, std::int64_t>>(slot, offset);\n")
                 header.write("}\n")
         header.write("\n")
-        header.write(f"}} // namespace {arch.name}")
+        header.write(f"}} // namespace {arch.name.lower()}")
 
-    with open(os.path.join(source_path, f"{arch.name}.cpp"), "w", encoding="utf-8") as source:
-        source.write(f"#include \"{arch.name}.hpp\"\n\n")
+    with open(os.path.join(source_path, arch.name.lower(), f"{arch.name.lower()}.cpp"), "w", encoding="utf-8") as source:
+        source.write(f"#include \"{arch.name.lower()}/{arch.name.lower()}.hpp\"\n\n")
         source.write("#include <algorithm>\n")
         source.write("#include <array>\n")
         source.write("#include <utility>\n\n")
-        source.write(f"namespace {arch.name} {{\n\n")
+        source.write(f"namespace {arch.name.lower()} {{\n\n")
         source.write("struct ValueRange {\n")
         source.write("  std::uint32_t min;\n")
         source.write("  std::uint32_t max;\n")
@@ -1412,14 +1412,14 @@ def write_file(include_path: str, source_path: str, arch: Architecture) -> None:
                     source.write(f"  std::pair{{ {entry.value}ull, std::tuple<{types}>{{ {value} }} }},\n")
                 source.write("};\n")
                 source.write(f"TABLE_LOOKUP({fix_name(tbl.name)}, {types})\n")
-        source.write(f"}} // namespace {arch.name}")
+        source.write(f"}} // namespace {arch.name.lower()}")
     
-    with open(os.path.join(include_path, f"{arch.name}Accessor.hpp"), "w", encoding="utf-8") as header:
+    with open(os.path.join(source_path, arch.name.lower(), "accessor.hpp"), "w", encoding="utf-8") as header:
         header.write("#pragma once\n\n")
-        header.write(f"#include \"{arch.name}.hpp\"\n\n")
+        header.write(f"#include \"{arch.name.lower()}/{arch.name.lower()}.hpp\"\n\n")
         header.write("#include <bit>\n")
         header.write("#include <limits>\n\n")
-        header.write(f"namespace {arch.name} {{\n\n")
+        header.write(f"namespace {arch.name.lower()} {{\n\n")
         header.write(
 """struct AccessorBase {
   std::uint64_t inst;
@@ -1874,25 +1874,27 @@ template <OpClass CLASS> struct Accessor;
                     else:
                         handle_immediate_operand(field, opclass)
             header.write("};\n\n")
-        header.write(f"}} // namespace {arch.name}")
+        header.write(f"}} // namespace {arch.name.lower()}")
     
-    with open(os.path.join(include_path, f"{arch.name}Print.hpp"), "w", encoding="utf-8") as header:
+    with open(os.path.join(source_path, arch.name.lower(), "print.hpp"), "w", encoding="utf-8") as header:
         header.write("#pragma once\n\n")
-        header.write("#include \"MaxwellAccessor.hpp\"\n\n")
+        header.write(f"#include \"{arch.name.lower()}/accessor.hpp\"\n\n")
         header.write("#include <optional>\n")
         header.write("#include <string>\n")
         header.write("#include <string_view>\n\n")
-        header.write(f"namespace {arch.name} {{\n\n")
-        header.write("std::string Print(OpClass opclass, const char* opcode, std::uint64_t inst, std::uint64_t sched, std::uint64_t pc);\n")
-        header.write("\n")
-        header.write(f"}} // {arch.name}")
-    
-    with open(os.path.join(source_path, f"{arch.name}Print.cpp"), "w", encoding="utf-8") as source:
-        source.write(f"#include \"{arch.name}Print.hpp\"\n\n")
-        source.write("#include <format>\n\n")
-        source.write(f"namespace {arch.name} {{\n\n")
+        header.write(f"namespace {arch.name.lower()} {{\n\n")
+        header.write("std::string Print(OpClass opclass, const char* opcode, std::uint64_t inst, std::uint64_t sched, std::uint64_t pc);\n\n")
         for register in sorted(seen_registers.values()):
-            source.write(f"[[maybe_unused]] static std::optional<const std::string_view> ToString({fix_name(register)} value) {{\n")
+            header.write(f"[[maybe_unused]] const std::string_view ToString({fix_name(register)} value);\n")
+        header.write("\n")
+        header.write(f"}} // {arch.name.lower()}")
+    
+    with open(os.path.join(source_path, arch.name.lower(), "print.cpp"), "w", encoding="utf-8") as source:
+        source.write(f"#include \"{arch.name.lower()}/print.hpp\"\n\n")
+        source.write("#include <format>\n\n")
+        source.write(f"namespace {arch.name.lower()} {{\n\n")
+        for register in sorted(seen_registers.values()):
+            source.write(f"const std::string_view ToString({fix_name(register)} value) {{\n")
             source.write("  switch (value) {\n")
             reg: RegisterGroup = arch.register_groups[register]
             if reg.is_composite:
@@ -1903,18 +1905,18 @@ template <OpClass CLASS> struct Accessor;
                         if v.value in seen:
                             continue
                         seen.add(v.value)
-                        source.write(f"    case static_cast<{fix_name(register)}>({fix_name(v.group.name)}::{fix_name(v.name)}): return std::make_optional<const std::string_view>(\"{v.name}\");\n")
+                        source.write(f"    case static_cast<{fix_name(register)}>({fix_name(v.group.name)}::{fix_name(v.name)}): return \"{v.name}\";\n")
             else:
                 seen: set[int] = set()
                 for value in reg.values:
                     if reg.values[value].value in seen:
                         continue
                     seen.add(reg.values[value].value)
-                    source.write(f"    case {fix_name(register)}::{fix_name(value)}: return std::make_optional<const std::string_view>(\"{value}\");\n")
-            source.write("    default: return std::nullopt;\n")
+                    source.write(f"    case {fix_name(register)}::{fix_name(value)}: return \"{value}\";\n")
+            source.write(f"    default: return std::format(\"{fix_name(register)}::{{:#x}}\", static_cast<std::uint32_t>(value));\n")
             source.write("  }\n")
             source.write("}\n\n")
-        source.write("std::string PrintInstruction([[maybe_unused]] const char* opcode, [[maybe_unused]] const Accessor<OpClass::NOP_DEFAULT>& accessor) {\n")
+        source.write("static std::string PrintInstruction([[maybe_unused]] const char* opcode, [[maybe_unused]] const Accessor<OpClass::NOP_DEFAULT>& accessor) {\n")
         source.write(f"  return \"{arch.empty_instr}\";\n")
         source.write("}\n\n")
         def write_format_func(opclass: OperationClass, op: Operand, indent: str = "  ") -> None:
@@ -1939,7 +1941,7 @@ template <OpClass CLASS> struct Accessor;
                                 source.write(f"{indent}if (accessor.{op.name}_negate()) out += \"-\";\n")
                             elif field == OperandField.ABSOLUTE:
                                 source.write(f"{indent}if (accessor.{op.name}_absolute()) out += \"|\";\n")
-                source.write(f"{indent}out += ToString(accessor.{op.name}()).value_or(\"{fix_name(op.register.name)}::???\");\n")
+                source.write(f"{indent}out += ToString(accessor.{op.name}());\n")
                 if not op.add_dot and op.fields is not None and OperandField.ABSOLUTE in op.fields:
                     source.write(f"{indent}if (accessor.{op.name}_absolute()) out += \"|\";\n")
             elif isinstance(op, ImmediateOperand):
@@ -1990,7 +1992,7 @@ template <OpClass CLASS> struct Accessor;
                         source.write(f"{indent}out += \"+\";\n")
                 source.write(f"{indent}out += \"]\";\n")
         for name, opclass in arch.funit.op_classes.items():
-            source.write(f"std::string PrintInstruction(const char* opcode, const Accessor<OpClass::{fix_name(name)}>& accessor) {{\n")
+            source.write(f"static std::string PrintInstruction(const char* opcode, const Accessor<OpClass::{fix_name(name)}>& accessor) {{\n")
             source.write("  std::string out;\n")
             source.write("  out.reserve(0x40);\n")
             for op in opclass.format:
@@ -2009,7 +2011,7 @@ template <OpClass CLASS> struct Accessor;
         source.write("      UNREACHABLE_DEFAULT_CASE;\n")
         source.write("  }\n")
         source.write("}\n\n")
-        source.write(f"}} // {arch.name}")
+        source.write(f"}} // {arch.name.lower()}")
 
 if __name__ == "__main__":
     import argparse
@@ -2019,12 +2021,10 @@ if __name__ == "__main__":
     parser: argparse.ArgumentParser = argparse.ArgumentParser(prog="Machine Description")
     parser.add_argument("--md", help="Path to input machine description file", default="data/SM52.md")
     parser.add_argument("--src", help="Path to source directory", default="src")
-    parser.add_argument("--inc", help="Path to include directory", default="src/include")
 
     args, _ = parser.parse_known_args()
     os.makedirs(args.src, exist_ok=True)
-    os.makedirs(args.inc, exist_ok=True)
 
     arch: Architecture = Architecture.load(Path(args.md).read_text())
 
-    write_file(args.inc, args.src, arch)
+    write_file(args.src, arch)

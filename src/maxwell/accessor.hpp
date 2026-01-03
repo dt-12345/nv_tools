@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Maxwell.hpp"
+#include "maxwell/maxwell.hpp"
 
 #include <bit>
 #include <limits>
 
-namespace Maxwell {
+namespace maxwell {
 
 struct AccessorBase {
   std::uint64_t inst;
@@ -15530,4 +15530,4 @@ template <> struct Accessor<OpClass::HFMA2_CCST> : public AccessorBase {
   SCHED_FIELD(usched_info, OEUSchedInfoEncoding, USCHED_INFO, Accessor::_Reg)
 };
 
-} // namespace Maxwell
+} // namespace maxwell
